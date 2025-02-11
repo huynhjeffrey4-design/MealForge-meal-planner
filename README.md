@@ -1,11 +1,15 @@
-# CSE442 Repo First Steps
-1. Checkout this repo on your computer
-2. Open up the project using your editor of choice
-3. Add your name to this file
-4. Commit your change (ideally using your editor's Git support IDE -- links to videos showing this in Piazza).
-    Good commit messages are important. Please use a message like "Adding me name to the README" for this commit.
-5. Push your commit back onto the server (ideally using your editor's Git support -- this is good early practice).
-6. Once each member of yourhas added their name, each person should pull down the updated file (using your editor of choice's Git support). 
-7. After everyone confirms you all see all of the updates, have **1** person remove these steps from the README, commit the change, and push it back.
-
 # Project Member Names
+* Peter Vaiciulis
+* Jeffrey Huynh
+* Daniel Gulvin
+* Songzhu Li
+* Johnathan Tang
+
+# Figma Link
+* [Figma](https://www.figma.com/design/TDHzs3o7ZAau7hvf7r4jsb/CSE442?node-id=0-1&t=Ck0RQzJd0lB9me4c-1)
+
+# Project Domain
+* [Aptitude (Dev)](https://se-dev.cse.buffalo.edu/CSE442/2025-Spring/cse-442v/)
+* [Cattle (Prod)](https://se-prod.cse.buffalo.edu/CSE442/2025-Spring/cse-442v/)
+
+
