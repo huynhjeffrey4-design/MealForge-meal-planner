@@ -1,0 +1,32 @@
+name: Deploy to Aptitude Server
+
+on:
+  pull_request:
+    branches:
+      - dev
+  workflow_dispatch:
+
+jobs:
+  deploy:
+    runs-on: self-hosted
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Display deployment start
+        run: echo "Starting deployment of PHP application..."
+
+      - name: Copy files to web directory
+        run: |
+          cp -r * /data/web/CSE442/2025-Spring/cse-442v/
+
+      - name: Verify deployment
+        run: |
+          echo "Checking if index.php exists..."
+          if [ -f "/data/web/CSE442/2025-Spring/cse-442v/index.html" ]; then
+            echo "✅ Deployment successful"
+          else
+            echo "❌ Deployment failed - index.php not found"
+            exit 1
+          fi
