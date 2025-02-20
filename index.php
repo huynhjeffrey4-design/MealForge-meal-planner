@@ -19,9 +19,11 @@
 				<a href="/about">
                 <button class="text-gray-600 hover:text-green-700">About</button>
 				</a>
+<a href="/login.php">
                 <button class="bg-green-600 text-white px-4 py-2 rounded-lg hover:bg-green-700">
                     Get Started
                 </button>
+</a>
             </div>
         </div>
     </nav>
@@ -94,7 +96,7 @@
             <p class="text-xl text-green-50 mb-8 max-w-2xl mx-auto">
                 Join thousands of happy users who have discovered their perfect meal plans with MealForge.
             </p>
-		<a href="/login">
+		<a href="/login.php">
             <button class="bg-white text-green-600 px-8 py-4 rounded-lg text-lg font-semibold hover:bg-green-50 flex items-center gap-2 mx-auto">
                 Get Started Now
                 <i data-lucide="arrow-right" class="w-5 h-5"></i>
