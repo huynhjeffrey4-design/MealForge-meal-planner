@@ -1,6 +1,9 @@
 <?php
 namespace App\Controllers;
 
+require_once __DIR__ . '/../setup.php';
+
+
 class UserController {
     private UserDataProviderInterface $provider;
     
@@ -12,10 +15,12 @@ class UserController {
      * Create a new user
      * @param string $email
      * @param string $password
+     * @param string $firstName
+     * @param string $lastName
      * @return int|false User ID if successful, false otherwise
      */
-    public function createUser(string $email, string $password, string $name_f, string $name_l): int|false {
-        return $this->provider->createUser($email, $password, $name_f, $name_l);
+    public function createUser(string $email, string $password, string $firstName, string $lastName): int|false {
+        return $this->provider->createUser($email, $password, $firstName, $lastName);
     }
     
     /**
@@ -27,43 +32,45 @@ class UserController {
         return $this->provider->deleteUser($userId);
     }
 
-	/**
-	 * Login user
-	 * @param string $email
-	 * @param string $password
-	 * @return bool login success
-	 */
-	public function login(string $email, string $password, bool $remember): bool {
-		$user_id =  $this->provider->login($email, $password);
-		if ($user_id !== false) {
-			session_start();
-			$_SESSION['user_id'] = $user_id;
+    /**
+     * Login user
+     * @param string $email
+     * @param string $password
+     * @return bool User ID if successful, false otherwise
+     */
+    public function login(string $email, string $password, bool $remember): bool {
+        $email = htmlspecialchars($email);
+        $password = htmlspecialchars($password);
 
-			if ($remember) {
-				// Set remember-me cookie (30 days)
-				setcookie('remember_token', 
-						 generateRememberToken(), 
-						 time() + (86400 * 30), 
-						 '/', 
-						 '', 
-						 true, // Secure
-						 true  // HttpOnly
-				);
-			}
-			return true;
-		}
-		return false;
-	}
+        $login_res =  $this->provider->login($email, $password);
+        if ($login_res !== false) {
+            session_start();
+            $_SESSION['user_id'] = $login_res;
+
+            if ($remember) {
+                // Set remember-me cookie (30 days)
+                setcookie('remember_token', 
+                         generateRememberToken(), 
+                         time() + (86400 * 30), 
+                         '/', 
+                         '', 
+                         true, // Secure
+                         true  // HttpOnly
+                );
+            }
+        }
+        return $login_res;
+    }
 }
 
 interface UserDataProviderInterface {
-    public function createUser(string $email, string $password, string $name_f, string $name_l): int|false;
+    public function createUser(string $email, string $password, string $firstName, string $lastName): int|false;
     public function deleteUser(int $userId): bool;
     public function login(string $email, string $password): int|false;
 }
 
 function getUserController(): UserController {
-	return new UserController(getUserProvider());
+    return new UserController(getUserProvider());
 }
 
 function getUserProvider(): UserDataProviderInterface {
@@ -77,19 +84,19 @@ class MysqliUserProvider implements UserDataProviderInterface {
     
     public function __construct() {
         $this->mysqli = new \mysqli(
-		  env('DB_HOST', 'localhost'),
-		  env('DB_USERNAME', 'username'),
-		  env('DB_PASSWORD', 'password'),
-		  env('DB_DATABASE', 'your_database')
-	  );
+          env('DB_HOST', 'localhost'),
+          env('DB_USERNAME', 'username'),
+          env('DB_PASSWORD', 'password'),
+          env('DB_DATABASE', 'testdb')
+      );
     }
     
-    public function createUser(string $email, string $password, string $name_f, string $name_l): int|false {
+    public function createUser(string $email, string $password, string $firstName, string $lastName): int|false {
         try {
             $hashedPassword = password_hash($password, PASSWORD_DEFAULT);
             
             $stmt = $this->mysqli->prepare("INSERT INTO users (email, password_hash, first_name, last_name) VALUES (?, ?, ?, ?)");
-            $stmt->bind_param("ssss", $email, $hashedPassword, $name_f, $name_l);
+            $stmt->bind_param("ssss", $email, $hashedPassword, $firstName, $lastName);
             
             $success = $stmt->execute();
             
@@ -122,49 +129,46 @@ class MysqliUserProvider implements UserDataProviderInterface {
         }
     }
     
-	public function login(string $email, string $password): int|false {
-    try {
-        // This is correct - using password_hash column
-        $stmt = $this->mysqli->prepare("SELECT id, password_hash FROM users WHERE email = ?");
-        $stmt->bind_param("s", $email);
-        $stmt->execute();
-        
-        $result = $stmt->get_result();
-        
-        if ($result->num_rows === 0) {
+    public function login(string $email, string $password): int|false {
+        try {
+            $stmt = $this->mysqli->prepare("SELECT user_id, password_hash FROM users WHERE email = ?");
+            $stmt->bind_param("s", $email);
+            $stmt->execute();
+            
+            $result = $stmt->get_result();
+            
+            if ($result->num_rows === 0) {
+                $stmt->close();
+                return false;
+            }
+            
+            $user = $result->fetch_assoc();
             $stmt->close();
+            
+            if (password_verify($password, $user['password_hash'])) {
+                return (int) $user['user_id'];
+            }
+            
+            return false;
+        } catch (\mysqli_sql_exception $e) {
+            // Log error here if needed
             return false;
         }
-        
-        $user = $result->fetch_assoc();
-        $stmt->close();
-        
-        // This is also correct - checking against password_hash column
-        if (password_verify($password, $user['password_hash'])) {
-            return (int) $user['id'];
-        }
-        
-        return false;
-    } catch (\mysqli_sql_exception $e) {
-        // Log error here if needed
-        error_log("Login error: " . $e->getMessage());
-        return false;
     }
-  }
 }
 
 class MockUserProvider implements UserDataProviderInterface 
 {
-	private array $users = [];
+    private array $users = [];
     private int $nextId = 1;
     private array $deletedUserIds = [];
 
-	public function __construct() {
-	  $this->createUser('peter@email.com', 'asdf', 'Peter', 'Vaiciulis');
-	  $this->createUser('test@test.com', 'test', 'Testy', 'Johnson');
-	}
+    public function __construct() {
+	  $this->createUser('test@email.com', 'test', 'Testy', 'Johnson');
+      $this->createUser('peter@email.com', 'asdf', 'Peter', 'Vaiciulis');
+    }
     
-    public function createUser(string $email, string $password, string $name_f, string $name_l): int|false 
+    public function createUser(string $email, string $password, string $firstName, string $lastName): int|false 
     {
         // Simulate email uniqueness check
         foreach ($this->users as $user) {
@@ -179,8 +183,8 @@ class MockUserProvider implements UserDataProviderInterface
             'id' => $userId,
             'email' => $email,
             'password' => password_hash($password, PASSWORD_DEFAULT),
-			'first_name' => $name_f,
-			'last_name' => $name_l
+            'first_name' => $firstName,
+            'last_name' => $lastName
         ];
         
         return $userId;
