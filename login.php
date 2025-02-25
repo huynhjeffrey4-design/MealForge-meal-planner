@@ -1,14 +1,11 @@
 <?php
 require __DIR__ . '/vendor/autoload.php';
-include __DIR__ . '/control.php';
-include __DIR__ . '/setup.php';
+require_once 'controllers/control.php';
 use function App\Controllers\getUserController;
 
 $error = '';
 
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
-
-
     $email = $_POST['email'];
     $password = $_POST['password'];
     $remember = isset($_POST['remember']);
@@ -16,7 +13,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 	$controller = getUserController();
 	$success = $controller->login($email, $password, $remember);
 	
-	if ($success == true) {
+	if ($success === true) {
 		header('Location: dashboard.php');
 		exit;
 	} else {
