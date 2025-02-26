@@ -119,7 +119,7 @@ function generateRememberToken() {
                     </button>
                     <div class="text-center text-gray-600">
                         Don't have a MealForge account? 
-                        <a href="register.php" class="text-primary hover:text-primary/80 font-medium">
+                        <a href="registration.php" class="text-primary hover:text-primary/80 font-medium">
                             Create one now
                         </a>
                     </div>
