@@ -1,7 +1,89 @@
 <?php
-// Initialize error variables
+// Initialize variables
 $errors = [];
 $error_message = null;
+
+// Process form submission
+if ($_SERVER['REQUEST_METHOD'] === 'POST') {
+    // Remove error display in production
+    // ini_set('display_errors', 0);
+    // error_reporting(E_ALL);
+    
+    require_once 'config.php';
+    require __DIR__ . '/vendor/autoload.php';
+    include __DIR__ . '/setup.php';
+    session_start();
+    
+    // Validate required fields
+    $required = ['firstName', 'lastName', 'email', 'password'];
+    foreach ($required as $field) {
+        if (empty($_POST[$field])) {
+            $errors[$field] = ucfirst($field) . ' is required';
+        }
+    }
+    
+    // Process and validate email
+    if (!empty($_POST['email'])) {
+        $email = strtolower(trim($_POST['email']));
+        if (!filter_var($email, FILTER_VALIDATE_EMAIL)) {
+            $errors['email'] = 'Please enter a valid email address';
+        } else {
+            // Check if email already exists
+            try {
+                $pdo = new PDO(
+                    "mysql:host=" . DB_HOST . ";dbname=" . DB_NAME,
+                    DB_USER,
+                    DB_PASS,
+                    [PDO::ATTR_ERRMODE => PDO::ERRMODE_EXCEPTION]
+                );
+                
+                $stmt = $pdo->prepare("SELECT user_id FROM users WHERE email = ?");
+                $stmt->execute([$email]);
+                if ($stmt->rowCount() > 0) {
+                    $errors['email'] = 'Email already registered';
+                }
+            } catch (PDOException $e) {
+                $error_message = "Database error: " . $e->getMessage();
+            }
+        }
+    }
+    
+    // Validate password
+    if (!empty($_POST['password']) && strlen($_POST['password']) < 8) {
+        $errors['password'] = 'Password must be at least 8 characters';
+    }
+    
+    // If no errors, proceed with registration
+    if (empty($errors)) {
+        try {
+            // Hash password
+            $passwordHash = password_hash($_POST['password'], PASSWORD_DEFAULT);
+            
+            // Insert user
+            $stmt = $pdo->prepare("INSERT INTO users (
+                first_name,
+                last_name,
+                email,
+                password_hash
+            ) VALUES (?, ?, ?, ?)");
+            
+            $stmt->execute([
+                htmlspecialchars(trim($_POST['firstName'])),
+                htmlspecialchars(trim($_POST['lastName'])),
+                $email,
+                $passwordHash
+            ]);
+            
+            // Redirect to login page with success message
+            $_SESSION['registration_success'] = true;
+            header('Location: login.php');
+            exit;
+            
+        } catch (PDOException $e) {
+            $error_message = "Registration failed: " . $e->getMessage();
+        }
+    }
+}
 ?>
 
 <!DOCTYPE html>
@@ -17,8 +99,7 @@ $error_message = null;
             theme: {
                 extend: {
                     colors: {
-                        'primary-green': '#00B341',
-                        'primary': '#00A651',  // Match login page color
+                        'primary': '#00A651',
                     }
                 }
             }
@@ -48,7 +129,7 @@ $error_message = null;
                 </div>
             <?php endif; ?>
 
-            <form id="registrationForm" method="POST" action="process_register.php" class="space-y-5">
+            <form id="registrationForm" method="POST" class="space-y-5">
                 <div>
                     <label for="firstName" class="block text-gray-700 font-medium mb-2">First name</label>
                     <input type="text" id="firstName" name="firstName" required 
