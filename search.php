@@ -1,33 +1,30 @@
 <?php
-// Assume these are retrieved from a RecipeController
-$recipes = [
-    [
-        'id' => 1,
-        'title' => 'Mediterranean Quinoa Bowl',
-        'tags' => ['Vegetarian', 'High Protein', 'Mediterranean'],
-        'prep_time' => 35,
-        'price' => 3.50,
-        'difficulty' => 'Medium',
-        'image' => 'quinoa_bowl.jpg'
-    ],
-    [
-        'id' => 2,
-        'title' => 'Mediterranean Quinoa Bowl',
-        'tags' => ['Vegetarian', 'High Protein', 'Mediterranean'],
-        'prep_time' => 35,
-        'price' => 3.50,
-        'difficulty' => 'Medium',
-        'image' => null // No image for second recipe to match design
-    ]
-];
+// Include the controller
+require_once 'controllers/recipe.php';
 
-// Sample filter options
-$dietaryOptions = ['Vegetarian', 'Vegan', 'Gluten-Free', 'Dairy-Free', 'Keto'];
+// Initialize the controller
+$recipeController = new App\Controllers\RecipeController();
 
 // Get filter values from URL parameters if present
-$selectedDietary = $_GET['dietary'] ?? [];
-$maxPrepTime = $_GET['max_prep_time'] ?? 60;
-$mealType = $_GET['meal_type'] ?? 'Any';
+$search = $_GET['search'] ?? null;
+$dietary = isset($_GET['dietary']) && is_array($_GET['dietary']) ? $_GET['dietary'] : null;
+$maxPrepTime = isset($_GET['max_prep_time']) ? (int)$_GET['max_prep_time'] : 60;
+$mealType = $_GET['meal_type'] ?? null;
+$priceRange = $_GET['price_range'] ?? null;
+
+// Use the controller to get filtered recipes
+$recipes = $recipeController->searchAction(
+    $search,
+    $dietary,
+    $maxPrepTime,
+    $mealType,
+    $priceRange
+);
+
+// Get all dietary options for filter checkboxes
+// TODO: The Controller should provide these. Either by parsing results or via provider method
+$dietaryOptions = ['Vegetarian', 'Vegan', 'Gluten-Free', 'Dairy-Free', 'Keto', 'Paleo'];
+$mealTypeOptions = ['Breakfast', 'Lunch', 'Dinner', 'Snack', 'Dessert'];
 
 // Calculate recipes count
 $recipesCount = count($recipes);
@@ -40,58 +37,76 @@ $recipesCount = count($recipes);
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Recipe Search</title>
     <script src="https://cdn.tailwindcss.com"></script>
+	<script src="https://unpkg.com/lucide@latest"></script>
 </head>
-<body class="bg-gray-100">
+<body class="bg-green-50">
     <div class="container mx-auto p-4">
         <!-- Back to Dashboard Button -->
         <a href="dashboard.php" class="flex items-center text-gray-600 mb-6">
-            <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 mr-1" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18" />
-            </svg>
+            <i data-lucide="arrow-left" class="h-5 w-5 mr-1"></i>
             Back to Dashboard
         </a>
+			  <!-- Search Bar -->
+			  <div class="relative mb-6">
+				  <div class="absolute inset-y-0 left-0 flex items-center pl-3 pointer-events-none">
+					  <i data-lucide="search" class="w-4 h-4 text-gray-400"></i>
+				  </div>
+				  <form action="" method="GET" id="search-form">
+					  <input type="text" name="search" value="<?= htmlspecialchars($search ?? '') ?>" class="bg-white text-gray-700 border-2 border rounded-lg pl-10 p-2.5 w-full" placeholder="Search recipes...">
+					  
+					  <!-- Preserve other filter values when searching -->
+					  <?php if ($dietary): foreach ($dietary as $diet): ?>
+					  <input type="hidden" name="dietary[]" value="<?= htmlspecialchars($diet) ?>">
+					  <?php endforeach; endif; ?>
+					  
+					  <?php if ($maxPrepTime): ?>
+					  <input type="hidden" name="max_prep_time" value="<?= htmlspecialchars($maxPrepTime) ?>">
+					  <?php endif; ?>
+					  
+					  <?php if ($mealType): ?>
+					  <input type="hidden" name="meal_type" value="<?= htmlspecialchars($mealType) ?>">
+					  <?php endif; ?>
+					  
+					  <?php if ($priceRange): ?>
+					  <input type="hidden" name="price_range" value="<?= htmlspecialchars($priceRange) ?>">
+					  <?php endif; ?>
+				  </form>
+			  </div>
+
 
         <div class="flex flex-col md:flex-row gap-6">
             <!-- Left Column: Filters -->
-            <div class="w-full md:w-1/3 bg-white rounded-lg shadow p-6">
-                <!-- Search Bar -->
-                <div class="relative mb-6">
-                    <div class="absolute inset-y-0 left-0 flex items-center pl-3 pointer-events-none">
-                        <svg class="w-4 h-4 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path>
-                        </svg>
-                    </div>
-                    <form action="" method="GET">
-                        <input type="text" name="search" class="bg-gray-100 text-gray-700 border-0 rounded-lg pl-10 p-2.5 w-full" placeholder="Search recipes...">
-                    </form>
-                </div>
-
+            <div class="w-full md:w-1/3 h-fit bg-white rounded-lg shadow p-6">
                 <!-- Filters Section -->
                 <div class="mb-4 flex justify-between items-center">
                     <div class="flex items-center">
-                        <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 mr-2 text-gray-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 4a1 1 0 011-1h16a1 1 0 011 1v2.586a1 1 0 01-.293.707l-6.414 6.414a1 1 0 00-.293.707V17l-4 4v-6.586a1 1 0 00-.293-.707L3.293 7.293A1 1 0 013 6.586V4z" />
-                        </svg>
+                        <i data-lucide="filter" class="h-5 w-5 mr-2 text-gray-600"></i>
                         <h2 class="text-lg font-semibold">Filters</h2>
                     </div>
-                    <a href="?reset=1" class="text-sm text-red-500">Reset All</a>
+                    <a href="?" class="text-sm text-red-500">Reset All</a>
                 </div>
 
-                <form action="" method="GET" class="space-y-6">
+                <form action="" method="GET" class="space-y-6" id="filter-form">
+                    <!-- Preserve search query when changing filters -->
+                    <?php if ($search): ?>
+                    <input type="hidden" name="search" value="<?= htmlspecialchars($search) ?>">
+                    <?php endif; ?>
+                
                     <!-- Dietary Preferences -->
                     <div class="border-b pb-4">
                         <div class="flex justify-between items-center mb-2 cursor-pointer" onclick="toggleSection('dietary')">
                             <h3 class="font-medium">Dietary Preferences</h3>
-                            <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 transform transition-transform" id="dietary-icon" viewBox="0 0 20 20" fill="currentColor">
-                                <path fill-rule="evenodd" d="M5.293 7.293a1 1 0 011.414 0L10 10.586l3.293-3.293a1 1 0 111.414 1.414l-4 4a1 1 0 01-1.414 0l-4-4a1 1 0 010-1.414z" clip-rule="evenodd" />
-                            </svg>
+                            <i data-lucide="chevron-down" id="dietary-icon" class="h-5 w-5 transform transition-transform"></i>
                         </div>
                         <div id="dietary-options" class="mt-2 space-y-2">
                             <?php foreach ($dietaryOptions as $option): ?>
                             <div class="flex items-center">
-                                <input type="checkbox" name="dietary[]" value="<?= htmlspecialchars($option) ?>" id="<?= htmlspecialchars(strtolower(str_replace(' ', '-', $option))) ?>" class="h-4 w-4 text-red-500 rounded"
-                                <?= in_array($option, $selectedDietary) ? 'checked' : '' ?>>
-                                <label for="<?= htmlspecialchars(strtolower(str_replace(' ', '-', $option))) ?>" class="ml-2 text-sm text-gray-700"><?= htmlspecialchars($option) ?></label>
+                                <input type="checkbox" name="dietary[]" value="<?= htmlspecialchars($option) ?>" 
+                                    id="<?= htmlspecialchars(strtolower(str_replace(' ', '-', $option))) ?>" 
+                                    class="h-4 w-4 text-red-500 rounded"
+                                    <?= $dietary && in_array($option, $dietary) ? 'checked' : '' ?>>
+                                <label for="<?= htmlspecialchars(strtolower(str_replace(' ', '-', $option))) ?>" 
+                                    class="ml-2 text-sm text-gray-700"><?= htmlspecialchars($option) ?></label>
                             </div>
                             <?php endforeach; ?>
                         </div>
@@ -101,13 +116,18 @@ $recipesCount = count($recipes);
                     <div class="border-b pb-4">
                         <div class="flex justify-between items-center mb-2 cursor-pointer" onclick="toggleSection('prep-time')">
                             <h3 class="font-medium">Maximum Preparation Time</h3>
-                            <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 transform transition-transform" id="prep-time-icon" viewBox="0 0 20 20" fill="currentColor">
-                                <path fill-rule="evenodd" d="M5.293 7.293a1 1 0 011.414 0L10 10.586l3.293-3.293a1 1 0 111.414 1.414l-4 4a1 1 0 01-1.414 0l-4-4a1 1 0 010-1.414z" clip-rule="evenodd" />
-                            </svg>
+                            <i data-lucide="chevron-down" id="prep-time-icon" class="h-5 w-5 transform transition-transform"></i>
                         </div>
                         <div id="prep-time-options" class="mt-2">
-                            <input type="range" name="max_prep_time" min="5" max="120" step="5" value="<?= $maxPrepTime ?>" class="w-full h-2 bg-gray-200 rounded-lg appearance-none cursor-pointer" oninput="updatePrepTimeValue(this.value)">
-                            <p class="text-sm text-gray-600 mt-1"><span id="prep-time-value"><?= $maxPrepTime ?></span> minutes</p>
+                            <input type="range" name="max_prep_time" min="5" max="120" step="5" 
+                                value="<?= $maxPrepTime ?>" 
+                                class="w-full h-2 bg-gray-200 rounded-lg appearance-none cursor-pointer" 
+                                oninput="updatePrepTimeValue(this.value)">
+                            <div class="flex justify-between text-sm text-gray-600 mt-1">
+                                <span>5 minutes</span>
+                                <span id="prep-time-value"><?= $maxPrepTime ?> minutes</span>
+                                <span>120 minutes</span>
+                            </div>
                         </div>
                     </div>
 
@@ -115,113 +135,142 @@ $recipesCount = count($recipes);
                     <div class="border-b pb-4">
                         <div class="flex justify-between items-center mb-2 cursor-pointer" onclick="toggleSection('meal-type')">
                             <h3 class="font-medium">Meal Type</h3>
-                            <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 transform transition-transform" id="meal-type-icon" viewBox="0 0 20 20" fill="currentColor">
-                                <path fill-rule="evenodd" d="M5.293 7.293a1 1 0 011.414 0L10 10.586l3.293-3.293a1 1 0 111.414 1.414l-4 4a1 1 0 01-1.414 0l-4-4a1 1 0 010-1.414z" clip-rule="evenodd" />
-                            </svg>
+                            <i data-lucide="chevron-down" id="meal-type-icon" class="h-5 w-5 transform transition-transform"></i>
                         </div>
                         <div id="meal-type-options" class="mt-2">
                             <select name="meal_type" class="w-full p-2 bg-gray-100 rounded-lg text-gray-700">
-                                <option value="Any" <?= $mealType === 'Any' ? 'selected' : '' ?>>Any</option>
-                                <option value="Breakfast" <?= $mealType === 'Breakfast' ? 'selected' : '' ?>>Breakfast</option>
-                                <option value="Lunch" <?= $mealType === 'Lunch' ? 'selected' : '' ?>>Lunch</option>
-                                <option value="Dinner" <?= $mealType === 'Dinner' ? 'selected' : '' ?>>Dinner</option>
-                                <option value="Snack" <?= $mealType === 'Snack' ? 'selected' : '' ?>>Snack</option>
+                                <option value="">Any</option>
+                                <?php foreach ($mealTypeOptions as $option): ?>
+                                <option value="<?= htmlspecialchars($option) ?>" <?= $mealType === $option ? 'selected' : '' ?>>
+                                    <?= htmlspecialchars($option) ?>
+                                </option>
+                                <?php endforeach; ?>
                             </select>
                         </div>
                     </div>
 
-                    <!-- Submit Button - Hidden but included for form submission without JS -->
-                    <button type="submit" class="hidden">Apply Filters</button>
+                    <!-- Price Range -->
+                    <div class="border-b pb-4">
+                        <div class="flex justify-between items-center mb-2 cursor-pointer" onclick="toggleSection('price-range')">
+                            <h3 class="font-medium">Price Range</h3>
+                            <i data-lucide="chevron-down" id="price-range-icon" class="h-5 w-5 transform transition-transform"></i>
+                        </div>
+                        <div id="price-range-options" class="mt-2">
+                            <select name="price_range" class="w-full p-2 bg-gray-100 rounded-lg text-gray-700">
+                                <option value="">Any</option>
+                                <option value="budget" <?= $priceRange === 'budget' ? 'selected' : '' ?>>Budget (< $5)</option>
+                                <option value="moderate" <?= $priceRange === 'moderate' ? 'selected' : '' ?>>Moderate ($5-$10)</option>
+                                <option value="premium" <?= $priceRange === 'premium' ? 'selected' : '' ?>>Premium (> $10)</option>
+                            </select>
+                        </div>
+                    </div>
+
+                    <!-- Apply Filters Button -->
+                    <button type="submit" class="w-full py-2 px-4 bg-red-600 hover:bg-red-700 text-white font-medium rounded-lg transition duration-150 ease-in-out">
+                        Apply Filters
+                    </button>
                 </form>
             </div>
 
             <!-- Right Column: Recipe Results -->
-            <div class="w-full md:w-2/3">
+            <div id="results" class="w-full md:w-2/3">
                 <p class="text-sm text-gray-600 mb-4">Showing <?= $recipesCount ?> recipes that match your preferences</p>
                 
                 <div class="grid grid-cols-1 gap-6">
-                    <?php foreach ($recipes as $recipe): ?>
-                    <div class="bg-white rounded-lg shadow overflow-hidden">
-                        <div class="flex flex-col md:flex-row">
-                            <?php if ($recipe['image']): ?>
-                            <div class="w-full md:w-2/5">
-                                <img src="images/<?= htmlspecialchars($recipe['image']) ?>" alt="<?= htmlspecialchars($recipe['title']) ?>" class="w-full h-48 object-cover">
-                            </div>
-                            <?php endif; ?>
-                            <div class="p-4 flex-1">
-                                <h3 class="font-bold text-lg mb-2"><?= htmlspecialchars($recipe['title']) ?></h3>
-                                
-                                <div class="flex flex-wrap gap-2 mb-4">
-                                    <?php foreach ($recipe['tags'] as $tag): ?>
-                                    <span class="inline-block px-2 py-1 text-xs rounded
-                                        <?php if ($tag === 'Vegetarian'): ?>
-                                            bg-green-100 text-green-800
-                                        <?php elseif ($tag === 'High Protein'): ?>
-                                            bg-blue-100 text-blue-800
-                                        <?php elseif ($tag === 'Mediterranean'): ?>
-                                            bg-purple-100 text-purple-800
-                                        <?php else: ?>
-                                            bg-gray-100 text-gray-800
-                                        <?php endif; ?>
-                                    "><?= htmlspecialchars($tag) ?></span>
-                                    <?php endforeach; ?>
+                    <?php if (empty($recipes)): ?>
+                    <div class="bg-white rounded-lg shadow p-6 text-center">
+                        <i data-lucide="search-x" class="h-12 w-12 mx-auto text-gray-400 mb-4"></i>
+                        <h3 class="text-lg font-semibold mb-2">No recipes found</h3>
+                        <p class="text-gray-600">Try adjusting your filters or search criteria.</p>
+                    </div>
+                    <?php else: ?>
+                        <?php foreach ($recipes as $recipe): ?>
+                        <div class="bg-white rounded-lg shadow overflow-hidden">
+                            <div class="flex flex-col md:flex-row">
+                                <?php if (!empty($recipe['image'])): ?>
+                                <div class="w-full md:w-2/5">
+                                    <img src="images/<?= htmlspecialchars($recipe['image']) ?>" alt="<?= htmlspecialchars($recipe['title']) ?>" class="w-full h-48 object-cover">
                                 </div>
-                                
-                                <div class="flex items-center justify-between">
-                                    <div class="flex items-center">
-                                        <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-gray-500 mr-1" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
-                                        </svg>
-                                        <span class="text-sm text-gray-600"><?= $recipe['prep_time'] ?> mins</span>
+                                <?php endif; ?>
+                                <div class="p-4">
+                                    <h3 class="font-bold text-lg mb-2"><?= htmlspecialchars($recipe['title']) ?></h3>
+                                    
+                                    <?php if (!empty($recipe['description'])): ?>
+                                    <p class="text-gray-600 text-sm mb-3"><?= htmlspecialchars($recipe['description']) ?></p>
+                                    <?php endif; ?>
+                                    
+                                    <div class="flex flex-wrap gap-2 mb-4">
+                                        <?php foreach ($recipe['tags'] as $tag): ?>
+                                        <span class="inline-block px-2 py-1 text-xs rounded-xl bg-green-100 text-green-800"><?= htmlspecialchars($tag) ?></span>
+                                        <?php endforeach; ?>
                                     </div>
                                     
-                                    <div class="flex items-center mx-4">
-                                        <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-gray-500 mr-1" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
-                                        </svg>
-                                        <span class="text-sm text-gray-600">$<?= number_format($recipe['price'], 2) ?></span>
-                                    </div>
-                                    
-                                    <div class="flex items-center">
-                                        <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-gray-500 mr-1" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z" />
-                                        </svg>
-                                        <span class="text-sm text-gray-600"><?= htmlspecialchars($recipe['difficulty']) ?></span>
+                                    <div class="flex items-center gap-4">
+                                        <div class="flex items-center">
+                                            <i data-lucide="clock" class="h-5 w-5 text-gray-500 mr-1"></i>
+                                            <span class="text-sm text-gray-600"><?= $recipe['prep_time'] ?> mins</span>
+                                        </div>
+                                        
+                                        <div class="flex items-center mx-4">
+                                            <i data-lucide="dollar-sign" class="h-5 w-5 text-gray-500 mr-1"></i>
+                                            <span class="text-sm text-gray-600"><?= number_format($recipe['price'], 2) ?></span>
+                                        </div>
+                                        
+                                        <div class="flex items-center">
+                                            <i data-lucide="gauge" class="h-5 w-5 text-gray-500 mr-1"></i>
+                                            <span class="text-sm text-gray-600"><?= htmlspecialchars($recipe['difficulty']) ?></span>
+                                        </div>
                                     </div>
                                 </div>
                             </div>
                         </div>
-                    </div>
-                    <?php endforeach; ?>
+                        <?php endforeach; ?>
+                    <?php endif; ?>
                 </div>
             </div>
         </div>
     </div>
 
     <script>
-        // Minimal JavaScript for interactive elements
+        // Initialize Lucide icons
+        lucide.createIcons();
+        
+        // Toggle section visibility
         function toggleSection(id) {
             const element = document.getElementById(`${id}-options`);
             const icon = document.getElementById(`${id}-icon`);
             
             if (element.classList.contains('hidden')) {
                 element.classList.remove('hidden');
-                icon.classList.remove('rotate-180');
+                icon.setAttribute('data-lucide', 'chevron-up');
             } else {
                 element.classList.add('hidden');
-                icon.classList.add('rotate-180');
+                icon.setAttribute('data-lucide', 'chevron-down');
             }
+            
+            // Re-initialize the icon
+            lucide.createIcons({
+                elements: [icon]
+            });
         }
         
+        // Update prep time value display
         function updatePrepTimeValue(value) {
-            document.getElementById('prep-time-value').textContent = value;
+            document.getElementById('prep-time-value').textContent = value + ' minutes';
         }
         
-        // Auto-submit form when filters change (to minimize JavaScript)
+        // Auto-submit form when filters change
         document.querySelectorAll('input[type=checkbox], input[type=range], select').forEach(element => {
             element.addEventListener('change', function() {
                 this.closest('form').submit();
             });
+        });
+        
+        // Handle search form submission
+        document.querySelector('#search-form input[name="search"]').addEventListener('keypress', function(e) {
+            if (e.key === 'Enter') {
+                document.getElementById('search-form').submit();
+            }
         });
     </script>
 </body>
