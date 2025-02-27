@@ -42,7 +42,7 @@
 				<p class="text-xl text-gray-600 mb-8 max-w-2xl">
 					Tell us about your dietary preferences and budget, and we'll forge the perfect meal plan tailored to your needs.
 				</p>
-				<a href="/login">
+				<a href="/login.php">
 					<button class="bg-green-600 text-white px-8 py-4 rounded-lg text-lg font-semibold hover:bg-green-700 flex items-center gap-2">
 						Start Your Journey
 						<i data-lucide="chevron-right" class="w-5 h-5"></i>
