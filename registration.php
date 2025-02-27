@@ -1,18 +1,20 @@
 <?php
+// Start session at the very beginning before any output
+session_start();
+
+// Start output buffering to prevent "headers already sent" errors
+ob_start();
+
 // Initialize variables
 $errors = [];
 $error_message = null;
 
 // Process form submission
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
-    // Remove error display in production
-    // ini_set('display_errors', 0);
-    // error_reporting(E_ALL);
-    
+    // Load required files
     require_once 'config.php';
-    require __DIR__ . '/vendor/autoload.php';
-    include __DIR__ . '/setup.php';
-    session_start();
+    require_once __DIR__ . '/vendor/autoload.php';
+    include_once __DIR__ . '/setup.php';
     
     // Validate required fields
     $required = ['firstName', 'lastName', 'email', 'password'];
@@ -31,10 +33,13 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             // Check if email already exists
             try {
                 $pdo = new PDO(
-                    "mysql:host=" . DB_HOST . ";dbname=" . DB_NAME,
+                    "mysql:host=" . DB_HOST . ";dbname=" . DB_NAME . ";charset=utf8mb4",
                     DB_USER,
                     DB_PASS,
-                    [PDO::ATTR_ERRMODE => PDO::ERRMODE_EXCEPTION]
+                    [
+                        PDO::ATTR_ERRMODE => PDO::ERRMODE_EXCEPTION,
+                        PDO::ATTR_DEFAULT_FETCH_MODE => PDO::FETCH_ASSOC
+                    ]
                 );
                 
                 $stmt = $pdo->prepare("SELECT user_id FROM users WHERE email = ?");
@@ -43,6 +48,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                     $errors['email'] = 'Email already registered';
                 }
             } catch (PDOException $e) {
+                error_log("Database error: " . $e->getMessage());
                 $error_message = "Database error: " . $e->getMessage();
             }
         }
@@ -54,7 +60,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     }
     
     // If no errors, proceed with registration
-    if (empty($errors)) {
+    if (empty($errors) && !isset($error_message)) {
         try {
             // Hash password
             $passwordHash = password_hash($_POST['password'], PASSWORD_DEFAULT);
@@ -67,25 +73,33 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 password_hash
             ) VALUES (?, ?, ?, ?)");
             
-            $stmt->execute([
+            $result = $stmt->execute([
                 htmlspecialchars(trim($_POST['firstName'])),
                 htmlspecialchars(trim($_POST['lastName'])),
                 $email,
                 $passwordHash
             ]);
             
-            // Redirect to login page with success message
-            $_SESSION['registration_success'] = true;
-            header('Location: login.php');
-            exit;
-            
+            if ($result) {
+                // Redirect to login page with success message
+                $_SESSION['registration_success'] = true;
+                
+                // Flush buffer before redirect
+                ob_end_flush();
+                
+                // Redirect and exit
+                header('Location: login.php');
+                exit;
+            } else {
+                $error_message = "Registration failed: Unable to create account";
+            }
         } catch (PDOException $e) {
+            error_log("Registration error: " . $e->getMessage());
             $error_message = "Registration failed: " . $e->getMessage();
         }
     }
 }
 ?>
-
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -193,3 +207,9 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     </div>
 </body>
 </html>
+<?php
+// End output buffering if we reached this point (no redirect happened)
+if (ob_get_level() > 0) {
+    ob_end_flush();
+}
+?>
