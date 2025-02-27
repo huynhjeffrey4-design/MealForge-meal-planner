@@ -186,12 +186,12 @@ $recipesCount = count($recipes);
                     <?php else: ?>
                         <?php foreach ($recipes as $recipe): ?>
                         <div class="bg-white rounded-lg shadow overflow-hidden">
-                            <div class="flex flex-col md:flex-row">
                                 <?php if (!empty($recipe['image'])): ?>
-                                <div class="w-full md:w-2/5">
-                                    <img src="images/<?= htmlspecialchars($recipe['image']) ?>" alt="<?= htmlspecialchars($recipe['title']) ?>" class="w-full h-48 object-cover">
+                                <div class="w-full">
+                                    <img src="<?= htmlspecialchars($recipe['image']) ?>" alt="<?= htmlspecialchars($recipe['title']) ?>" class="w-full h-48 object-cover">
                                 </div>
                                 <?php endif; ?>
+                            <div class="flex flex-col md:flex-row">
                                 <div class="p-4">
                                     <h3 class="font-bold text-lg mb-2"><?= htmlspecialchars($recipe['title']) ?></h3>
                                     

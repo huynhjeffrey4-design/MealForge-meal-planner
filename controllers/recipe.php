@@ -190,7 +190,7 @@ class MockRecipeDataProvider implements RecipeDataProvider {
                 'prep_time' => 35,
                 'price' => 7,
                 'difficulty' => 'Medium',
-                'image' => null
+                'image' => 'https://pinchofyum.com/wp-content/uploads/Mediterranean-Bowl-Recipe.jpg'
             ],
             [
                 'id' => 2,
@@ -210,7 +210,7 @@ class MockRecipeDataProvider implements RecipeDataProvider {
                 'prep_time' => 45,
                 'price' => 8,
                 'difficulty' => 'Medium',
-                'image' => null
+                'image' => 'https://www.simplyrecipes.com/thmb/BLYYqIQu7_WOk3a17MiHBkaqYEU=/1500x0/filters:no_upscale():max_bytes(150000):strip_icc()/__opt__aboutcom__coeus__resources__content_migration__simply_recipes__uploads__2016__10__sweet-potato-black-bean-tacos-horiz-a-1600-2d713550f6b3461eac27c915bf75a9cb.jpg'
             ],
             [
                 'id' => 4,
@@ -220,7 +220,7 @@ class MockRecipeDataProvider implements RecipeDataProvider {
                 'prep_time' => 30,
                 'price' => 12,
                 'difficulty' => 'Medium',
-                'image' => null
+                'image' => 'https://cookingwithcocktailrings.com/wp-content/uploads/2021/02/BakedSalmonwithLemonDillSauce-18-1.jpg'
             ],
             [
                 'id' => 5,
