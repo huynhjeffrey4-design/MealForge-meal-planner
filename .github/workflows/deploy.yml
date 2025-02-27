@@ -24,7 +24,7 @@ jobs:
       - name: Verify deployment
         run: |
           echo "Checking if index.php exists..."
-          if [ -f "/data/web/CSE442/2025-Spring/cse-442v/index.html" ]; then
+          if [ -f "/data/web/CSE442/2025-Spring/cse-442v/index.php" ]; then
             echo "✅ Deployment successful"
           else
             echo "❌ Deployment failed - index.php not found"
