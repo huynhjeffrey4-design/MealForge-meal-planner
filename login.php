@@ -1,5 +1,5 @@
 <?php
-require_once __DIR__ . 'controllers/control.php';
+require_once __DIR__ . '/controllers/control.php';
 
 use function App\Controllers\getUserController;
 

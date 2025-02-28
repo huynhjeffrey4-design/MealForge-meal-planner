@@ -46,15 +46,15 @@ final class UserControllerCest
     }
     public function testCharacterEscape(UnitTester $T): void {
           // Escaped html characters
-          $email = 'test@example.com';
-          $unescaped = '<script>alert("XSS")</script>';
-          $password = htmlspecialchars($unescaped);
+          $unescaped = '<script>alert("XSS")</script>@example.com';
+		  $escaped_email = htmlspecialchars($unescaped);
+          $password = 'password';
           $firstName = 'Secure';
           $lastName = 'Tester';
-          $userId = $this->provider->createUser($email, $password, $firstName, $lastName);
+          $userId = $this->provider->createUser($escaped_email, $password, $firstName, $lastName);
           $T->assertNotFalse($userId);
           // Act
-          $result = $this->controller->login($email, $unescaped, false);
+          $result = $this->controller->login($unescaped, $password, false);
           // Assert
           $T->assertTrue($result);
           $T->assertEquals($userId, $_SESSION['user_id']);
