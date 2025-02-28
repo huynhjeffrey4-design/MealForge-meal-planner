@@ -17,14 +17,19 @@ jobs:
       - name: Display deployment start
         run: echo "Starting deployment of PHP application..."
 
-      - name: Copy files to web directory
+      - name: Install dependencies
+        run: /home/csdue/petervai/composer.phar install --prefer-dist --no-progress --no-interaction --no-suggest --no-scripts
+
+      - name: Transfer files to web directory
         run: |
+          chmod 777 ./*
+          rm -rf /data/web/CSE442/2025-Spring/cse-442v/*
           cp -r * /data/web/CSE442/2025-Spring/cse-442v/
 
       - name: Verify deployment
         run: |
           echo "Checking if index.php exists..."
-          if [ -f "/data/web/CSE442/2025-Spring/cse-442v/index.html" ]; then
+          if [ -f "/data/web/CSE442/2025-Spring/cse-442v/index.php" ]; then
             echo "✅ Deployment successful"
           else
             echo "❌ Deployment failed - index.php not found"
