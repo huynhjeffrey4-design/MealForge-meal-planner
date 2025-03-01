@@ -1,22 +1,19 @@
 <?php
-require __DIR__ . '/vendor/autoload.php';
-include __DIR__ . '/control.php';
-include __DIR__ . '/setup.php';
+require_once __DIR__ . '/controllers/control.php';
+
 use function App\Controllers\getUserController;
 
 $error = '';
 
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
+	$email = $_POST['email'];
+	$password = $_POST['password'];
+	$remember = isset($_POST['remember']);
 
-
-    $email = $_POST['email'];
-    $password = $_POST['password'];
-    $remember = isset($_POST['remember']);
-    
 	$controller = getUserController();
 	$success = $controller->login($email, $password, $remember);
-	
-	if ($success == true) {
+
+	if ($success === true) {
 		header('Location: dashboard.php');
 		exit;
 	} else {
@@ -24,34 +21,37 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 	}
 }
 
-function generateRememberToken() {
-    // Generate a secure random token
-    $token = bin2hex(random_bytes(32));
-    // In a real implementation, you would store this token in the database
-    // associated with the user ID
-    return $token;
+function generateRememberToken()
+{
+	// Generate a secure random token
+	$token = bin2hex(random_bytes(32));
+	// In a real implementation, you would store this token in the database
+	// associated with the user ID
+	return $token;
 }
 ?>
 
 <!doctype html>
 <html lang="en">
+
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Login to your MealForge account</title>
-    <script src="https://cdn.tailwindcss.com"></script>
-    <script>
-        tailwind.config = {
-            theme: {
-                extend: {
-                    colors: {
-                        primary: '#00A651',
-                    }
-                }
-            }
-        }
-    </script>
+	<meta charset="UTF-8">
+	<meta name="viewport" content="width=device-width, initial-scale=1.0">
+	<title>Login to your MealForge account</title>
+	<script src="https://cdn.tailwindcss.com"></script>
+	<script>
+		tailwind.config = {
+			theme: {
+				extend: {
+					colors: {
+						primary: '#00A651',
+					}
+				}
+			}
+		}
+	</script>
 </head>
+
 <body class="bg-white min-h-screen">
     <div class="min-h-screen flex flex-col md:flex-row">
         <!-- Brand Section -->
@@ -128,4 +128,5 @@ function generateRememberToken() {
         </div>
     </div>
 </body>
+
 </html>
