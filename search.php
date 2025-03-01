@@ -1,6 +1,6 @@
 <?php
 // Include the controller
-require_once 'controllers/recipe.php';
+require_once __DIR__ .  '/controllers/recipe.php';
 
 // Initialize the controller
 $recipeController = new App\Controllers\RecipeController();

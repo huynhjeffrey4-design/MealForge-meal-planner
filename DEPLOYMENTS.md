@@ -8,7 +8,9 @@ for some reason. There exists a github action in `.github/workflows` which outli
 but it is just this:
 
 1. Clone the repo to the `aptitude` server.
-2. Copy the files to the root, where they will be served.
+2. Install dependencies.
+3. Open up file permissions.
+4. Clean up our deployment location and move the new files there.
 
 
 ## How to Push Deployments
@@ -18,9 +20,8 @@ but since it's dev we don't really care.
 
 1. Open a pull-request or push changes to pull request.
 2. A task will be queued in the [actions tab](https://github.com/cse442-at-ub/sp25-project-o-no/actions/workflows/deploy.yml).
-3. If the aptitude runner is [already running](https://github.com/cse442-at-ub/sp25-project-o-no/settings/actions/runners), it will deploy automatically.
-3. __If it is NOT running__, you'll have to start it manually by running the script `run.sh` which I've placed on the server.
-You can do this by first using `ssh` to get to server, and executing `run.sh` located in`/actions-runner` at the deployment location.
+3. __If the aptitude runner is NOT already running__, you'll have to start it manually by running the script `run.sh` which I've placed on the server.
+You can do this by running `/home/csdue/petervai/actions-runner/run.sh`while on the aptitude server.
 4. Once the runner is running, it will automatically run any queued jobs.
 
 

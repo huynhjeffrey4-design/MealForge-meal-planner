@@ -1,5 +1,4 @@
 <?php
-
 namespace App\Controllers;
 
 require_once __DIR__ . '/../setup.php';
@@ -46,7 +45,7 @@ class UserController
 	public function login(string $email, string $password, bool $remember): bool
 	{
 		$email = htmlspecialchars($email);
-		$password = htmlspecialchars($password);
+		$password = $password;
 
 		$login_res =  $this->provider->login($email, $password);
 		if ($login_res !== false) {
