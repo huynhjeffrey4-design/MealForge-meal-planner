@@ -9,4 +9,23 @@ services:
     environment:
       MYSQL_ROOT_PASSWORD: password
       MYSQL_DATABASE: testdb
+    networks:
+      - app-network
 
+  php-app:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    volumes:
+      - ./:/var/www/html
+    ports:
+      - '8080:8080'
+    depends_on:
+      - db
+    command: php -S 0.0.0.0:8080 -t /var/www/html
+    networks:
+      - app-network
+
+networks:
+  app-network:
+    driver: bridge
