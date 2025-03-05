@@ -1,0 +1,48 @@
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>MealForge - Find Grocery Stores</title>
+  <link rel="stylesheet" href="map.css" />
+</head>
+<body>
+  <header>
+    <h1 id="logo">MealForge</h1>
+    <a id="profileLink" href="#">🔙 Back to Profile</a>
+  </header>
+
+  <main>
+    <h2>Find a Grocery Store Near You</h2>
+
+    <div class="search-container">
+      <input type="text" id="searchBox" placeholder="Enter your address, city or zip" />
+      <button id="searchButton">⬅</button>
+      <button id="currentLocationButton">📍 Use my current location</button>
+    </div>
+
+    <!-- Range slider to filter stores by distance -->
+    <div class="range-container">
+      <label for="distanceRange">Distance Range (km):</label>
+      <input
+        type="range"
+        id="distanceRange"
+        min="0"
+        max="10"
+        step="0.1"
+        value="5"
+      />
+      <span id="rangeValue">5 km</span>
+    </div>
+
+    <div id="map"></div>
+
+    <ul id="stores-list"></ul>
+  </main>
+
+  
+  <script src="map.js"></script>
+  <script async defer src="https://maps.googleapis.com/maps/api/js?key=AIzaSyCy_Mlx0IaBsrSlxmJw8f6luCc09nNcLYs&callback=initMap&libraries=places,geometry"></script>
+</script>
+</html>
