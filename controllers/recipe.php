@@ -2,6 +2,7 @@
 
 namespace App\Controllers;
 
+require_once __DIR__ . '/../setup.php';
 require_once __DIR__ . '/../DatabaseConnection.php';
 use PDO;
 use PDOException;
@@ -13,8 +14,9 @@ class RecipeController {
     private $recipeProvider;
     
     public function __construct() {
-		// TODO: Implement "real" provider.
-        $this->recipeProvider = new MockRecipeDataProvider();
+		$env = env('ENVIRONMENT', 'prod');
+
+        $this->recipeProvider = $env == 'prod' ? new PDORecipeDataProvider() : new MockRecipeDataProvider();
     }
     
     /**
