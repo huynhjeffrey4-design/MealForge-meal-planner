@@ -2,6 +2,10 @@
 
 // File: DatabaseConnection.php
 
+namespace App\Controllers;
+
+use PDO;
+use PDOException;
 
 class DatabaseConnection
 {
@@ -15,18 +19,11 @@ class DatabaseConnection
     // Database connection method
     private function connect(): PDO
     {
-        // For local testing with xampp
-//        $host = 'localhost'; //
-//        $port = '3307';
-//        $dbname = 'cse442_2025_spring_team_v_db';
-//        $username = 'root';
-//        $password = '';
+	  $host = env('DB_HOST', 'localhost');
+	  $username = env('DB_USERNAME', 'dsgulvin');
+	  $password = env('DB_PASSWORD', '50504609');
+	  $dbname = 	env('DB_DATABASE', 'cse442_2025_spring_team_v_db');
 
-//         Database connection details for remote database on Aptitude (once deployed)
-        $host = 'localhost'; // Remote host (or IP address of the server)
-        $dbname = 'cse442_2025_spring_team_v_db'; // Remote database name
-        $username = 'dsgulvin'; // Database username
-        $password = '50504609'; // Database password
 
         try {
             // Create PDO connection string
