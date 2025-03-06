@@ -1,0 +1,101 @@
+body {
+  font-family: Arial, sans-serif;
+  margin: 0;
+  padding: 0;
+  text-align: center;
+}
+
+header {
+  
+  background: #00A63E;
+  display: flex;             
+  align-items: center;       
+  justify-content: space-between; 
+ 
+  padding: 0 20px;           
+  height: 96px;              
+
+}
+#logo {
+  
+  font-size: 23px;
+  color: white;
+  margin: 0;                
+  margin-top: -28px;  /* 根据需要微调 */
+  margin-left: 10px;
+}
+#profileLink {
+  text-decoration: none;
+  color: white;
+  font-size: 14px;
+  margin-top: 50px;  /* 根据需要微调 */
+
+}
+
+.search-container {
+  margin: 20px;
+}
+
+.range-container {
+  margin: 20px;
+}
+
+#searchBox {
+  padding: 10px;
+  width: 280px;
+  font-size: 16px;
+}
+#searchButton {
+  background-color: #00A63E;
+  color: white;
+  border: none;
+  padding: 10px 15px;
+  font-size: 16px;
+  cursor: pointer;
+}
+
+
+button {
+  padding: 10px;
+  font-size: 16px;
+  cursor: pointer;
+  margin: 5px;
+}
+
+#map {
+  width: 90%;
+  height: 400px;
+  margin: auto;
+}
+
+ul {
+  list-style-type: none;
+  padding: 0;
+  text-align: left;
+  width: 90%;
+  margin: auto;
+}
+
+li {
+  background: #f4f4f4;
+  margin: 5px 0;
+  padding: 10px;
+  border-radius: 5px;
+  font-size: 16px;
+}
+.get-directions {
+  color: #00A63E;
+
+  font-weight: bold;
+}
+
+
+/* 可选：让 Open/Closed 更醒目 */
+.open-status-open {
+  color: #00A63E;
+  font-weight: bold;
+}
+.open-status-closed {
+  color: red;
+  font-weight: bold;
+}
