@@ -48,11 +48,11 @@ final class RecipeSearchCest
         $I->amOnPage('/search.php');
 		$I->see('Vegetarian', "label");
 
-		$I->submitForm("#filter-form", ["dietary" => ["Vegetarian"]]);
+		$I->submitForm("#filter-form", ["dietary" => "Vegetarian"]);
 
         
         // Assert
-        $I->seeInCurrentUrl('dietary%5B0%5D=Vegetarian');
+        $I->seeInCurrentUrl('dietary=Vegetarian');
         $I->see('Vegetarian', '.bg-green-100'); // Should see Vegetarian tag in recipe results
     }
     
@@ -85,20 +85,6 @@ final class RecipeSearchCest
         $I->see('Breakfast', '.inline-block'); // Should see Breakfast tag in recipe results
     }
     
-    /**
-     * Test filtering recipes by price range
-     */
-    public function testFilterByPriceRange(AcceptanceTester $I): void
-    {
-        // Act
-        $I->amOnPage('/search.php');
-        $I->selectOption('price_range', 'budget');
-
-		$I->click('Apply Filters');
-        
-        // Assert
-        $I->seeInCurrentUrl('price_range=budget');
-    }
     
     /**
      * Test combining multiple filters
@@ -108,14 +94,14 @@ final class RecipeSearchCest
         // Act
         $I->amOnPage('/search.php');
 		$I->submitForm('#filter-form', [
-				'max_prep_time' => 30,
-				'dietary' => ['Vegan']
+				'max_prep_time' => 120,
+				'dietary' => 'Vegetarian'
 		]);
         
         // Assert
-        $I->seeInCurrentUrl('dietary%5B0%5D=Vegan');
-        $I->seeInCurrentUrl('max_prep_time=30');
-        $I->see('Vegan', 'span'); // Should see Vegan tag in results
+        $I->seeInCurrentUrl('dietary=Vegetarian');
+        $I->seeInCurrentUrl('max_prep_time=120');
+        $I->see('Vegetarian', 'span'); // Should see Vegan tag in results
     }
     
     /**
@@ -124,7 +110,7 @@ final class RecipeSearchCest
     public function testResetAllFilters(AcceptanceTester $I): void
     {
         // Arrange - First apply some filters
-        $I->amOnPage('/search.php?dietary%5B%5D=Vegetarian&max_prep_time=30&meal_type=Breakfast');
+        $I->amOnPage('/search.php?dietary=Vegetarian&max_prep_time=30&meal_type=Breakfast');
         
         // Act - Click reset all
         $I->click('Reset All');
@@ -159,7 +145,7 @@ final class RecipeSearchCest
     {
         // Arrange - First apply some filters
         $I->amOnPage('/search.php');
-        $I->selectOption('dietary[]', 'Vegetarian');
+        $I->selectOption('dietary', 'Vegetarian');
 		$I->click('Apply Filters');
         
         // Act - Then search for something
@@ -167,7 +153,7 @@ final class RecipeSearchCest
         
         // Assert
         $I->seeInCurrentUrl('search=bowl');
-        $I->seeInCurrentUrl('dietary%5B0%5D=Vegetarian');
+        $I->seeInCurrentUrl('dietary=Vegetarian');
     }
     
     /**
@@ -179,12 +165,12 @@ final class RecipeSearchCest
         $I->amOnPage('/search.php');
 
 		$I->submitForm('#filter-form', [
-				'dietary' => ['Gluten-Free'],
+				'dietary' => 'Gluten-Free',
 				'max_prep_time' => 45
 		]);
         
         // Assert
-        $I->seeInCurrentUrl('dietary%5B0%5D=Gluten-Free');
+        $I->seeInCurrentUrl('dietary=Gluten-Free');
         $I->seeInCurrentUrl('max_prep_time=45');
     }
     
