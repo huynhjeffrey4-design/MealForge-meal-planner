@@ -93,18 +93,28 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 error_log("User registered successfully. Attempting redirect to login.php");
                 
                 // Clear any output buffering
-                while (ob_get_level() > 0) {
-                    ob_end_clean(); // Use clean instead of flush
-                }
-                
-                // Redirect and exit
-                $is_cse_server = (strpos($_SERVER['SERVER_NAME'] ?? '', 'cse.buffalo.edu') !== false);
-                if ($is_cse_server) {
-                    header("Location: /CSE442/2025-Spring/cse-442v/login.php");
-                } else {
-                    header("Location: login.php");
-                }
-                exit;
+                   // Force output clearing
+                    while (ob_get_level() > 0) {
+                        ob_end_clean();
+                    }
+
+                                // Get directory path relative to the domain root
+            $dir_path = dirname($_SERVER['SCRIPT_NAME']);
+
+            // If we're at domain root, don't add a trailing slash
+            if ($dir_path == '/') {
+                $dir_path = '';
+            }
+
+            // Create a site-root relative path
+            $login_path = $dir_path . '/login.php';
+
+            // Log the path for debugging
+            error_log("Redirecting to: " . $login_path);
+
+            // Redirect
+            header("Location: " . $login_path);
+            exit;
             } else {
                 $error_message = "Registration failed: Unable to create account";
             }
@@ -229,13 +239,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         </div>
     </div>
 
-    <!-- Debug info -->
-    <div class="mt-8 mx-auto max-w-6xl p-4 bg-gray-100 rounded-lg text-xs text-gray-600">
-        <h3 class="font-bold mb-2">Debug Info:</h3>
-        <p>PHP Version: <?php echo phpversion(); ?></p>
-        <p>Document Root: <?php echo $_SERVER['DOCUMENT_ROOT']; ?></p>
-        <p>Script Path: <?php echo __FILE__; ?></p>
-    </div>
 </body>
 </html>
 <?php
