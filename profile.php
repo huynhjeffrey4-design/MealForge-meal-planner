@@ -1,5 +1,4 @@
 <?php
-
 // Start session and require config
 session_start();
 require_once 'config.php';
