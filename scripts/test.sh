@@ -7,5 +7,9 @@
 #    password: password
 #    To do this you can use the docker-compose.yml via:
 #    > docker-compose up
+#
+#  UPDATE:
+#  Now both services can be run using the docker-compose.yml file:
+#  > docker-compose up
 
 php vendor/bin/codecept run

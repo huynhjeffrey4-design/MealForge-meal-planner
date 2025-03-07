@@ -7,7 +7,7 @@ $recipeController = new App\Controllers\RecipeController();
 
 // Get filter values from URL parameters if present
 $search = $_GET['search'] ?? null;
-$dietary = isset($_GET['dietary']) && is_array($_GET['dietary']) ? $_GET['dietary'] : null;
+$dietary = $_GET['dietary'] ?? null; // Changed to string instead of array
 $maxPrepTime = isset($_GET['max_prep_time']) ? (int)$_GET['max_prep_time'] : 60;
 $mealType = $_GET['meal_type'] ?? null;
 $priceRange = $_GET['price_range'] ?? null;
@@ -15,13 +15,13 @@ $priceRange = $_GET['price_range'] ?? null;
 // Use the controller to get filtered recipes
 $recipes = $recipeController->searchAction(
     $search,
-    $dietary,
+    $dietary, // Now passing a single string value
     $maxPrepTime,
     $mealType,
     $priceRange
 );
 
-// Get all dietary options for filter checkboxes
+// Get all dietary options for filter radio buttons
 // TODO: The Controller should provide these. Either by parsing results or via provider method
 $dietaryOptions = ['Vegetarian', 'Vegan', 'Gluten-Free', 'Dairy-Free', 'Keto', 'Paleo'];
 $mealTypeOptions = ['Breakfast', 'Lunch', 'Dinner', 'Snack', 'Dessert'];
@@ -55,9 +55,9 @@ $recipesCount = count($recipes);
 					  <input type="text" name="search" value="<?= htmlspecialchars($search ?? '') ?>" class="bg-white text-gray-700 border-2 border rounded-lg pl-10 p-2.5 w-full" placeholder="Search recipes...">
 					  
 					  <!-- Preserve other filter values when searching -->
-					  <?php if ($dietary): foreach ($dietary as $diet): ?>
-					  <input type="hidden" name="dietary[]" value="<?= htmlspecialchars($diet) ?>">
-					  <?php endforeach; endif; ?>
+					  <?php if ($dietary): ?>
+					  <input type="hidden" name="dietary" value="<?= htmlspecialchars($dietary) ?>">
+					  <?php endif; ?>
 					  
 					  <?php if ($maxPrepTime): ?>
 					  <input type="hidden" name="max_prep_time" value="<?= htmlspecialchars($maxPrepTime) ?>">
@@ -65,10 +65,6 @@ $recipesCount = count($recipes);
 					  
 					  <?php if ($mealType): ?>
 					  <input type="hidden" name="meal_type" value="<?= htmlspecialchars($mealType) ?>">
-					  <?php endif; ?>
-					  
-					  <?php if ($priceRange): ?>
-					  <input type="hidden" name="price_range" value="<?= htmlspecialchars($priceRange) ?>">
 					  <?php endif; ?>
 				  </form>
 			  </div>
@@ -92,19 +88,28 @@ $recipesCount = count($recipes);
                     <input type="hidden" name="search" value="<?= htmlspecialchars($search) ?>">
                     <?php endif; ?>
                 
-                    <!-- Dietary Preferences -->
+                    <!-- Dietary Preferences - Now as Radio Buttons -->
                     <div class="border-b pb-4">
                         <div class="flex justify-between items-center mb-2 cursor-pointer" onclick="toggleSection('dietary')">
-                            <h3 class="font-medium">Dietary Preferences</h3>
+                            <h3 class="font-medium">Dietary Preference</h3>
                             <i data-lucide="chevron-down" id="dietary-icon" class="h-5 w-5 transform transition-transform"></i>
                         </div>
                         <div id="dietary-options" class="mt-2 space-y-2">
+                            <!-- Add an "Any" option -->
+                            <div class="flex items-center">
+                                <input type="radio" name="dietary" value="" 
+                                    id="dietary-any" 
+                                    class="h-4 w-4 text-red-500 rounded"
+                                    <?= $dietary === null || $dietary === '' ? 'checked' : '' ?>>
+                                <label for="dietary-any" 
+                                    class="ml-2 text-sm text-gray-700">Any</label>
+                            </div>
                             <?php foreach ($dietaryOptions as $option): ?>
                             <div class="flex items-center">
-                                <input type="checkbox" name="dietary[]" value="<?= htmlspecialchars($option) ?>" 
+                                <input type="radio" name="dietary" value="<?= htmlspecialchars($option) ?>" 
                                     id="<?= htmlspecialchars(strtolower(str_replace(' ', '-', $option))) ?>" 
                                     class="h-4 w-4 text-red-500 rounded"
-                                    <?= $dietary && in_array($option, $dietary) ? 'checked' : '' ?>>
+                                    <?= $dietary === $option ? 'checked' : '' ?>>
                                 <label for="<?= htmlspecialchars(strtolower(str_replace(' ', '-', $option))) ?>" 
                                     class="ml-2 text-sm text-gray-700"><?= htmlspecialchars($option) ?></label>
                             </div>
@@ -149,22 +154,6 @@ $recipesCount = count($recipes);
                         </div>
                     </div>
 
-                    <!-- Price Range -->
-                    <div class="border-b pb-4">
-                        <div class="flex justify-between items-center mb-2 cursor-pointer" onclick="toggleSection('price-range')">
-                            <h3 class="font-medium">Price Range</h3>
-                            <i data-lucide="chevron-down" id="price-range-icon" class="h-5 w-5 transform transition-transform"></i>
-                        </div>
-                        <div id="price-range-options" class="mt-2">
-                            <select name="price_range" class="w-full p-2 bg-gray-100 rounded-lg text-gray-700">
-                                <option value="">Any</option>
-                                <option value="budget" <?= $priceRange === 'budget' ? 'selected' : '' ?>>Budget (< $5)</option>
-                                <option value="moderate" <?= $priceRange === 'moderate' ? 'selected' : '' ?>>Moderate ($5-$10)</option>
-                                <option value="premium" <?= $priceRange === 'premium' ? 'selected' : '' ?>>Premium (> $10)</option>
-                            </select>
-                        </div>
-                    </div>
-
                     <!-- Apply Filters Button -->
                     <button type="submit" class="w-full py-2 px-4 bg-red-600 hover:bg-red-700 text-white font-medium rounded-lg transition duration-150 ease-in-out">
                         Apply Filters
@@ -188,12 +177,12 @@ $recipesCount = count($recipes);
                         <div class="bg-white rounded-lg shadow overflow-hidden">
                                 <?php if (!empty($recipe['image'])): ?>
                                 <div class="w-full">
-                                    <img src="<?= htmlspecialchars($recipe['image']) ?>" alt="<?= htmlspecialchars($recipe['title']) ?>" class="w-full h-48 object-cover">
+                                    <img src="<?= htmlspecialchars($recipe['image']) ?>" alt="<?= htmlspecialchars($recipe['recipe']) ?>" class="w-full h-48 object-cover">
                                 </div>
                                 <?php endif; ?>
                             <div class="flex flex-col md:flex-row">
                                 <div class="p-4">
-                                    <h3 class="font-bold text-lg mb-2"><?= htmlspecialchars($recipe['title']) ?></h3>
+                                    <h3 class="font-bold text-lg mb-2"><?= htmlspecialchars($recipe['recipe']) ?></h3>
                                     
                                     <?php if (!empty($recipe['description'])): ?>
                                     <p class="text-gray-600 text-sm mb-3"><?= htmlspecialchars($recipe['description']) ?></p>
@@ -211,10 +200,6 @@ $recipesCount = count($recipes);
                                             <span class="text-sm text-gray-600"><?= $recipe['prep_time'] ?> mins</span>
                                         </div>
                                         
-                                        <div class="flex items-center mx-4">
-                                            <i data-lucide="dollar-sign" class="h-5 w-5 text-gray-500 mr-1"></i>
-                                            <span class="text-sm text-gray-600"><?= number_format($recipe['price'], 2) ?></span>
-                                        </div>
                                         
                                         <div class="flex items-center">
                                             <i data-lucide="gauge" class="h-5 w-5 text-gray-500 mr-1"></i>
@@ -260,7 +245,7 @@ $recipesCount = count($recipes);
         }
         
         // Auto-submit form when filters change
-        document.querySelectorAll('input[type=checkbox], input[type=range], select').forEach(element => {
+        document.querySelectorAll('input[type=radio], input[type=range], select').forEach(element => {
             element.addEventListener('change', function() {
                 this.closest('form').submit();
             });

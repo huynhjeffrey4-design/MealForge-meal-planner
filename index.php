@@ -18,10 +18,10 @@
 			<div class="text-2xl font-bold text-green-700">MealForge</div>
 			<div class="space-x-6">
 				<button class="text-gray-600 hover:text-green-700">How it Works</button>
-				<a href="/about">
+				<a href="">
 					<button class="text-gray-600 hover:text-green-700">About</button>
 				</a>
-				<a href="/login.php">
+				<a href="login.php">
 					<button class="bg-green-600 text-white px-4 py-2 rounded-lg hover:bg-green-700">
 						Get Started
 					</button>
@@ -42,7 +42,7 @@
 				<p class="text-xl text-gray-600 mb-8 max-w-2xl">
 					Tell us about your dietary preferences and budget, and we'll forge the perfect meal plan tailored to your needs.
 				</p>
-				<a href="/login.php">
+				<a href="login.php">
 					<button class="bg-green-600 text-white px-8 py-4 rounded-lg text-lg font-semibold hover:bg-green-700 flex items-center gap-2">
 						Start Your Journey
 						<i data-lucide="chevron-right" class="w-5 h-5"></i>
@@ -98,7 +98,7 @@
 			<p class="text-xl text-green-50 mb-8 max-w-2xl mx-auto">
 				Join thousands of happy users who have discovered their perfect meal plans with MealForge.
 			</p>
-			<a href="/login.php">
+			<a href="login.php">
 				<button class="bg-white text-green-600 px-8 py-4 rounded-lg text-lg font-semibold hover:bg-green-50 flex items-center gap-2 mx-auto">
 					Get Started Now
 					<i data-lucide="arrow-right" class="w-5 h-5"></i>
