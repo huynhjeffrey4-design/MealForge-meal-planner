@@ -18,7 +18,7 @@
 			<div class="text-2xl font-bold text-green-700">MealForge</div>
 			<div class="space-x-6">
 				<button class="text-gray-600 hover:text-green-700">How it Works</button>
-				<a href="">
+				<a href="About.html">
 					<button class="text-gray-600 hover:text-green-700">About</button>
 				</a>
 				<a href="login.php">
