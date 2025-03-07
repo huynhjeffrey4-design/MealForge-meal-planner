@@ -175,9 +175,9 @@ final class RecipeSearchCest
     }
     
     /**
-     * Test back to dashboard navigation
+     * Test back to Profile navigation
      */
-    public function testBackToDashboardNavigation(AcceptanceTester $I): void
+    public function testBackToProfileNavigation(AcceptanceTester $I): void
     {
         // Arrange
 		$email = 'test@email.com';
@@ -187,14 +187,14 @@ final class RecipeSearchCest
 		$I->fillField('email', $email);
 		$I->fillField('password', $password);
 		$I->click('Continue');
-        $I->seeCurrentUrlEquals('/dashboard.php');
+        $I->seeCurrentUrlEquals('/profile.php');
         
 		$I->amOnPage('/search.php');
 
         // Act
-        $I->click('Back to Dashboard');
+        $I->click('Back to Profile');
         
         // Assert
-        $I->seeCurrentUrlEquals('/dashboard.php');
+        $I->seeCurrentUrlEquals('/profile.php');
     }
 }

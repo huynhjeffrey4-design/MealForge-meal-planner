@@ -41,11 +41,11 @@ $recipesCount = count($recipes);
 </head>
 <body class="bg-green-50">
     <div class="container mx-auto p-4">
-        <!-- Back to Dashboard Button -->
-        <a href="dashboard.php" class="flex items-center text-gray-600 mb-6">
-            <i data-lucide="arrow-left" class="h-5 w-5 mr-1"></i>
-            Back to Dashboard
-        </a>
+		<!-- Changed from "Back to Dashboard" to "Back to Profile" -->
+		<a href="profile.php" class="flex items-center text-gray-600 mb-6">
+		    <i data-lucide="arrow-left" class="h-5 w-5 mr-1"></i>
+		    Back to Profile
+		</a>
 			  <!-- Search Bar -->
 			  <div class="relative mb-6">
 				  <div class="absolute inset-y-0 left-0 flex items-center pl-3 pointer-events-none">
