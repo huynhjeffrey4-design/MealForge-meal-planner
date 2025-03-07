@@ -1,9 +1,15 @@
 <?php
-// Start session at the very beginning before any output
+// Start output buffering at the very beginning
+ob_start();
+
+// Start session
 session_start();
 
-// Start output buffering to prevent "headers already sent" errors
-ob_start();
+// Enhanced error reporting
+error_reporting(E_ALL);
+ini_set('display_errors', 1);
+ini_set('error_log', __DIR__ . '/registration_errors.log');
+error_log("Registration page loaded - " . date('Y-m-d H:i:s') . " - " . $_SERVER['REQUEST_METHOD']);
 
 // Initialize variables
 $errors = [];
@@ -11,6 +17,8 @@ $error_message = null;
 
 // Process form submission
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
+    error_log("Form submitted - processing registration");
+    
     // Load required files
     require_once 'config.php';
     
@@ -53,7 +61,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                     $errors['email'] = 'Email already registered';
                 }
             } catch (PDOException $e) {
-                error_log("Database error: " . $e->getMessage());
+                error_log("Database error during email check: " . $e->getMessage());
                 $error_message = "Database error: " . $e->getMessage();
             }
         }
@@ -67,6 +75,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     // If no errors, proceed with registration
     if (empty($errors) && !isset($error_message)) {
         try {
+            error_log("Validation passed, proceeding with registration");
+            
             // Hash password
             $passwordHash = password_hash($_POST['password'], PASSWORD_DEFAULT);
             
@@ -86,41 +96,63 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             ]);
             
             if ($result) {
+                error_log("Database insert successful");
+                
                 // Set session variable for success message on login page
                 $_SESSION['registration_success'] = true;
                 
-                // Log the redirect attempt
-                error_log("User registered successfully. Attempting redirect to login.php");
+                // Debug message (will only show if redirect fails)
+                echo "<!-- Registration successful. If you see this page, redirection failed. -->";
+                echo "<div style='display:none;'>About to redirect to login.php...</div>";
                 
-                // Clear any output buffering
-                   // Force output clearing
-                    while (ob_get_level() > 0) {
-                        ob_end_clean();
-                    }
-
-                                // Get directory path relative to the domain root
-            $dir_path = dirname($_SERVER['SCRIPT_NAME']);
-
-            // If we're at domain root, don't add a trailing slash
-            if ($dir_path == '/') {
-                $dir_path = '';
-            }
-
-            // Create a site-root relative path
-            $login_path = $dir_path . '/login.php';
-
-            // Log the path for debugging
-            error_log("Redirecting to: " . $login_path);
-
-            // Redirect
-            header("Location: login.php");
-            exit;
+                // Clean all output buffers before redirect
+                while (ob_get_level() > 0) {
+                    ob_end_clean();
+                }
+                
+                try {
+                    // Force status code first
+                    http_response_code(302);
+                    
+                    // Try multiple redirect approaches
+                    error_log("Attempting redirect to login.php");
+                    
+                    // 1. Simple direct redirect
+                    header("Location: login.php");
+                    error_log("Header sent successfully");
+                    
+                    // 2. JavaScript fallback (will execute if PHP redirect fails)
+                    echo '<!DOCTYPE html>
+                    <html>
+                    <head>
+                        <title>Redirecting...</title>
+                        <meta http-equiv="refresh" content="0;url=login.php">
+                    </head>
+                    <body>
+                        <p>Registration successful! Redirecting to login page...</p>
+                        <script>
+                            window.location.href = "login.php";
+                        </script>
+                        <p>If you are not redirected, <a href="login.php">click here</a>.</p>
+                    </body>
+                    </html>';
+                    
+                    exit;
+                } catch (Exception $e) {
+                    error_log("Error during redirect: " . $e->getMessage());
+                    echo "Error during redirect: " . $e->getMessage();
+                    echo "<p>Please <a href='login.php'>click here</a> to go to the login page.</p>";
+                }
             } else {
+                error_log("Database insert failed");
                 $error_message = "Registration failed: Unable to create account";
             }
         } catch (PDOException $e) {
             error_log("Registration error: " . $e->getMessage());
             $error_message = "Registration failed: " . $e->getMessage();
+        } catch (Exception $e) {
+            error_log("General error: " . $e->getMessage());
+            $error_message = "An unexpected error occurred: " . $e->getMessage();
         }
     }
 }
@@ -175,7 +207,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                     </div>
                 <?php endif; ?>
 
-                <form id="registrationForm" method="POST" class="space-y-6">
+                <form id="registrationForm" method="POST" action="" class="space-y-6">
                     <div>
                         <label for="firstName" class="block text-gray-700 font-medium mb-2">First name</label>
                         <input type="text" id="firstName" name="firstName" required 
@@ -238,7 +270,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             </div>
         </div>
     </div>
-
 </body>
 </html>
 <?php
