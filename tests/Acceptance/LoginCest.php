@@ -25,7 +25,7 @@ final class LoginCest
 		$I->fillField('email', $email);
 		$I->fillField('password', $password);
 		$I->click('Continue');
-		$I->seeCurrentUrlEquals('/dashboard.php');
+		$I->seeCurrentUrlEquals('/profile.php');
 	}
 
 	public function testUnsuccesfulLogin(AcceptanceTester $I): void
