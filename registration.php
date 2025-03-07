@@ -113,7 +113,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             error_log("Redirecting to: " . $login_path);
 
             // Redirect
-            header("Location: " . $login_path);
+            header("Location: login.php");
             exit;
             } else {
                 $error_message = "Registration failed: Unable to create account";

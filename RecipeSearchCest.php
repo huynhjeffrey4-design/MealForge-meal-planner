@@ -187,8 +187,7 @@ final class RecipeSearchCest
 		$I->fillField('email', $email);
 		$I->fillField('password', $password);
 		$I->click('Continue');
-    $I->seeCurrentUrlEquals('/profile.php');
-
+        $I->seeCurrentUrlEquals('/profile.php');
         
 		$I->amOnPage('/search.php');
 
