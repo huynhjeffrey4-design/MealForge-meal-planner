@@ -1,10 +1,9 @@
 <?php
 // Start session and require config
 session_start();
-require_once 'config.php';
+require_once __DIR__ . '/controllers/control.php';
 
-// Check if user is logged in
-if (!isset($_SESSION['user_id'])) {
+if (!isset($_SESSION['user']['id'])) {
     header('Location: login.php');
     exit;
 }
@@ -20,7 +19,21 @@ if (isset($_SESSION['message'])) {
     $messageType = '';
 }
 
-$userId = $_SESSION['user_id'];
+$userId = $_SESSION['user_id']['id'];
+
+$userController = getUserController();
+$user = $userController->getUserById($userId);
+$userProfile = $userController->getProfileByUserId($userId);
+
+if (!$user || !$userProfile) {
+		$_SESSION['message'] = 'User not found';
+		$_SESSION['message_type'] = 'error';
+		header('Location: login.php');
+		exit;
+		session_destroy();
+		header('Location: login.php');
+		exit;
+}
 
 // Define dietary options
 $dietaryRestrictionOptions = [
@@ -63,53 +76,75 @@ $healthTips = [
     "Meal prep on weekends to ensure healthy eating throughout the week."
 ];
 
-// Connect to database and get user data
-try {
-    $pdo = new PDO(
-        "mysql:host=" . DB_HOST . ";dbname=" . DB_NAME,
-        DB_USER,
-        DB_PASS,
-        [PDO::ATTR_ERRMODE => PDO::ERRMODE_EXCEPTION]
-    );
+// Initialize variables for form values
+$firstName = $user['first_name'] ?? '';
+$lastName = $user['last_name'] ?? '';
+
+$dob = $userProfile['date_of_birth'] ?? '';
+$gender = $userProfile['gender'] ?? '';
+$email = $userProfile['email'] ?? '';
+$phone = $userProfile['phone_number'] ?? '';
+$dietaryRestrictions = $userProfile['dietary_restrictions'] ?? '';
+$dietaryPreferences = $userProfile['dietary_preferences'] ?? '';
+$profilePicture = $userProfile['profile_picture'] ?? '';
+
+$defaultProfilePic = 'assets/default-profile.png';
+
+// Format dietary restrictions and preferences as arrays for display
+$restrictionsArray = !empty($dietaryRestrictions) ? explode(',', $dietaryRestrictions) : [];
+$preferencesArray = !empty($dietaryPreferences) ? explode(',', $dietaryPreferences) : [];
+
+// Get a random health tip
+$randomTip = $healthTips[array_rand($healthTips)];
+
+// Handle form submission (updated for new structure)
+if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['edit_all'])) {
+    $userData = [
+        'first_name' => $_POST['first_name'] ?? $firstName,
+        'last_name' => $_POST['last_name'] ?? $lastName,
+        'email' => $_POST['email'] ?? $email
+    ];
     
-    // Get user data
-    $stmt = $pdo->prepare("SELECT * FROM users WHERE user_id = ?");
-    $stmt->execute([$userId]);
-    $user = $stmt->fetch(PDO::FETCH_ASSOC);
+    $profileData = [
+        'date_of_birth' => $_POST['dob'] ?? $dob,
+        'gender' => $_POST['gender'] ?? $gender,
+        'phone_number' => $_POST['phone'] ?? $phone
+    ];
     
-    if (!$user) {
-        // User not found, redirect to login
-        session_destroy();
-        header('Location: login.php');
-        exit;
+    // Handle dietary restrictions
+    if (isset($_POST['dietary_restrictions'])) {
+        $profileData['dietary_restrictions'] = implode(',', $_POST['dietary_restrictions']);
+    } else {
+        $profileData['dietary_restrictions'] = '';
     }
     
-    // Initialize variables for form values
-    $firstName = $user['first_name'] ?? '';
-    $lastName = $user['last_name'] ?? '';
-    $dob = $user['date_of_birth'] ?? '';
-    $gender = $user['gender'] ?? '';
-    $email = $user['email'] ?? '';
-    $phone = $user['phone_number'] ?? '';
-    $dietaryRestrictions = $user['dietary_restrictions'] ?? '';
-    $dietaryPreferences = $user['dietary_preferences'] ?? '';
-    $profilePicture = $user['profile_picture'] ?? '';
-    $defaultProfilePic = 'assets/default-profile.png';
+    // Handle dietary preferences
+    if (isset($_POST['dietary_preferences'])) {
+        $profileData['dietary_preferences'] = implode(',', $_POST['dietary_preferences']);
+    } else {
+        $profileData['dietary_preferences'] = '';
+    }
     
-    // Format dietary restrictions and preferences as arrays for display
-    $restrictionsArray = !empty($dietaryRestrictions) ? explode(',', $dietaryRestrictions) : [];
-    $preferencesArray = !empty($dietaryPreferences) ? explode(',', $dietaryPreferences) : [];
+    // Update user data
+    $userUpdateSuccess = $userController->updateUser($userId, $userData);
     
-    // Get a random health tip
-    $randomTip = $healthTips[array_rand($healthTips)];
+    // Update profile data
+    $profileUpdateSuccess = $userController->updateProfile($userId, $profileData);
     
-} catch (PDOException $e) {
-    // Log error and show generic message
-    error_log("Database error in profile.php: " . $e->getMessage());
-    $message = "A system error occurred. Please try again later.";
-    $messageType = "error";
+    if ($userUpdateSuccess && $profileUpdateSuccess) {
+        $_SESSION['message'] = 'Profile updated successfully';
+        $_SESSION['message_type'] = 'success';
+    } else {
+        $_SESSION['message'] = 'Failed to update profile';
+        $_SESSION['message_type'] = 'error';
+    }
+    
+    // Refresh page to show updated data
+    header('Location: profile.php');
+    exit;
 }
 ?>
+
 <!DOCTYPE html>
 <html lang="en">
 <head>

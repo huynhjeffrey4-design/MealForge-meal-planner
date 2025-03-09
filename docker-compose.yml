@@ -8,7 +8,7 @@ services:
       - '3306'
     environment:
       MYSQL_ROOT_PASSWORD: password
-      MYSQL_DATABASE: testdb
+      MYSQL_DATABASE: cse442_2025_spring_team_v_db
     networks:
       - app-network
 
@@ -25,6 +25,21 @@ services:
     command: php -S 0.0.0.0:8080 -t /var/www/html
     networks:
       - app-network
+
+  cloudbeaver:
+    image: dbeaver/cloudbeaver:latest
+    restart: always
+    ports:
+      - '8978:8978'
+    volumes:
+      - cloudbeaver-data:/opt/cloudbeaver/workspace
+    depends_on:
+      - db
+    networks:
+      - app-network
+
+volumes:
+  cloudbeaver-data:
 
 networks:
   app-network:

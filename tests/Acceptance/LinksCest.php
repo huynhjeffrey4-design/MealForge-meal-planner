@@ -69,7 +69,17 @@ final class LinksCest
             'links' => [
                 ['text' => 'Get Started Now', 'href' => 'login.php', 'expectInUrl' => true]
             ]
-        ]
+        ],
+		'Profile Page' => [
+					'url' => '/profile.php',
+					'pageIdentifier' => 'Welcome back',
+					'requireLogin' => true,
+					'links' => [
+						['text' => 'Shop', 'href' => 'map.html', 'expectInUrl' => true],
+						['text' => 'Social', 'href' => 'social.php', 'expectInUrl' => true],
+						['text' => 'Shop', 'href' => 'shop.php', 'expectInUrl' => true]
+					]
+			]
     ];
 
     public function _before(AcceptanceTester $I): void
