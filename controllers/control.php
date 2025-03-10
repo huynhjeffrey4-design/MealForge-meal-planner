@@ -21,6 +21,13 @@ class UserController
 				'firstName' => 'Testy',
 				'lastName' => 'Johnson'
 			],
+			[
+				'email' => 'peter@email.com',
+				'password' => 'asdf',
+				'firstName' => 'Peter',
+				'lastName' => 'Vaiciulis'
+
+			],
 		];
 
 		foreach ($test_accounts as $account) {
@@ -137,6 +144,7 @@ class UserController
 		}
 
 		if ($validation->hasErrors()) {
+			// TODO: Return and handle validation errors
 			return false;
 		}
 

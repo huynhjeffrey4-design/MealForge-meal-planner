@@ -1,46 +1,40 @@
 <?php
-// Enable error reporting for debugging
-error_reporting(E_ALL);
-ini_set('display_errors', 1);
-
 session_start();
-require_once 'config.php';
+require_once __DIR__ . '/controllers/control.php';
 
 // Check if user is logged in
-if (!isset($_SESSION['user_id'])) {
+if (!isset($_SESSION['user'])) {
     echo json_encode(['success' => false, 'message' => 'Not logged in']);
     exit;
 }
 
-$userId = $_SESSION['user_id'];
+$userId = $_SESSION['user']['id'];
+$userController = getUserController();
 
 // Handle the upload
 if (isset($_FILES['profile_picture']) && $_FILES['profile_picture']['error'] === UPLOAD_ERR_OK) {
-    // Store file in base64 format in the database instead of as a file
+    // Store file in base64 format in the database
     $imageData = file_get_contents($_FILES['profile_picture']['tmp_name']);
     $base64Image = 'data:' . $_FILES['profile_picture']['type'] . ';base64,' . base64_encode($imageData);
     
-    try {
-        $pdo = new PDO(
-            "mysql:host=" . DB_HOST . ";dbname=" . DB_NAME,
-            DB_USER,
-            DB_PASS,
-            [PDO::ATTR_ERRMODE => PDO::ERRMODE_EXCEPTION]
-        );
+    // Update user data with new profile picture
+    $userData = [
+        'profile_picture' => $base64Image
+    ];
+    
+    $success = $userController->updateUser($userId, $userData);
+    
+    if ($success) {
+        $_SESSION['message'] = "Profile picture updated successfully!";
+        $_SESSION['message_type'] = "success";
         
-        // Update the database with the base64 image data
-        $stmt = $pdo->prepare("UPDATE users SET profile_picture = ? WHERE user_id = ?");
-        $success = $stmt->execute([$base64Image, $userId]);
-        
-        if ($success) {
-            $_SESSION['message'] = "Profile picture updated successfully!";
-            $_SESSION['message_type'] = "success";
-        } else {
-            $_SESSION['message'] = "Error updating profile picture in database.";
-            $_SESSION['message_type'] = "error";
+        // Update the session with the new profile picture
+        $updatedUser = $userController->getUserById($userId);
+        if ($updatedUser) {
+            $_SESSION['user'] = $updatedUser;
         }
-    } catch (PDOException $e) {
-        $_SESSION['message'] = "Database error: " . $e->getMessage();
+    } else {
+        $_SESSION['message'] = "Error updating profile picture.";
         $_SESSION['message_type'] = "error";
     }
 } else {
@@ -52,4 +46,3 @@ if (isset($_FILES['profile_picture']) && $_FILES['profile_picture']['error'] ===
 // Redirect back to profile page
 header('Location: profile.php');
 exit;
-?>
