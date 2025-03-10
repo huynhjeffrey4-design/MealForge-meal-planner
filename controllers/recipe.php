@@ -14,9 +14,9 @@ class RecipeController {
     private $recipeProvider;
     
     public function __construct() {
-		$env = env('ENVIRONMENT', 'prod');
+		$env = env('PROVIDER_RECIPE', '');
 
-        $this->recipeProvider = $env == 'prod' ? new PDORecipeDataProvider() : new MockRecipeDataProvider();
+        $this->recipeProvider = $env == 'mock' ? new MockRecipeDataProvider() : new PDORecipeDataProvider();
     }
     
     /**
