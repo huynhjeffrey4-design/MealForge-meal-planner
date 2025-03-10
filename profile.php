@@ -1,7 +1,7 @@
 <?php
 // Start session and require config
 session_start();
-require_once __DIR__ . '/controllers/control.php';
+require_once __DIR__ . '/controllers/user.php';
 
 if (!isset($_SESSION['user']['id'])) {
     header('Location: login.php');

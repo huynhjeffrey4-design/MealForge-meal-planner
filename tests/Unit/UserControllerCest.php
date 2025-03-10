@@ -4,7 +4,7 @@ declare(strict_types=1);
 namespace Tests\Unit;
 use Tests\Support\UnitTester;
 
-require_once __DIR__ . '/../../controllers/control.php';
+require_once __DIR__ . '/../../controllers/user.php';
 
 final class UserControllerCest
 {

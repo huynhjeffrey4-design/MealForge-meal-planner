@@ -257,13 +257,9 @@ interface UserDataProviderInterface
 
 function getUserController(): UserController
 {
-	return new UserController(getUserProvider());
-}
-
-function getUserProvider(): UserDataProviderInterface
-{
-	$env = env('ENVIRONMENT', 'prod');
-	return $env == 'prod' ? new RedBeanUserProvider() : new MockUserProvider();
+	$provider_t = env('PROVIDER_USER', '');
+	$provider =  $provider_t === 'mock' ? new MockUserProvider() : new RedBeanUserProvider();
+	return new UserController($provider);
 }
 
 class RedBeanUserProvider implements UserDataProviderInterface
@@ -283,6 +279,7 @@ class RedBeanUserProvider implements UserDataProviderInterface
 	 */
 	public function createUser(string $email, string $password, string $firstName, string $lastName): array
 	{
+	  // TODO: This should be a database invariant rather than provider responsibility
 	  if ($this->getUserByEmail($email)) {
 		$validation = new ValidationResult();
 		return ['success' => false, 'validation' => $validation->addError('email', 'Email already in use')];
@@ -437,110 +434,103 @@ class RedBeanUserProvider implements UserDataProviderInterface
 
 class MockUserProvider implements UserDataProviderInterface
 {
-	private array $users = [];
-	private int $nextId = 1;
-	private array $deletedUserIds = [];
+    // Change to static properties to persist data between instantiations
+    private static array $users = [];
+    private static int $nextId = 1;
+    private static array $deletedUserIds = [];
 
-	public function createUser(string $email, string $password, string $firstName, string $lastName): array
-	{
-		$validation = new ValidationResult();
+    public function createUser(string $email, string $password, string $firstName, string $lastName): array
+    {
+        $validation = new ValidationResult();
+        // Simulate email uniqueness check
+        foreach (self::$users as $user) {
+            if ($user['email'] === $email) {
+                $validation->addError('email', 'Email already in use');
+                return ['success' => false, 'validation' => $validation];
+            }
+        }
 
-		// Simulate email uniqueness check
-		foreach ($this->users as $user) {
-			if ($user['email'] === $email) {
-				$validation->addError('email', 'Email already in use');
-				return ['success' => false, 'validation' => $validation];
-			}
-		}
+        $userId = self::$nextId++;
+        self::$users[$userId] = [
+            'id' => $userId,
+            'email' => $email,
+            'password_hash' => password_hash($password, PASSWORD_DEFAULT),
+            'first_name' => $firstName,
+            'last_name' => $lastName,
+            // Include profile fields
+            'date_of_birth' => null,
+            'gender' => null,
+            'phone_number' => null,
+            'profile_picture' => null,
+            'dietary_restrictions' => null,
+            'dietary_preferences' => null
+        ];
+        return ['success' => true, 'user' => self::$users[$userId]];
+    }
 
-		$userId = $this->nextId++;
-		$this->users[$userId] = [
-			'id' => $userId,
-			'email' => $email,
-			'password_hash' => password_hash($password, PASSWORD_DEFAULT),
-			'first_name' => $firstName,
-			'last_name' => $lastName,
+    public function deleteUser(int $userId): bool
+    {
+        if (!isset(self::$users[$userId])) {
+            return false;
+        }
+        unset(self::$users[$userId]);
+        self::$deletedUserIds[] = $userId;
+        return true;
+    }
 
-			// Include profile fields
-			'date_of_birth' => null,
-			'gender' => null,
-			'phone_number' => null,
-			'profile_picture' => null,
-			'dietary_restrictions' => null,
-			'dietary_preferences' => null
-		];
+    public function getUserByEmail(string $email): array|false
+    {
+        foreach (self::$users as $userId => $user) {
+            if ($user['email'] === $email) {
+                $userData = $user;
+                $userData['email'] = htmlspecialchars($userData['email']);
+                return $userData;
+            }
+        }
+        return false;
+    }
 
-		return ['success' => true, 'user' => $this->users[$userId]];
-	}
+    public function getUserById(int $userId): array|false
+    {
+        if (!isset(self::$users[$userId])) {
+            return false;
+        }
+        $userData = self::$users[$userId];
+        $userData['email'] = htmlspecialchars($userData['email']);
+        return $userData;
+    }
 
-	public function deleteUser(int $userId): bool
-	{
-		if (!isset($this->users[$userId])) {
-			return false;
-		}
+    public function updateUser(int $userId, array $userData): bool
+    {
+        if (!isset(self::$users[$userId])) {
+            return false;
+        }
+        foreach ($userData as $key => $value) {
+            // Special handling for password
+            if ($key === 'password') {
+                self::$users[$userId]['password_hash'] = password_hash($value, PASSWORD_DEFAULT);
+            } else {
+                self::$users[$userId][$key] = $value;
+            }
+        }
+        return true;
+    }
 
-		unset($this->users[$userId]);
-		$this->deletedUserIds[] = $userId;
-		return true;
-	}
+    // Helper methods for testing
+    public function getAllUsers(): array
+    {
+        return self::$users;
+    }
 
-	public function getUserByEmail(string $email): array|false
-	{
-		foreach ($this->users as $userId => $user) {
-			if ($user['email'] === $email) {
-				$userData = $user;
-				$userData['email'] = htmlspecialchars($userData['email']);
-				return $userData;
-			}
-		}
-		return false;
-	}
+    public function getDeletedUserIds(): array
+    {
+        return self::$deletedUserIds;
+    }
 
-	public function getUserById(int $userId): array|false
-	{
-		if (!isset($this->users[$userId])) {
-			return false;
-		}
-
-		$userData = $this->users[$userId];
-		$userData['email'] = htmlspecialchars($userData['email']);
-
-		return $userData;
-	}
-
-	public function updateUser(int $userId, array $userData): bool
-	{
-		if (!isset($this->users[$userId])) {
-			return false;
-		}
-
-		foreach ($userData as $key => $value) {
-			// Special handling for password
-			if ($key === 'password') {
-				$this->users[$userId]['password_hash'] = password_hash($value, PASSWORD_DEFAULT);
-			} else {
-				$this->users[$userId][$key] = $value;
-			}
-		}
-
-		return true;
-	}
-
-	// Helper methods for testing
-	public function getAllUsers(): array
-	{
-		return $this->users;
-	}
-
-	public function getDeletedUserIds(): array
-	{
-		return $this->deletedUserIds;
-	}
-
-	public function reset(): void
-	{
-		$this->users = [];
-		$this->nextId = 1;
-		$this->deletedUserIds = [];
-	}
+    public function reset(): void
+    {
+        self::$users = [];
+        self::$nextId = 1;
+        self::$deletedUserIds = [];
+    }
 }

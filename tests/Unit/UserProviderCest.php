@@ -1,7 +1,7 @@
 <?php
 declare(strict_types=1);
 namespace Tests\Unit;
-require_once __DIR__ . '/../../controllers/control.php';
+require_once __DIR__ . '/../../controllers/user.php';
 use Tests\Support\UnitTester;
 final class UserProviderCest
 {
