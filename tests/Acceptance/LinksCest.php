@@ -11,7 +11,7 @@ final class LinksCest
      */
     private array $testUser = [
         'email' => 'test@email.com',
-        'password' => 'test'
+        'password' => 'password123'
     ];
     
     /**

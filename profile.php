@@ -19,20 +19,16 @@ if (isset($_SESSION['message'])) {
     $messageType = '';
 }
 
-$userId = $_SESSION['user_id']['id'];
+$userId = $_SESSION['user']['id']; // Fixed user ID access
 
 $userController = getUserController();
 $user = $userController->getUserById($userId);
-$userProfile = $userController->getProfileByUserId($userId);
 
-if (!$user || !$userProfile) {
-		$_SESSION['message'] = 'User not found';
-		$_SESSION['message_type'] = 'error';
-		header('Location: login.php');
-		exit;
-		session_destroy();
-		header('Location: login.php');
-		exit;
+if (!$user) {
+    $_SESSION['message'] = 'User not found';
+    $_SESSION['message_type'] = 'error';
+    header('Location: login.php');
+    exit;
 }
 
 // Define dietary options
@@ -80,13 +76,14 @@ $healthTips = [
 $firstName = $user['first_name'] ?? '';
 $lastName = $user['last_name'] ?? '';
 
-$dob = $userProfile['date_of_birth'] ?? '';
-$gender = $userProfile['gender'] ?? '';
-$email = $userProfile['email'] ?? '';
-$phone = $userProfile['phone_number'] ?? '';
-$dietaryRestrictions = $userProfile['dietary_restrictions'] ?? '';
-$dietaryPreferences = $userProfile['dietary_preferences'] ?? '';
-$profilePicture = $userProfile['profile_picture'] ?? '';
+// Profile info now comes directly from user record, not a separate profile
+$dob = $user['date_of_birth'] ?? '';
+$gender = $user['gender'] ?? '';
+$email = $user['email'] ?? '';
+$phone = $user['phone_number'] ?? '';
+$dietaryRestrictions = $user['dietary_restrictions'] ?? '';
+$dietaryPreferences = $user['dietary_preferences'] ?? '';
+$profilePicture = $user['profile_picture'] ?? '';
 
 $defaultProfilePic = 'assets/default-profile.png';
 
@@ -97,15 +94,12 @@ $preferencesArray = !empty($dietaryPreferences) ? explode(',', $dietaryPreferenc
 // Get a random health tip
 $randomTip = $healthTips[array_rand($healthTips)];
 
-// Handle form submission (updated for new structure)
+// Handle form submission
 if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['edit_all'])) {
     $userData = [
         'first_name' => $_POST['first_name'] ?? $firstName,
         'last_name' => $_POST['last_name'] ?? $lastName,
-        'email' => $_POST['email'] ?? $email
-    ];
-    
-    $profileData = [
+        'email' => $_POST['email'] ?? $email,
         'date_of_birth' => $_POST['dob'] ?? $dob,
         'gender' => $_POST['gender'] ?? $gender,
         'phone_number' => $_POST['phone'] ?? $phone
@@ -113,25 +107,22 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['edit_all'])) {
     
     // Handle dietary restrictions
     if (isset($_POST['dietary_restrictions'])) {
-        $profileData['dietary_restrictions'] = implode(',', $_POST['dietary_restrictions']);
+        $userData['dietary_restrictions'] = implode(',', $_POST['dietary_restrictions']);
     } else {
-        $profileData['dietary_restrictions'] = '';
+        $userData['dietary_restrictions'] = '';
     }
     
     // Handle dietary preferences
     if (isset($_POST['dietary_preferences'])) {
-        $profileData['dietary_preferences'] = implode(',', $_POST['dietary_preferences']);
+        $userData['dietary_preferences'] = implode(',', $_POST['dietary_preferences']);
     } else {
-        $profileData['dietary_preferences'] = '';
+        $userData['dietary_preferences'] = '';
     }
     
     // Update user data
     $userUpdateSuccess = $userController->updateUser($userId, $userData);
     
-    // Update profile data
-    $profileUpdateSuccess = $userController->updateProfile($userId, $profileData);
-    
-    if ($userUpdateSuccess && $profileUpdateSuccess) {
+    if ($userUpdateSuccess) {
         $_SESSION['message'] = 'Profile updated successfully';
         $_SESSION['message_type'] = 'success';
     } else {
@@ -680,7 +671,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['edit_all'])) {
 
         <!-- Edit Form -->
         <div class="edit-form" id="edit-individual-form">
-            <form method="POST" action="update_field.php">
+            <form method="POST" action="">
                 <div class="profile-grid">
                     <!-- First Name Edit -->
                     <div class="field">

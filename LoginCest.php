@@ -19,7 +19,7 @@ final class LoginCest
 		// NOTE: Precondition:
 		//  1. Test-user is registered
 		$email = 'test@email.com';
-		$password = 'test';
+		$password = 'password123';
 
 		$I->amOnPage('/login.php');
 		$I->fillField('email', $email);

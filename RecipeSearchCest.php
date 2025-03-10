@@ -181,7 +181,7 @@ final class RecipeSearchCest
     {
         // Arrange
 		$email = 'test@email.com';
-		$password = 'test';
+		$password = 'password123';
 
 		$I->amOnPage('/login.php');
 		$I->fillField('email', $email);

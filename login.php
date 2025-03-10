@@ -11,7 +11,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 	} else {
 		$userController = getUserController();
 
-
 		$res = $userController->login($_POST['email'], $_POST['password'], isset($_POST['remember']));
 
 		if ($res['success']) {
