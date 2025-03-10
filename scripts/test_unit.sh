@@ -11,6 +11,4 @@
 #  UPDATE:
 #  Now both services can be run using the docker-compose.yml file:
 #  > docker-compose up
-
-php vendor/bin/codecept run
-
+php vendor/bin/codecept run Unit

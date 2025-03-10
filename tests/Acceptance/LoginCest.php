@@ -8,12 +8,6 @@ use Tests\Support\AcceptanceTester;
 
 final class LoginCest
 {
-
-	public function _before(AcceptanceTester $I): void
-	{
-		$_ENV['ENVIRONMENT'] = 'test';
-	}
-
 	public function testSuccesfulLogin(AcceptanceTester $I): void
 	{
 		// NOTE: Precondition:

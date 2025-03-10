@@ -1,8 +1,11 @@
 <?php
 declare(strict_types=1);
-namespace Tests\Unit;
+namespace Tests\Integration;
+
 require_once __DIR__ . '/../../controllers/user.php';
-use Tests\Support\UnitTester;
+
+use Tests\Support\IntegrationTester;
+
 final class UserProviderCest
 {
     private ?\RedBeanUserProvider $provider = null;
@@ -10,7 +13,7 @@ final class UserProviderCest
     private string $testEmail = 'test@example.com';
     private array $createdUserIds = []; // Array to store all created user IDs
     
-    public function _before(UnitTester $I): void
+    public function _before(IntegrationTester $I): void
     {
         $config = ([
             'host' => '127.0.0.1'
@@ -20,7 +23,7 @@ final class UserProviderCest
         $this->provider->deleteUserByEmail($this->testEmail);
     }
     
-    public function _after(UnitTester $I): void
+    public function _after(IntegrationTester $I): void
     {
         // Delete all users created during tests
         foreach ($this->createdUserIds as $userId) {
@@ -35,7 +38,7 @@ final class UserProviderCest
     }
     
     // Helper method to create a test user for other tests
-    private function createTestUser(UnitTester $I): array
+    private function createTestUser(IntegrationTester $I): array
     {
         $email = $this->testEmail;
         $password = 'correct_password';
@@ -51,7 +54,7 @@ final class UserProviderCest
         return $result;
     }
     
-    public function tryToCreateUser(UnitTester $I): void
+    public function tryToCreateUser(IntegrationTester $I): void
     {
         $email = $this->testEmail;
         $password = 'correct_password';
@@ -78,7 +81,7 @@ final class UserProviderCest
         $this->createdUserIds[] = $this->testUserId; // Store the created user ID
     }
     
-    public function tryToCreateDuplicateUser(UnitTester $I): void
+    public function tryToCreateDuplicateUser(IntegrationTester $I): void
     {
         // First, create a user
         $result = $this->createTestUser($I);
@@ -97,7 +100,7 @@ final class UserProviderCest
         $I->assertStringContainsString('Email already in use', $duplicateResult['validation']->getError('email'));
     }
     
-    public function tryToGetUserByEmail(UnitTester $I): void
+    public function tryToGetUserByEmail(IntegrationTester $I): void
     {
         // Create a test user first
         $result = $this->createTestUser($I);
@@ -112,7 +115,7 @@ final class UserProviderCest
         $I->assertEquals('Johnson', $user['last_name'], 'Last name should match');
     }
     
-    public function tryToGetNonExistentUserByEmail(UnitTester $I): void
+    public function tryToGetNonExistentUserByEmail(IntegrationTester $I): void
     {
         $nonExistentEmail = 'nonexistent@example.com';
         $user = $this->provider->getUserByEmail($nonExistentEmail);
@@ -120,7 +123,7 @@ final class UserProviderCest
         $I->assertFalse($user, 'Should return false for non-existent user');
     }
     
-    public function tryToGetUserById(UnitTester $I): void
+    public function tryToGetUserById(IntegrationTester $I): void
     {
         // Create a test user first
         $result = $this->createTestUser($I);
@@ -136,7 +139,7 @@ final class UserProviderCest
         $I->assertEquals('Johnson', $user['last_name'], 'Last name should match');
     }
     
-    public function tryToGetNonExistentUserById(UnitTester $I): void
+    public function tryToGetNonExistentUserById(IntegrationTester $I): void
     {
         $nonExistentId = 99999; // Assuming this ID doesn't exist
         $user = $this->provider->getUserById($nonExistentId);
@@ -144,7 +147,7 @@ final class UserProviderCest
         $I->assertFalse($user, 'Should return false for non-existent user ID');
     }
     
-    public function tryToUpdateUser(UnitTester $I): void
+    public function tryToUpdateUser(IntegrationTester $I): void
     {
         // Create a test user first
         $result = $this->createTestUser($I);
@@ -176,7 +179,7 @@ final class UserProviderCest
         $I->assertEquals('555-1234', $updatedUser['phone_number'], 'Phone number should be updated');
     }
     
-    public function tryToUpdatePassword(UnitTester $I): void
+    public function tryToUpdatePassword(IntegrationTester $I): void
     {
         // Create a test user first
         $result = $this->createTestUser($I);
@@ -196,7 +199,7 @@ final class UserProviderCest
         $I->assertFalse(password_verify('correct_password', $newHash), 'Old password should no longer work');
     }
     
-    public function tryToUpdateNonExistentUser(UnitTester $I): void
+    public function tryToUpdateNonExistentUser(IntegrationTester $I): void
     {
         $nonExistentId = 99999; // Assuming this ID doesn't exist
         $updateResult = $this->provider->updateUser($nonExistentId, ['first_name' => 'Nobody']);
@@ -204,7 +207,7 @@ final class UserProviderCest
         $I->assertFalse($updateResult, 'Update for non-existent user should fail');
     }
     
-    public function tryToDeleteUser(UnitTester $I): void
+    public function tryToDeleteUser(IntegrationTester $I): void
     {
         // Create a test user first
         $result = $this->createTestUser($I);
@@ -232,7 +235,7 @@ final class UserProviderCest
         unset($this->testUserId);
     }
     
-    public function tryToDeleteNonExistentUser(UnitTester $I): void
+    public function tryToDeleteNonExistentUser(IntegrationTester $I): void
     {
         $nonExistentId = 99999; // Assuming this ID doesn't exist
         $deleteResult = $this->provider->deleteUser($nonExistentId);
@@ -240,7 +243,7 @@ final class UserProviderCest
         $I->assertFalse($deleteResult, 'Deletion of non-existent user should fail');
     }
     
-    public function tryEdgeCaseWithSpecialCharacters(UnitTester $I): void
+    public function tryEdgeCaseWithSpecialCharacters(IntegrationTester $I): void
     {
         // Test with email containing special characters (but still valid)
         $email = 'test.special+chars@example.com';
@@ -268,7 +271,7 @@ final class UserProviderCest
         $this->provider->deleteUserByEmail($email);
     }
     
-    public function trySecurityEdgeCases(UnitTester $I): void
+    public function trySecurityEdgeCases(IntegrationTester $I): void
     {
         // Test with potential SQL injection in the email
         $email = "test'); DROP TABLE user; --";

@@ -12,7 +12,7 @@ services:
     networks:
       - app-network
 
-  php-app:
+  app:
     build:
       context: .
       dockerfile: Dockerfile
@@ -20,8 +20,6 @@ services:
       - ./:/var/www/html
     ports:
       - '8080:8080'
-    depends_on:
-      - db
     command: php -S 0.0.0.0:8080 -t /var/www/html
     networks:
       - app-network
