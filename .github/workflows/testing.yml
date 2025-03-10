@@ -12,13 +12,14 @@ jobs:
         image: mysql:8.0
         env:
           MYSQL_ROOT_PASSWORD: password
-          MYSQL_DATABASE: testdb
+          MYSQL_DATABASE: cse442_2025_spring_team_v_db
         ports:
           - 3306:3306
         options: --health-cmd="mysqladmin ping" --health-interval=10s --health-timeout=5s --health-retries=3
 
     env:
       ENVIRONMENT: test
+      PROVIDER_RECIPE: mock
 
     steps:
     - uses: actions/checkout@v4
@@ -43,8 +44,19 @@ jobs:
   test-acceptance:
     runs-on: ubuntu-latest
 
+    services:
+      mysql:
+        image: mysql:8.0
+        env:
+          MYSQL_ROOT_PASSWORD: password
+          MYSQL_DATABASE: cse442_2025_spring_team_v_db
+        ports:
+          - 3306:3306
+        options: --health-cmd="mysqladmin ping" --health-interval=10s --health-timeout=5s --health-retries=3
+
     env:
       ENVIRONMENT: test
+      PROVIDER_RECIPE: mock
 
     steps:
       - name: Checkout
@@ -77,6 +89,6 @@ jobs:
           DB_CONNECTION: mysql
           DB_HOST: 127.0.0.1
           DB_PORT: 3306
-          DB_DATABASE: testdb
+          DB_DATABASE: cse442_2025_spring_team_v_db
           DB_USERNAME: root
           DB_PASSWORD: password

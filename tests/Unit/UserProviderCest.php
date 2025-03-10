@@ -5,7 +5,7 @@ require_once __DIR__ . '/../../controllers/user.php';
 use Tests\Support\UnitTester;
 final class UserProviderCest
 {
-    private \RedBeanUserProvider $provider;
+    private ?\RedBeanUserProvider $provider = null;
     private ?int $testUserId = null;
     private string $testEmail = 'test@example.com';
     private array $createdUserIds = []; // Array to store all created user IDs
