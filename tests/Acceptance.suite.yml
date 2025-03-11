@@ -2,7 +2,28 @@ actor: AcceptanceTester
 modules:
     enabled:
         - PhpBrowser:
-            url: http://localhost:8080/
+            url: http://127.0.0.1:8080/
+        - Asserts
+        - Db:
+            dsn: 'mysql:host=127.0.0.1;dbname=cse442_2025_spring_team_v_db'
+            user: 'root'
+            password: 'password'
+            dump: 'tests/Support/Data/dump.sql'
+            populate: true # whether the dump should be loaded before the test suite is started
+            cleanup: true # whether the dump should be reloaded before each test
+            reconnect: true # whether the module should reconnect to the database before each test
+            waitlock: 10 # wait lock (in seconds) that the database session should use for DDL statements
+            databases: # include more database configs and switch between them in tests.
+            skip_cleanup_if_failed: true # Do not perform the cleanup if the tests failed. If this is used, manual cleanup might be required when re-running
+            initial_queries: # list of queries to be executed right after connection to the database has been initiated, i.e. creating the database if it does not exist or preparing the database collation
+              - 'CREATE DATABASE IF NOT EXISTS cse442_2025_spring_team_v_db;'
+              - 'USE cse442_2025_spring_team_v_db;'
+              - 'SET NAMES utf8;'
+            # ssl_key: '/path/to/client-key.pem' # path to the SSL key (MySQL specific, see https://php.net/manual/de/ref.pdo-mysql.php#pdo.constants.mysql-attr-key)
+            # ssl_cert: '/path/to/client-cert.pem' # path to the SSL certificate (MySQL specific, see https://php.net/manual/de/ref.pdo-mysql.php#pdo.constants.mysql-attr-ssl-cert)
+            # ssl_ca: '/path/to/ca-cert.pem' # path to the SSL certificate authority (MySQL specific, see https://php.net/manual/de/ref.pdo-mysql.php#pdo.constants.mysql-attr-ssl-ca)
+            # ssl_verify_server_cert: false # disables certificate CN verification (MySQL specific, see https://php.net/manual/de/ref.pdo-mysql.php)
+            # ssl_cipher: 'AES256-SHA' # list of one or more permissible ciphers to use for SSL encryption (MySQL specific, see https://php.net/manual/de/ref.pdo-mysql.php#pdo.constants.mysql-attr-cipher)
 # Add Codeception\Step\Retry trait to AcceptanceTester to enable retries
 step_decorators:
     - Codeception\Step\ConditionalAssertion

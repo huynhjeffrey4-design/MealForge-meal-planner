@@ -3,7 +3,7 @@
 require_once __DIR__ .  '/controllers/recipe.php';
 
 // Initialize the controller
-$recipeController = new App\Controllers\RecipeController();
+$recipeController = new App\Controllers\RecipeController(null);
 
 // Get filter values from URL parameters if present
 $search = $_GET['search'] ?? null;

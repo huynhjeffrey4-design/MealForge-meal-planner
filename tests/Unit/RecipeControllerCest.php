@@ -6,6 +6,7 @@ require_once __DIR__ . '/../../controllers/recipe.php';
 
 use Tests\Support\UnitTester;
 use App\Controllers\RecipeController;
+use App\Controllers\MockRecipeDataProvider;
 
 final class RecipeControllerCest
 {
@@ -13,7 +14,7 @@ final class RecipeControllerCest
     
     public function _before(UnitTester $I): void
     {
-        $this->controller = new RecipeController();
+        $this->controller = new RecipeController(new MockRecipeDataProvider());
     }
     
     /**

@@ -13,10 +13,13 @@ use PDOException;
 class RecipeController {
     private $recipeProvider;
     
-    public function __construct() {
+    public function __construct(?RecipeDataProvider $recipeProvider) {
+	  if ($recipeProvider !== null) {
+		$this->recipeProvider = $recipeProvider;
+	  } else {
 		$env = env('PROVIDER_RECIPE', '');
-
         $this->recipeProvider = $env == 'mock' ? new MockRecipeDataProvider() : new PDORecipeDataProvider();
+	  }
     }
     
     /**
@@ -25,8 +28,15 @@ class RecipeController {
      * @return array All available recipes
      */
     public function getAllRecipes(): array {
-        return $this->recipeProvider->getAllRecipes();
+        $recipes =  $this->recipeProvider->getAllRecipes();
+		// Comes in as '["asdf", "asdf"]'
+		foreach ($recipes as $key => $recipe) {
+			$recipes[$key]['tags'] = json_decode($recipe['tags']);
+		}
+
+		return $recipes;
     }
+
     
     /**
      * Search for recipes with specified filters
@@ -47,7 +57,7 @@ class RecipeController {
     ): array {
 
         // Get all recipes first
-        $recipes = $this->recipeProvider->getAllRecipes();
+        $recipes = $this->getAllRecipes();
         $filteredRecipes = $recipes;
 
         // Filter by dietary preferences
@@ -198,7 +208,7 @@ class MockRecipeDataProvider implements RecipeDataProvider {
         'nutrients_kcal' => '420 kcal',
         'nutrients_salt' => '1.8g',
         'total_time' => 35,
-        'tags' => ['Vegan', 'Thai', 'Dinner', 'Spicy']
+        'tags' => "'Vegan', 'Thai', 'Dinner', 'Spicy'"
     ],
     [
         'id' => 11,
@@ -222,7 +232,7 @@ class MockRecipeDataProvider implements RecipeDataProvider {
         'nutrients_kcal' => '450 kcal',
         'nutrients_salt' => '1.5g',
         'total_time' => 30,
-        'tags' => ['High Protein', 'Chinese', 'Dinner']
+        'tags' => "'High Protein', 'Chinese', 'Dinner'"
     ],
     [
         'id' => 12,
@@ -246,7 +256,7 @@ class MockRecipeDataProvider implements RecipeDataProvider {
         'nutrients_kcal' => '200 kcal',
         'nutrients_salt' => '0.2g',
         'total_time' => 10,
-        'tags' => ['Vegan', 'Gluten-Free', 'Breakfast', 'Snack']
+        'tags' => "'Vegan', 'Gluten-Free', 'Breakfast', 'Snack'"
     ],
     [
         'id' => 13,
@@ -270,7 +280,7 @@ class MockRecipeDataProvider implements RecipeDataProvider {
         'nutrients_kcal' => '300 kcal',
         'nutrients_salt' => '1.2g',
         'total_time' => 60,
-        'tags' => ['Vegetarian','Gluten-Free' , 'Keto', 'Dinner']
+        'tags' => "'Vegetarian','Gluten-Free' , 'Keto', 'Dinner'"
     ],
     [
         'id' => 14,
@@ -294,7 +304,7 @@ class MockRecipeDataProvider implements RecipeDataProvider {
         'nutrients_kcal' => '470 kcal',
         'nutrients_salt' => '1.8g',
         'total_time' => 55,
-        'tags' => ['Korean', 'High Protein', 'Dinner']
+        'tags' => "'Korean', 'High Protein', 'Dinner'"
     ],
     [
         'id' => 15,
@@ -318,7 +328,7 @@ class MockRecipeDataProvider implements RecipeDataProvider {
         'nutrients_kcal' => '230 kcal',
         'nutrients_salt' => '0.1g',
         'total_time' => 15,
-        'tags' => ['Vegan', 'Gluten-Free', 'Breakfast', 'Snack']
+        'tags' => "'Vegan', 'Gluten-Free', 'Breakfast', 'Snack'"
     ]
   ];
     }

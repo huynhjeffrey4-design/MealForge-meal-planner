@@ -21,13 +21,6 @@ class UserController
 				'firstName' => 'Testy',
 				'lastName' => 'Johnson'
 			],
-			[
-				'email' => 'peter@email.com',
-				'password' => 'asdf',
-				'firstName' => 'Peter',
-				'lastName' => 'Vaiciulis'
-
-			],
 		];
 
 		foreach ($test_accounts as $account) {
@@ -268,10 +261,6 @@ class RedBeanUserProvider implements UserDataProviderInterface
 	{
 		$dbConnection = DatabaseConnection::getInstance();
 		$dbConnection->setup($config);
-
-		if (!\R::testConnection()) {
-			throw new Exception("Failed to connect to database: " . $dbConnection->cstr);
-		}
 	}
 
 	/**

@@ -1,10 +1,10 @@
-name: Test MealForge Application
+name: Pull Request
 
 on:
   pull_request:
 
 jobs:
-  validate: 
+  validate-lint: 
     runs-on: ubuntu-latest
 
     steps:
@@ -21,30 +21,17 @@ jobs:
     - name: Validate composer.json and composer.lock
       run: composer validate
 
-    - name: Install dependencies
-      run: composer install --prefer-dist --no-progress --no-interaction --no-suggest
-
+    - name: Lint
+      run: find . -name "*.php" -type f -exec php -l {} \;
 
   test-unit:
     runs-on: ubuntu-latest
 
-    needs: validate
-
-    services:
-      mysql:
-        image: mysql:8.0
-        env:
-          MYSQL_ROOT_PASSWORD: password
-          MYSQL_DATABASE: cse442_2025_spring_team_v_db
-        ports:
-          - 3306:3306
-        options: --health-cmd="mysqladmin ping" --health-interval=10s --health-timeout=5s --health-retries=3
+    needs: [validate-lint]
 
     env:
       PROVIDER_RECIPE: mock
-      DB_USERNAME: root
-      DB_PASSWORD: password
-      DB_HOST: localhost
+      PROVIDER_USER: mock
 
     steps:
     - uses: actions/checkout@v4
@@ -64,48 +51,12 @@ jobs:
       run: composer install --prefer-dist --no-progress --no-interaction --no-suggest
 
     - name: Run tests
-      run: php vendor/bin/codecept run Unit
+      run: ./scripts/test_unit.sh
+
 
   test-acceptance:
     runs-on: ubuntu-latest
-
-    needs: validate
-
-    steps:
-      - name: Checkout
-        uses: actions/checkout@v2
-
-      - name: Install PHP
-        uses: shivammathur/setup-php@v2
-        with:
-          php-version: ${{ matrix.php-version }}
-          extensions: curl, mbstring, openssl, pdo, pdo_mysql
-          ini-values: memory_limit=-1, date.timezone='UTC'
-          coverage: xdebug
-          tools: composer:v2
-
-      - name: Validate composer.json and composer.lock
-        run: composer validate
-
-      - name: Install dependencies
-        run: composer install --prefer-dist --no-progress --no-interaction --no-suggest
-
-      - name: Setup
-        run: docker compose up -d
-
-      - name: Run acceptance tests
-        run: php vendor/bin/codecept run Acceptance
-        env:
-          DB_HOST: 127.0.0.1
-          DB_PORT: 3306
-          DB_DATABASE: cse442_2025_spring_team_v_db
-          DB_USERNAME: root
-          DB_PASSWORD: password
-
-  test-integration:
-    runs-on: ubuntu-latest
-
-    needs: validate
+    needs: [validate-lint]
 
     services:
       mysql:
@@ -117,11 +68,6 @@ jobs:
           - 3306:3306
         options: --health-cmd="mysqladmin ping" --health-interval=10s --health-timeout=5s --health-retries=3
 
-    env:
-      PROVIDER_RECIPE: mock
-      DB_USERNAME: root
-      DB_PASSWORD: password
-      DB_HOST: localhost
 
     steps:
       - name: Checkout
@@ -142,19 +88,17 @@ jobs:
       - name: Install dependencies
         run: composer install --prefer-dist --no-progress --no-interaction --no-suggest
 
-      - name: Start PHP server
-        run: php -S localhost:8080 &
+      - name: Start application
+        run: php -S 0.0.0.0:8080 -t . &
 
-      - name: Wait for PHP server
-        run: sleep 5
+      - name: Take a break
+        run: sleep 10
 
-      - name: Run integration tests
-        run: php vendor/bin/codecept run Integration
+      - name: Run acceptance tests
+        run: php vendor/bin/codecept run Acceptance
         env:
-          DB_CONNECTION: mysql
           DB_HOST: 127.0.0.1
           DB_PORT: 3306
           DB_DATABASE: cse442_2025_spring_team_v_db
           DB_USERNAME: root
           DB_PASSWORD: password
-

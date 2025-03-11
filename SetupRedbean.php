@@ -36,9 +36,9 @@ class DatabaseConnection
         }
         
         $default = [
-            'username' => env('DB_USERNAME', 'petervai'),
-            'password' => env('DB_PASSWORD', '50540621'),
-            'host'     => env('DB_HOST', 'localhost'),
+            'username' => env('DB_USERNAME', 'root'),
+            'password' => env('DB_PASSWORD', 'password'),
+            'host'     => env('DB_HOST', '127.0.0.1'),
             'database' => 'cse442_2025_spring_team_v_db',
             'port'     => '3306'
         ];

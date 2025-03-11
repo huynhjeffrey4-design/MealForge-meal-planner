@@ -7,8 +7,6 @@ final class ProfilePageCest
 {
     public function _before(AcceptanceTester $I): void
     {
-        $_ENV['ENVIRONMENT'] = 'prod';
-        
         // Login before each test
         $email = 'test@email.com';
         $password = 'password123';
