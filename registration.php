@@ -1,162 +1,45 @@
 <?php
-// Start output buffering at the very beginning
-ob_start();
+require_once __DIR__ . '/controllers/user.php';
 
-// Start session
 session_start();
 
-// Enhanced error reporting
-error_reporting(E_ALL);
-ini_set('display_errors', 1);
-ini_set('error_log', __DIR__ . '/registration_errors.log');
-error_log("Registration page loaded - " . date('Y-m-d H:i:s') . " - " . $_SERVER['REQUEST_METHOD']);
+$formData = [
+    'firstName' => '',
+    'lastName' => '',
+    'email' => ''
+];
 
-// Initialize variables
-$errors = [];
-$error_message = null;
+$validation = new ValidationResult();
+$registrationSuccess = false;
 
-// Process form submission
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
-    error_log("Form submitted - processing registration");
+    $formData = [
+        'firstName' => trim($_POST['firstName'] ?? ''),
+        'lastName' => trim($_POST['lastName'] ?? ''),
+        'email' => trim($_POST['email'] ?? ''),
+        'password' => $_POST['password'] ?? ''
+    ];
     
-    // Load required files
-    require_once 'config.php';
+    $userController = getUserController();
     
-    // Only try to include autoload.php if it exists
-    if (file_exists(__DIR__ . '/vendor/autoload.php')) {
-        require_once __DIR__ . '/vendor/autoload.php';
-    }
+    $result = $userController->createUser(
+        $formData['email'],
+        $formData['password'],
+        $formData['firstName'],
+        $formData['lastName']
+    );
     
-    include_once __DIR__ . '/setup.php';
-    
-    // Validate required fields
-    $required = ['firstName', 'lastName', 'email', 'password'];
-    foreach ($required as $field) {
-        if (empty($_POST[$field])) {
-            $errors[$field] = ucfirst($field) . ' is required';
-        }
-    }
-    
-    // Process and validate email
-    if (!empty($_POST['email'])) {
-        $email = strtolower(trim($_POST['email']));
-        if (!filter_var($email, FILTER_VALIDATE_EMAIL)) {
-            $errors['email'] = 'Please enter a valid email address';
-        } else {
-            // Check if email already exists
-            try {
-                $pdo = new PDO(
-                    "mysql:host=" . DB_HOST . ";dbname=" . DB_NAME . ";charset=utf8mb4",
-                    DB_USER,
-                    DB_PASS,
-                    [
-                        PDO::ATTR_ERRMODE => PDO::ERRMODE_EXCEPTION,
-                        PDO::ATTR_DEFAULT_FETCH_MODE => PDO::FETCH_ASSOC
-                    ]
-                );
-                
-                $stmt = $pdo->prepare("SELECT user_id FROM users WHERE email = ?");
-                $stmt->execute([$email]);
-                if ($stmt->rowCount() > 0) {
-                    $errors['email'] = 'Email already registered';
-                }
-            } catch (PDOException $e) {
-                error_log("Database error during email check: " . $e->getMessage());
-                $error_message = "Database error: " . $e->getMessage();
-            }
-        }
-    }
-    
-    // Validate password
-    if (!empty($_POST['password']) && strlen($_POST['password']) < 8) {
-        $errors['password'] = 'Password must be at least 8 characters';
-    }
-    
-    // If no errors, proceed with registration
-    if (empty($errors) && !isset($error_message)) {
-        try {
-            error_log("Validation passed, proceeding with registration");
-            
-            // Hash password
-            $passwordHash = password_hash($_POST['password'], PASSWORD_DEFAULT);
-            
-            // Insert user
-            $stmt = $pdo->prepare("INSERT INTO users (
-                first_name,
-                last_name,
-                email,
-                password_hash
-            ) VALUES (?, ?, ?, ?)");
-            
-            $result = $stmt->execute([
-                htmlspecialchars(trim($_POST['firstName'])),
-                htmlspecialchars(trim($_POST['lastName'])),
-                $email,
-                $passwordHash
-            ]);
-            
-            if ($result) {
-                error_log("Database insert successful");
-                
-                // Set session variable for success message on login page
-                $_SESSION['registration_success'] = true;
-                
-                // Debug message (will only show if redirect fails)
-                echo "<!-- Registration successful. If you see this page, redirection failed. -->";
-                echo "<div style='display:none;'>About to redirect to login.php...</div>";
-                
-                // Clean all output buffers before redirect
-                while (ob_get_level() > 0) {
-                    ob_end_clean();
-                }
-                
-                try {
-                    // Force status code first
-                    http_response_code(302);
-                    
-                    // Try multiple redirect approaches
-                    error_log("Attempting redirect to login.php");
-                    
-                    // 1. Simple direct redirect
-                    header("Location: login.php");
-                    error_log("Header sent successfully");
-                    
-                    // 2. JavaScript fallback (will execute if PHP redirect fails)
-                    echo '<!DOCTYPE html>
-                    <html>
-                    <head>
-                        <title>Redirecting...</title>
-                        <meta http-equiv="refresh" content="0;url=login.php">
-                    </head>
-                    <body>
-                        <p>Registration successful! Redirecting to login page...</p>
-                        <script>
-                            window.location.href = "login.php";
-                        </script>
-                        <p>If you are not redirected, <a href="login.php">click here</a>.</p>
-                    </body>
-                    </html>';
-                    
-                    exit;
-                } catch (Exception $e) {
-                    error_log("Error during redirect: " . $e->getMessage());
-                    echo "Error during redirect: " . $e->getMessage();
-                    echo "<p>Please <a href='login.php'>click here</a> to go to the login page.</p>";
-                }
-            } else {
-                error_log("Database insert failed");
-                $error_message = "Registration failed: Unable to create account";
-            }
-        } catch (PDOException $e) {
-            error_log("Registration error: " . $e->getMessage());
-            $error_message = "Registration failed: " . $e->getMessage();
-        } catch (Exception $e) {
-            error_log("General error: " . $e->getMessage());
-            $error_message = "An unexpected error occurred: " . $e->getMessage();
-        }
+    if ($result['success']) {
+        $_SESSION['registration_success'] = true;
+        header("Location: login.php");
+        exit;
+    } else {
+        $validation = $result['validation'];
     }
 }
 ?>
+
+
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -201,56 +84,80 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 </h1>
                 <p class="text-gray-600 mb-8">Get started on your meal prep journey today - for free!</p>
 
-                <?php if (isset($error_message)): ?>
+                <?php if ($validation->getError('general')): ?>
                     <div id="generalError" class="bg-red-50 border border-red-400 text-red-700 p-4 rounded-md mb-6">
-                        <?php echo $error_message; ?>
+                        <?php echo htmlspecialchars($validation->getError('general')); ?>
                     </div>
                 <?php endif; ?>
 
                 <form id="registrationForm" method="POST" action="" class="space-y-6">
+                    <!-- First Name Field -->
                     <div>
                         <label for="firstName" class="block text-gray-700 font-medium mb-2">First name</label>
-                        <input type="text" id="firstName" name="firstName" required 
-                            value="<?php echo isset($_POST['firstName']) ? htmlspecialchars($_POST['firstName']) : ''; ?>"
-                            class="w-full px-4 py-3 border <?php echo isset($errors['firstName']) ? 'border-red-500' : 'border-gray-300'; ?> rounded-lg focus:outline-none focus:ring-2 ring-primary focus:border-primary">
-                        <?php if (isset($errors['firstName'])): ?>
+                        <input 
+                            type="text" 
+                            id="firstName" 
+                            name="firstName" 
+                            required 
+                            value="<?php echo htmlspecialchars($formData['firstName']); ?>"
+                            class="w-full px-4 py-3 border <?php echo $validation->getError('firstName') ? 'border-red-500' : 'border-gray-300'; ?> rounded-lg focus:outline-none focus:ring-2 ring-primary focus:border-primary"
+                        >
+                        <?php if ($validation->getError('firstName')): ?>
                             <div class="text-red-600 text-sm mt-1">
-                                <?php echo $errors['firstName']; ?>
+                                <?php echo htmlspecialchars($validation->getError('firstName')); ?>
                             </div>
                         <?php endif; ?>
                     </div>
 
+                    <!-- Last Name Field -->
                     <div>
                         <label for="lastName" class="block text-gray-700 font-medium mb-2">Last name</label>
-                        <input type="text" id="lastName" name="lastName" required 
-                            value="<?php echo isset($_POST['lastName']) ? htmlspecialchars($_POST['lastName']) : ''; ?>"
-                            class="w-full px-4 py-3 border <?php echo isset($errors['lastName']) ? 'border-red-500' : 'border-gray-300'; ?> rounded-lg focus:outline-none focus:ring-2 ring-primary focus:border-primary">
-                        <?php if (isset($errors['lastName'])): ?>
+                        <input 
+                            type="text" 
+                            id="lastName" 
+                            name="lastName" 
+                            required 
+                            value="<?php echo htmlspecialchars($formData['lastName']); ?>"
+                            class="w-full px-4 py-3 border <?php echo $validation->getError('lastName') ? 'border-red-500' : 'border-gray-300'; ?> rounded-lg focus:outline-none focus:ring-2 ring-primary focus:border-primary"
+                        >
+                        <?php if ($validation->getError('lastName')): ?>
                             <div class="text-red-600 text-sm mt-1">
-                                <?php echo $errors['lastName']; ?>
+                                <?php echo htmlspecialchars($validation->getError('lastName')); ?>
                             </div>
                         <?php endif; ?>
                     </div>
 
+                    <!-- Email Field -->
                     <div>
                         <label for="email" class="block text-gray-700 font-medium mb-2">Email (username)</label>
-                        <input type="email" id="email" name="email" required 
-                            value="<?php echo isset($_POST['email']) ? htmlspecialchars($_POST['email']) : ''; ?>"
-                            class="w-full px-4 py-3 border <?php echo isset($errors['email']) ? 'border-red-500' : 'border-gray-300'; ?> rounded-lg focus:outline-none focus:ring-2 ring-primary focus:border-primary">
-                        <?php if (isset($errors['email'])): ?>
+                        <input 
+                            type="email" 
+                            id="email" 
+                            name="email" 
+                            required 
+                            value="<?php echo htmlspecialchars($formData['email']); ?>"
+                            class="w-full px-4 py-3 border <?php echo $validation->getError('email') ? 'border-red-500' : 'border-gray-300'; ?> rounded-lg focus:outline-none focus:ring-2 ring-primary focus:border-primary"
+                        >
+                        <?php if ($validation->getError('email')): ?>
                             <div class="text-red-600 text-sm mt-1">
-                                <?php echo $errors['email']; ?>
+                                <?php echo htmlspecialchars($validation->getError('email')); ?>
                             </div>
                         <?php endif; ?>
                     </div>
 
+                    <!-- Password Field -->
                     <div>
                         <label for="password" class="block text-gray-700 font-medium mb-2">Password</label>
-                        <input type="password" id="password" name="password" required
-                            class="w-full px-4 py-3 border <?php echo isset($errors['password']) ? 'border-red-500' : 'border-gray-300'; ?> rounded-lg focus:outline-none focus:ring-2 ring-primary focus:border-primary">
-                        <?php if (isset($errors['password'])): ?>
+                        <input 
+                            type="password" 
+                            id="password" 
+                            name="password" 
+                            required
+                            class="w-full px-4 py-3 border <?php echo $validation->getError('password') ? 'border-red-500' : 'border-gray-300'; ?> rounded-lg focus:outline-none focus:ring-2 ring-primary focus:border-primary"
+                        >
+                        <?php if ($validation->getError('password')): ?>
                             <div class="text-red-600 text-sm mt-1">
-                                <?php echo $errors['password']; ?>
+                                <?php echo htmlspecialchars($validation->getError('password')); ?>
                             </div>
                         <?php endif; ?>
                         <div class="text-gray-500 text-xs mt-1">Password must be at least 8 characters</div>
@@ -272,9 +179,3 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     </div>
 </body>
 </html>
-<?php
-// End output buffering if we reached this point (no redirect happened)
-if (ob_get_level() > 0) {
-    ob_end_flush();
-}
-?>

@@ -8,11 +8,11 @@ services:
       - '3306'
     environment:
       MYSQL_ROOT_PASSWORD: password
-      MYSQL_DATABASE: testdb
+      MYSQL_DATABASE: cse442_2025_spring_team_v_db
     networks:
       - app-network
 
-  php-app:
+  app:
     build:
       context: .
       dockerfile: Dockerfile
@@ -20,12 +20,37 @@ services:
       - ./:/var/www/html
     ports:
       - '8080:8080'
-    depends_on:
-      - db
     command: php -S 0.0.0.0:8080 -t /var/www/html
     networks:
       - app-network
 
+  cloudbeaver:
+    image: dbeaver/cloudbeaver:latest
+    restart: always
+    ports:
+      - '8978:8978'
+    volumes:
+      - cloudbeaver-data:/opt/cloudbeaver/workspace
+    depends_on:
+      - db
+    networks:
+      - app-network
+
+  phpmyadmin:
+    image: phpmyadmin/phpmyadmin
+    restart: always
+    ports:
+      - '8081:80'
+    environment:
+      PMA_HOST: db
+      PMA_PORT: 3306
+      MYSQL_ROOT_PASSWORD: password
+    depends_on:
+      - db
+    networks:
+      - app-network
+volumes:
+  cloudbeaver-data:
 networks:
   app-network:
     driver: bridge

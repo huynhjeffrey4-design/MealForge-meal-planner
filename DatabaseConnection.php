@@ -19,9 +19,9 @@ class DatabaseConnection
     // Database connection method
     private function connect(): PDO
     {
-	  $host = env('DB_HOST', 'localhost');
-	  $username = env('DB_USERNAME', 'dsgulvin');
-	  $password = env('DB_PASSWORD', '50504609');
+	  $host = env('DB_HOST', '127.0.0.1');
+	  $username = env('DB_USERNAME', 'root');
+	  $password = env('DB_PASSWORD', 'password');
 	  $dbname = 	env('DB_DATABASE', 'cse442_2025_spring_team_v_db');
 
 

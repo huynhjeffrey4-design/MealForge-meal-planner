@@ -8,18 +8,12 @@ use Tests\Support\AcceptanceTester;
 
 final class LoginCest
 {
-
-	public function _before(AcceptanceTester $I): void
-	{
-		$_ENV['ENVIRONMENT'] = 'test';
-	}
-
 	public function testSuccesfulLogin(AcceptanceTester $I): void
 	{
 		// NOTE: Precondition:
 		//  1. Test-user is registered
 		$email = 'test@email.com';
-		$password = 'test';
+		$password = 'password123';
 
 		$I->amOnPage('/login.php');
 		$I->fillField('email', $email);

@@ -27,7 +27,7 @@ final class RecipeSearchCest
     public function testSearchByKeyword(AcceptanceTester $I): void
     {
         // Arrange
-        $searchTerm = 'Quinoa';
+        $searchTerm = 'Broccoli';
         
         // Act
         $I->amOnPage('/search.php');
@@ -36,7 +36,7 @@ final class RecipeSearchCest
         
         // Assert
         $I->seeInCurrentUrl('search=' . urlencode($searchTerm));
-        $I->see("Mediterranean Quinoa Bowl", "h3"); // Should see recipe title containing the search term
+        $I->see("Broccoli", "h3"); // Should see recipe title containing the search term
     }
     
     /**
@@ -53,7 +53,7 @@ final class RecipeSearchCest
         
         // Assert
         $I->seeInCurrentUrl('dietary=Vegetarian');
-        $I->see('Vegetarian', '.bg-green-100'); // Should see Vegetarian tag in recipe results
+        $I->see('vegetarian', 'p'); // Should see Vegetarian tag in recipe results
     }
     
     /**
@@ -101,7 +101,7 @@ final class RecipeSearchCest
         // Assert
         $I->seeInCurrentUrl('dietary=Vegetarian');
         $I->seeInCurrentUrl('max_prep_time=120');
-        $I->see('Vegetarian', 'span'); // Should see Vegan tag in results
+        $I->see('vegetarian', 'p'); // Should see Vegan tag in results
     }
     
     /**
@@ -181,13 +181,13 @@ final class RecipeSearchCest
     {
         // Arrange
 		$email = 'test@email.com';
-		$password = 'test';
+		$password = 'password123';
 
 		$I->amOnPage('/login.php');
 		$I->fillField('email', $email);
 		$I->fillField('password', $password);
 		$I->click('Continue');
-    $I->seeCurrentUrlEquals('/profile.php');
+		$I->seeCurrentUrlEquals('/profile.php');
 
         
 		$I->amOnPage('/search.php');
