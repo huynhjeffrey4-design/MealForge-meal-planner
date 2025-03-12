@@ -1,11 +1,7 @@
 <?php
 
-namespace App\Controllers;
-
 require_once __DIR__ . '/../setup.php';
-require_once __DIR__ . '/../DatabaseConnection.php';
-use PDO;
-use PDOException;
+require_once __DIR__ . '/../SetupRedbean.php';
 
 /**
  * Recipe Controller with parameter-based filtering
@@ -18,7 +14,7 @@ class RecipeController {
 		$this->recipeProvider = $recipeProvider;
 	  } else {
 		$env = env('PROVIDER_RECIPE', '');
-        $this->recipeProvider = $env == 'mock' ? new MockRecipeDataProvider() : new PDORecipeDataProvider();
+        $this->recipeProvider = $env == 'mock' ? new MockRecipeDataProvider() : new RedbeanRecipeDataProvider();
 	  }
     }
     
@@ -334,32 +330,16 @@ class MockRecipeDataProvider implements RecipeDataProvider {
     }
 }
 
-class PDORecipeDataProvider implements RecipeDataProvider {
-    private $dbConnection;
+class RedbeanRecipeDataProvider implements RecipeDataProvider {
 
-    public function __construct() {
-        // Establish the database connection using the DatabaseConnection class
-        $this->dbConnection = (new DatabaseConnection())->getConnection();
-    }
+	public function __construct(array $config = [])
+	{
+		$dbConnection = DatabaseConnection::getInstance();
+		$dbConnection->setup($config);
+	}
 
-    // Implement the getAllRecipes() function to fetch all recipes from the database
-    public function getAllRecipes(): array {
-        try {
-            // Prepare the SQL query to select all recipes from the 'recipes' table
-            $query = "SELECT * FROM recipes WHERE 1=1";
-            $stmt = $this->dbConnection->prepare($query);
-
-            // Execute the query
-            $stmt->execute();
-
-            // Fetch all [the results as an associative array]
-            $recipes = $stmt->fetchAll(PDO::FETCH_ASSOC);
-
-            return $recipes;
-        } catch (PDOException $e) {
-            // If there's an error, return an empty array or handle the error as needed
-            echo "Error: " . $e->getMessage();
-            return [];
-        }
-    }
+	public function getAllRecipes(): array {
+		$recipes = \R::findAll('recipes');
+		return \R::exportAll($recipes);
+	}
 }

@@ -5,16 +5,14 @@ namespace Tests\Unit;
 require_once __DIR__ . '/../../controllers/recipe.php';
 
 use Tests\Support\UnitTester;
-use App\Controllers\RecipeController;
-use App\Controllers\MockRecipeDataProvider;
 
 final class RecipeControllerCest
 {
-    private RecipeController $controller;
+    private \RecipeController $controller;
     
     public function _before(UnitTester $I): void
     {
-        $this->controller = new RecipeController(new MockRecipeDataProvider());
+        $this->controller = new \RecipeController(new \MockRecipeDataProvider());
     }
     
     /**
