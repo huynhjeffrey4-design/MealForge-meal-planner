@@ -334,8 +334,10 @@ class MockRecipeDataProvider implements RecipeDataProvider {
 }
 
 class RedbeanRecipeDataProvider implements RecipeDataProvider {
-
-	public function __construct(array $config = [])
+    /**
+     * @param array<int,mixed> $config
+     */
+    public function __construct(array $config = [])
 	{
 		$dbConnection = DatabaseConnection::getInstance();
 		$dbConnection->setup($config);
