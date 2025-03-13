@@ -127,13 +127,16 @@ class RecipeController {
     public function getRecipeById($recipeId): array|null {
         $recipes = $this->recipeProvider->getAllRecipes();
         
+		$r = null;
         foreach ($recipes as $recipe) {
             if ($recipe['id'] == $recipeId) {
-                return $recipe;
+                $r = $recipe;
+				// Comes in as '["asdf", "asdf"]'
+				$r['tags'] = json_decode($recipe['tags']);
             }
         }
         
-        return null;
+        return $r;
     }
 }
 
