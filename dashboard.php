@@ -377,8 +377,7 @@ document.querySelectorAll('.add-meal').forEach(button => {
         
         // Load new content after slight delay
         setTimeout(() => {
-            iframe.src = `search.php?modal=true&day=${encodeURIComponent(day)}`;
-            document.getElementById('meal-modal').classList.remove('hidden');
+        iframe.src = `search.php?modal=true&day=${encodeURIComponent(day)}`;            document.getElementById('meal-modal').classList.remove('hidden');
         }, 50);
     });
 });
