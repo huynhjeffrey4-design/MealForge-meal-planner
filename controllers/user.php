@@ -452,7 +452,10 @@ class MockUserProvider implements UserDataProviderInterface
             'phone_number' => null,
             'profile_picture' => null,
             'dietary_restrictions' => null,
-            'dietary_preferences' => null
+            'dietary_preferences' => null,
+
+			// Relation
+			'sharedRecipeList' => []
         ];
         return ['success' => true, 'user' => self::$users[$userId]];
     }
