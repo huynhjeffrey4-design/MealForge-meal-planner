@@ -112,9 +112,6 @@ class RecipeController {
             });
         }
 
-        // Limit number of filtered recipes
-        $filteredRecipes = array_slice($filteredRecipes,0,30);
-
         return array_values($filteredRecipes); // Reset array indices
     }
     
@@ -125,18 +122,11 @@ class RecipeController {
      * @return array|null Recipe data or null if not found
      */
     public function getRecipeById($recipeId): array|null {
-        $recipes = $this->recipeProvider->getAllRecipes();
-        
-		$r = null;
-        foreach ($recipes as $recipe) {
-            if ($recipe['id'] == $recipeId) {
-                $r = $recipe;
-				// Comes in as '["asdf", "asdf"]'
-				$r['tags'] = json_decode($recipe['tags']);
-            }
-        }
-        
-        return $r;
+	  $recipe = $this->recipeProvider->getRecipeById($recipeId);
+
+	  $recipe['tags'] = json_decode($recipe['tags']);
+
+	  return $recipe;
     }
 }
 
@@ -164,6 +154,7 @@ interface RecipeDataProvider
 	* @return array of recipe data
     */
     public function getAllRecipes(): array;
+	public function getRecipeById($recipeId): array|null;
 }
 
 /**
@@ -179,6 +170,12 @@ class MockRecipeDataProvider implements RecipeDataProvider {
     public function getAllRecipes(): array {
         return $this->recipes;
     }
+
+	public function getRecipeById($recipeId): ?array
+	{
+	  return [];
+	}
+
     
     /**
      * Initialize mock recipe data
@@ -346,5 +343,11 @@ class RedbeanRecipeDataProvider implements RecipeDataProvider {
 	public function getAllRecipes(): array {
 		$recipes = \R::findAll('recipes');
 		return \R::exportAll($recipes);
+	}
+
+	public function getRecipeById($recipeId): ?array
+	{
+		$recipe = \R::load('recipes', $recipeId);
+		return $recipe->export();
 	}
 }
