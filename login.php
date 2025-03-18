@@ -15,6 +15,10 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
 		if ($res['success']) {
 			$_SESSION['user'] = $res['user'];
+			if (isset($_GET['redirect'])) {
+				header('Location: ' . $_GET['redirect']);
+				exit;
+			}
 			header('Location: profile.php');
 			exit;
 		} else {
