@@ -1,4 +1,40 @@
+# Project specific
 config.php
 .env
 vendor/
 .aider*
+
+# Composer
+composer.phar
+/vendor/
+
+# IDE files
+.idea/
+.vscode/
+*.sublime-project
+*.sublime-workspace
+*.code-workspace
+
+# OS generated files
+.DS_Store
+.DS_Store?
+._*
+.Spotlight-V100
+.Trashes
+ehthumbs.db
+Thumbs.db
+
+# PHP specific
+*.log
+*.cache
+/logs/
+/cache/
+
+# Testing
+/phpunit.xml
+.phpunit.result.cache
+/coverage/
+
+# Build files
+/build/
+/dist/
