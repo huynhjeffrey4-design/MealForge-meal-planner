@@ -2,6 +2,9 @@
 require_once __DIR__ . '/controllers/recipe.php';
 require_once __DIR__ . '/controllers/bookmark.php';
 
+// TODO: Handle not-logged in user clicking bookmark icon
+// TODO: improved messages when bookmarking
+
 session_start();
 
 $recipeController = new RecipeController(null);
@@ -15,6 +18,7 @@ if ($recipe_id) {
 
 $recipeNotFound = ($recipe === null);
 if (!$recipeNotFound) {
+  // TODO: move some of this parsing logic to controller or provider
     $ingredientsList = explode(", ", $recipe['ingredients']);
 
     $instructionsList = explode(". ", $recipe['instructions']);
