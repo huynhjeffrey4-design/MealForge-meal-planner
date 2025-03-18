@@ -11,7 +11,10 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
     $recipeId = isset($_POST['recipe_id']) ? intval($_POST['recipe_id']) : null;
     $result = $bookmarkController->toggleBookmark($recipeId);
-	$_SESSION['message'] = 'Bookmark toggled for recipe ' . $recipeId;
+
+	$recipe = R::load('recipe', $recipeId);
+
+	$_SESSION['message'] = 'Bookmark toggled for recipe ' . $recipe['recipe'];
     
     header('Location: /recipe.php?id=' . $recipeId);
     exit;
