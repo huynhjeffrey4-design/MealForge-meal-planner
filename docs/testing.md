@@ -16,14 +16,6 @@ Unit tests verify that individual components (classes, methods, functions) work 
 - Focus: Testing individual classes and methods
 - No database or external service dependencies
 
-### Integration Tests
-
-Integration tests verify that different components work correctly together.
-
-- Location: `tests/Integration/`
-- Focus: Testing interactions between components
-- May include database interactions
-
 ### Acceptance Tests
 
 Acceptance tests verify that the application works correctly from a user's perspective.
@@ -31,6 +23,7 @@ Acceptance tests verify that the application works correctly from a user's persp
 - Location: `tests/Acceptance/`
 - Focus: Testing user flows and scenarios
 - Simulates user interactions with the application
+- Interaction with live database is available
 
 ## Writing Tests
 
@@ -99,6 +92,9 @@ class LoginCest
 
 ## Running Tests
 
+You can use `scripts/test.sh` to run all tests. Requires PHP server and mysql to be running,
+which you can do via the docker-compose file in this repo: `docker compose up`.
+
 ### Running All Tests
 
 ```bash
@@ -137,16 +133,6 @@ Tests should run in an isolated environment to prevent affecting production data
 
 Tests are automatically run in our CI pipeline on every pull request and merge to main branches.
 
-## Best Practices
-
-1. **Test Independence**: Each test should be independent and not rely on the state from other tests
-2. **Arrange-Act-Assert**: Structure tests with clear setup, action, and verification phases
-3. **Descriptive Names**: Use clear test method names that describe what is being tested
-4. **Focus on Behavior**: Test what the code does, not how it does it
-5. **Keep Tests Fast**: Tests should run quickly to provide rapid feedback
-6. **Test Edge Cases**: Include tests for boundary conditions and error scenarios
-7. **Maintain Tests**: Update tests when requirements change
-
 ## Troubleshooting
 
 If tests are failing:
@@ -159,4 +145,3 @@ If tests are failing:
 ## Resources
 
 - [Codeception Documentation](https://codeception.com/docs)
-- [PHPUnit Documentation](https://phpunit.de/documentation.html) (Codeception uses PHPUnit under the hood)
