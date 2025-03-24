@@ -16,7 +16,7 @@ if ($recipe_id) {
     $recipe = $recipeController->getRecipeById($recipe_id);
 }
 
-$recipeNotFound = ($recipe === null);
+$recipeNotFound = ($recipe == null);
 if (!$recipeNotFound) {
   // TODO: move some of this parsing logic to controller or provider
     $ingredientsList = explode(", ", $recipe['ingredients']);
@@ -56,13 +56,18 @@ if (isset($_SESSION['user']) && isset($_SESSION['user']['id']) && $recipe_id) {
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title><?= $recipeNotFound ? 'Recipe Not Found' : htmlspecialchars($recipe['recipe']) ?></title>
     <script src="https://cdn.tailwindcss.com"></script>
-    <link href="https://cdn.jsdelivr.net/npm/lucide-icon@latest/dist/lucide-icon.min.css" rel="stylesheet">
+	<script src="https://unpkg.com/lucide@latest"></script>
+    <style>
+        [data-lucide="bookmark"].filled {
+            fill: currentColor;
+        }
+    </style>
 </head>
 <body class="bg-gray-100">
     <div class="container mx-auto max-w-3xl p-4">
         <!-- Back to Search Button -->
         <div class="mb-6">
-            <a href="recipes.php" class="flex items-center text-gray-600 hover:text-gray-900">
+            <a href="search.php" class="flex items-center text-gray-600 hover:text-gray-900">
                 <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="mr-2">
                     <path d="M19 12H5"></path>
                     <path d="M12 19l-7-7 7-7"></path>
@@ -89,10 +94,23 @@ if (isset($_SESSION['user']) && isset($_SESSION['user']['id']) && $recipe_id) {
             </a>
         </div>
         <?php else: ?>
-<?php if (isset($_SESSION['message'])): ?>
-<?php echo $_SESSION['message']; ?>
-<?php unset($_SESSION['message']); ?>
-<?php endif; ?>
+				<?php if (isset($_SESSION['message'])): ?>
+					<div class="bg-green-50 border border-green-400 text-green-700 p-4 rounded-md mb-6">
+<p>
+						<?php echo $_SESSION['message']; ?>
+</p>
+					</div>
+					<?php unset($_SESSION['message']); ?>
+				<?php endif; ?>
+
+				<?php if (isset($_SESSION['error'])): ?>
+					<div id="login-error" class="bg-red-50 border border-red-400 text-red-700 p-4 rounded-md mb-6">
+<p>
+						<?php echo $_SESSION['error']; ?>
+</p>
+					</div>
+					<?php unset($_SESSION['error']); ?>
+				<?php endif; ?>
 
         <div class="bg-white rounded-lg shadow-md p-6">
             <!-- Recipe Header -->
@@ -118,14 +136,14 @@ if (isset($_SESSION['user']) && isset($_SESSION['user']['id']) && $recipe_id) {
                         </svg>
                     </button>
 <!-- Bookmark Form -->
-<form action="bookmark.php" method="POST">
+<form action="bookmark.php" method="POST" id="bookmark_form">
     <input type="hidden" name="recipe_id" value="<?= $recipe_id ?>">
-    <button type="submit" class="<?= $isBookmarked ? 'text-green-600' : 'text-gray-500' ?> hover:text-gray-700">
-        <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" 
-             fill="<?= $isBookmarked ? 'currentColor' : 'none' ?>" 
-             stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-            <path d="M19 21l-7-5-7 5V5a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2z"></path>
-        </svg>
+    <button type="submit" class="<?= $isBookmarked ? 'text-green-600' : 'text-gray-500' ?> hover:text-gray-700" id="bookmark_button">
+        <?php if ($isBookmarked): ?>
+            <i data-lucide="bookmark-check"></i>
+        <?php else: ?>
+            <i data-lucide="bookmark-plus"></i>
+        <?php endif; ?>
     </button>
 </form>
                 </div>
@@ -308,5 +326,10 @@ if (isset($_SESSION['user']) && isset($_SESSION['user']['id']) && $recipe_id) {
         </div>
         <?php endif; ?>
     </div>
+
+	<script>
+		// Initialize Lucide icons
+		lucide.createIcons();
+	</script>
 </body>
 </html>

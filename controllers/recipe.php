@@ -356,6 +356,9 @@ class RedbeanRecipeDataProvider implements RecipeDataProvider {
 	public function getRecipeById($recipeId): ?array
 	{
 		$recipe = \R::load('recipes', $recipeId);
+		if ($recipe->id === 0 && !isset($recipe['recipe'])) {
+			return null; // Recipe not found
+		}
 		return $recipe->export();
 	}
 }
