@@ -13,15 +13,25 @@ final class MatchCest
     public function testPageLayout(AcceptanceTester $I): void
     {
         $I->amOnPage('/match.php');
+        // Check for elements in the layout
+        // Recipe Image
         $I->seeElement('img', ['alt' => 'Recipe Image']);
-        $I->seeElement('h3', ['class' => 'recipe-name']);
-        $I->seeElement('p', ['class' => 'recipe-description']);
+        $I->seeElement('span', ['class' => 'text-gray-500', 'text' => 'Recipe Image Placeholder']);
+        // Recipe Name
+        $I->seeElement('h3', ['class' => 'text-xl font-bold mb-4']);
+        // Recipe Description
+        $I->seeElement('p', ['class' => 'text-gray-600 text-sm mb-4']);
+        // Recipe Tags
         $I->seeElement('.recipe-tags');
+        // Recipe Total Time
         $I->seeElement('.prep-time');
-        $I->seeElement('.serves');
+        // Recipe Difficulty
         $I->seeElement('.difficulty');
-        $I->seeElement('button', ['class' => 'red-x']);
-        $I->seeElement('button', ['class' => 'green-check']);
+        // Serves
+        $I->seeElement('.serves');
+        // Buttons (check if both the red X and green check buttons are present)
+        $I->seeElement('button', ['class' => 'bg-red-600']);
+        $I->seeElement('a', ['class' => 'bg-green-600']);
     }
 
     public function testCheckOnFirst(AcceptanceTester $I): void

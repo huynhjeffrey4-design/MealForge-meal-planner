@@ -2,8 +2,6 @@
 
 require_once __DIR__ . '/../setup.php';
 require_once __DIR__ . '/../SetupRedbean.php';
-require_once __DIR__ . '/../DatabaseConnection.php';
-use App\Controllers\DatabaseConnection;
 
 /**
  * Recipe Controller with parameter-based filtering
@@ -36,52 +34,15 @@ class RecipeController {
     }
 
     /**
-     * Get a random recipe from the rand_recipes table
-     * Uses DatabaseConnection
+     * Get a random recipe containing an imageURL from the recipes table
      *
      * @return array A single random recipe
      */
-    public function getRandomRecipe(): array
+    public function getRandomRecipeWithImage(): array
     {
-        try {
-            $dbConnection = (new DatabaseConnection())->getConnection();
-            $query = "SELECT * FROM rand_recipes";
-            $stmt = $dbConnection->prepare($query);
-            $stmt->execute();
-
-            $recipes = $stmt->fetchAll(PDO::FETCH_ASSOC);
-            if (empty($recipes)) {
-                return []; // Return an empty array if no recipes are found
-            }
-
-            $randomRecipe = $recipes[array_rand($recipes)];
-            return $randomRecipe;
-        } catch (PDOException $e) {
-            return [];
-        }
-    }
-
-    public function formatTags(array $recipeData): array {
-        // Clean tags: Decode HTML entities, remove unwanted characters, and trim extra spaces and quotes
-        if (isset($recipeData['tags'])) {
-            $recipeData['tags'] = array_map(function($tag) {
-                // Decode HTML entities (like &quot; -> ")
-                $tag = html_entity_decode($tag, ENT_QUOTES, 'UTF-8');
-                // Remove unwanted characters like -->, extra quotes, etc.
-                $tag = str_replace(['-->', '"', "'"], '', $tag); // Removing -->, " and '
-                // Trim spaces for each tag
-                $tag = trim($tag);
-                // Ensure each tag is escaped for safe HTML output
-                return htmlspecialchars($tag);
-            }, explode(',', $recipeData['tags']));
-
-            // Remove square brackets from the first and last tag if they exist
-            $recipeData['tags'][0] = ltrim($recipeData['tags'][0], '['); // Remove leading [ from the first tag
-            $recipeData['tags'][count($recipeData['tags']) - 1] = rtrim($recipeData['tags'][count($recipeData['tags']) - 1], ']'); // Remove trailing ] from the last tag
-        }
-
-        // Return the cleaned recipe data, maintaining the same structure as the input
-        return $recipeData;
+        $randomRecipe = $this->recipeProvider->getRandomRecipeWithImage();
+        $randomRecipe['tags'] = json_decode($randomRecipe['tags']);
+        return $randomRecipe;
     }
 
     /**
@@ -392,4 +353,24 @@ class RedbeanRecipeDataProvider implements RecipeDataProvider {
         $recipes = \R::findAll('recipes');
         return \R::exportAll($recipes);
     }
+
+    public function getRandomRecipeWithImage(): array {
+        $recipes = $this->getAllRecipes();
+
+        // Filter out recipes that have NULL or empty imageURL
+        $recipesWithImage = array_filter($recipes, function($recipe) {
+            // Check if imageURL is not NULL or empty
+            return isset($recipe['imageURL']) && !is_null($recipe['imageURL']) && !empty($recipe['imageURL']);
+        });
+
+        if (empty($recipesWithImage)) {
+            return [];
+        }
+
+        $randomIndex = array_rand($recipesWithImage);
+        $randomRecipe = $recipesWithImage[$randomIndex];
+
+        return (is_array($randomRecipe)) ? $randomRecipe : [];
+    }
+
 }
