@@ -19,6 +19,8 @@ final class MatchCest
 
         // Check if the recipe name (h3) is displayed
         $I->seeElement('h3');
+
+        $I->seeElement('img', ['alt' => 'Recipe Image']);
     }
 
     public function testCheckOnFirst(AcceptanceTester $I): void
@@ -35,6 +37,8 @@ final class MatchCest
         // Check for the placeholder text if the image is missing
         $I->see('Recipe Image Placeholder', 'span');
 
+        $I->seeElement('img', ['alt' => 'Recipe Image']);
+
         // Verify that you are taken to the recipe display page
         // $I->seeInCurrentUrl('/display.php');
     }
@@ -47,14 +51,17 @@ final class MatchCest
         // Click the red X button three times to skip the recipes
         for ($i = 0; $i < 3; $i++) {
             $I->click('.bg-red-600');  // Using the background color as class for simplicity
-            $I->wait(1); // Wait for the page to reload with a new recipe
+            $I->amOnPage('/match.php'); // Wait for the page to reload with a new recipe
 
             // Check if the "Recipe Suggestions" header is still there
             $I->see('Recipe Suggestions', 'h2');
+            $I->seeElement('img', ['alt' => 'Recipe Image']);
         }
 
         // After skipping, check if the page still has the header
         $I->see('Recipe Suggestions', 'h2');
+
+        $I->seeElement('img', ['alt' => 'Recipe Image']);
 
         // Verify that you are taken to the recipe display page
         // $I->seeInCurrentUrl('/display.php');
