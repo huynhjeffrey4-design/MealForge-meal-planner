@@ -313,28 +313,66 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         });
 
         function loadRecipes() {
-            fetch('api/get_random_recipes.php')
-                .then(response => response.json())
-                .then(data => {
+        fetch('api/get_random_recipes.php')
+            .then(response => response.json())
+            .then(data => {
                 const container = document.getElementById('slider-content');
                 container.innerHTML = '';
                 data.forEach(recipe => {
-                    const card = `
-                    <div class="w-[calc(100%)] h-[calc(100%/3*2)] flex-shrink-0 bg-white shadow rounded-lg flex items-center p-2">
-                        <img src="${recipe.imageURL}" alt="${recipe.meal_name}" class="h-auto w-[calc(50%)] rounded object-cover">
-                        <div class="ml-4 flex flex-col justify-center">
-                        <h4 class="font-bold text-base mb-1">${recipe.meal_name}</h4>
-                        <p class="text-gray-500 text-sm">${recipe.meal_type}</p>
-                        </div>
-                    </div>
-                    `;
-                    container.insertAdjacentHTML('beforeend', card);
-                });
-                });
-            }
+                    const card = document.createElement('div');
+                    card.className = "w-[calc(100%)] h-[calc(100%/3*2)] flex-shrink-0 cursor-pointer";
 
-            // 页面加载时先随机加载
-            document.addEventListener('DOMContentLoaded', loadRecipes);
+                    card.innerHTML = `
+                        <div class="w-full h-full bg-white shadow rounded-lg flex items-center p-2 hover:shadow-lg transition">
+                            <img src="${recipe.imageURL}" alt="${recipe.meal_name}" draggable="false" class="h-auto w-[calc(50%)] rounded object-cover select-none">
+                            <div class="ml-4 flex flex-col justify-center">
+                                <h4 class="font-bold text-base mb-1">${recipe.meal_name}</h4>
+                                <p class="text-gray-500 text-sm">${recipe.meal_type}</p>
+                            </div>
+                        </div>
+                    `;
+
+                    // Click and slide detection
+                    let startX, startY, startTime;
+                    card.addEventListener('mousedown', (e) => {
+                        startX = e.pageX;
+                        startY = e.pageY;
+                        startTime = new Date().getTime();
+                    });
+                    card.addEventListener('mouseup', (e) => {
+                        const diffX = Math.abs(e.pageX - startX);
+                        const diffY = Math.abs(e.pageY - startY);
+                        const timeDiff = new Date().getTime() - startTime;
+
+                        if (diffX < 5 && diffY < 5 && timeDiff < 500) {
+                            window.open(`/recipe.php?id=${recipe.id}`, '_blank');
+                        }
+                    });
+
+                    // Add touch event support (mobile)
+                    card.addEventListener('touchstart', (e) => {
+                        startX = e.touches[0].pageX;
+                        startY = e.touches[0].pageY;
+                        startTime = new Date().getTime();
+                    });
+                    card.addEventListener('touchend', (e) => {
+                        const touch = e.changedTouches[0];
+                        const diffX = Math.abs(touch.pageX - startX);
+                        const diffY = Math.abs(touch.pageY - startY);
+                        const timeDiff = new Date().getTime() - startTime;
+
+                        if (diffX < 5 && diffY < 5 && timeDiff < 500) {
+                            window.open(`/recipe.php?id=${recipe.id}`, '_blank');
+                        }
+                    });
+
+                    container.appendChild(card);
+                });
+            });
+        }
+
+        // 页面加载时先随机加载
+        document.addEventListener('DOMContentLoaded', loadRecipes);
     </script>
     
     
