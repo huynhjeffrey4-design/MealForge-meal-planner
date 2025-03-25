@@ -20,28 +20,43 @@ if (isset($_GET['logout'])) {
     exit;
 }
 
-// Handle like button click for logged-in users
+// Handle like/unlike action for logged-in users
 if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['id']) && $isLoggedIn) {
     $postId = $_POST['id'];
+    $userEmail = $_SESSION['user']['email'];  // Get the logged-in user's email
 
     // Find the post in the database
     $post = \R::load('post', $postId);
 
     // Ensure the post exists
     if ($post->id) {
-        // Increment the likes count
-        $post->likes++;
-        \R::store($post);  // Save the updated post back to the database
+        // Get the current liked_by value (a comma-separated list of emails)
+        $likedBy = explode(',', $post->liked_by);  // Convert the string to an array
+
+        if (in_array($userEmail, $likedBy)) {
+            // If the user has already liked the post, remove their email and decrement the likes count
+            $likedBy = array_diff($likedBy, [$userEmail]);  // Remove user's email
+            $post->likes--;  // Decrement like count
+        } else {
+            // If the user hasn't liked the post, add their email and increment the likes count
+            $likedBy[] = $userEmail;  // Add user's email to the array
+            $post->likes++;  // Increment like count
+        }
+
+        // Update the liked_by field with the new comma-separated list of emails
+        $post->liked_by = implode(',', $likedBy);  // Convert the array back to a string
+
+        // Save the updated post back to the database
+        \R::store($post);
 
         // Return the updated like count and liked status
         echo json_encode([
             'likes' => $post->likes,
-            'liked' => true // Indicating the user has liked the post
+            'liked' => in_array($userEmail, $likedBy) // True if the user has liked the post
         ]);
-        exit;  // Terminate the script to avoid further output
+        exit;
     }
 }
-
 
 // Get the user's information if logged in
 if ($isLoggedIn) {
@@ -91,7 +106,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['description']) && iss
                 $post->profile_picture = $user['profile_picture'];
                 $post->description = $description;
                 $post->likes = 0; // Initial like count
-                $post->image_url = $temporaryImagePath; // Use 'image_url' as per your specification
+                $post->image_url = $temporaryImagePath;
+                $post->liked_by = "";
 
                 // Store the post in the database and get the generated post ID
                 $postId = \R::store($post);
@@ -139,16 +155,15 @@ $posts = $postController->getAllPosts();
     <script src="https://cdn.tailwindcss.com"></script>
     <!-- Lucide Icons (New CDN) -->
     <script src="https://unpkg.com/lucide@latest"></script>
-    <style>
-        .liked {
-            color: red; /* Change color to red when liked */
-            font-weight: bold; /* Make the like count bolder */
-        }
-    </style>
 </head>
 
 <body class="bg-gray-50">
 <div class="container mx-auto py-16 px-12">
+    <!-- Back to Profile Button -->
+    <a href="profile.php" class="flex items-center text-gray-600 mb-6">
+        <i data-lucide="arrow-left" class="h-5 w-5 mr-1"></i>
+        Back to Profile
+    </a>
     <!-- Header -->
     <header class="mb-8 pb-2 border-b border-gray-200">
         <div class="flex justify-between items-center">
@@ -210,8 +225,18 @@ $posts = $postController->getAllPosts();
                                 <!-- Like button with dynamic class based on whether user has liked or not -->
                                 <?php if ($isLoggedIn): ?>
                                     <form action="social.php" method="POST" class="like-form" data-post-id="<?= $post['id'] ?>">
-                                        <button type="submit" class="like-button <?= isset($post['liked_by_user']) && $post['liked_by_user'] ? 'liked' : '' ?>">
-                                            <i data-lucide="thumbs-up" class="h-5 w-5 <?= isset($post['liked_by_user']) && $post['liked_by_user'] ? 'text-red-500' : 'text-black' ?>"></i>
+                                        <?php
+                                        // Get the logged-in user's email
+                                        $userEmail = $_SESSION['user']['email'];
+
+                                        // Get the liked_by field and convert it to an array
+                                        $likedByArray = explode(',', $post['liked_by']);
+
+                                        // Check if the user's email is in the liked_by array
+                                        $isLiked = in_array($userEmail, $likedByArray);
+                                        ?>
+                                        <button type="submit" class="like-button <?= $isLiked ? 'liked' : '' ?>">
+                                            <i data-lucide="thumbs-up" class="h-5 w-5 <?= $isLiked ? 'text-red-500' : 'text-black' ?>"></i>
                                         </button>
                                     </form>
                                 <?php else: ?>
@@ -219,7 +244,7 @@ $posts = $postController->getAllPosts();
                                         <i data-lucide="thumbs-up" class="h-5 w-5 text-black"></i>
                                     </a>
                                 <?php endif; ?>
-                                <span class="like-count text-black font-bold <?= isset($post['liked_by_user']) && $post['liked_by_user'] ? 'liked' : '' ?>"><?= $post['likes'] ?></span>
+                                <span class="like-count text-black font-bold <?= $isLiked ? 'liked' : '' ?>"><?= $post['likes'] ?></span>
                             </div>
                         </div>
 
@@ -243,22 +268,20 @@ $posts = $postController->getAllPosts();
 </script>
 
 <script>
-    // Handle like button color change (Only for logged-in users)
     document.addEventListener('DOMContentLoaded', function() {
         const likeButtons = document.querySelectorAll('.like-button');
 
         likeButtons.forEach(button => {
             button.addEventListener('click', function(e) {
-                // Prevent form submission to prevent page reload (for this effect)
                 e.preventDefault();
 
-                // Check if the user is logged in (only allow liking if logged in)
+                // Only proceed if the user is logged in
                 if (<?= json_encode($isLoggedIn) ?>) {
                     const postId = button.closest('form').dataset.postId;
-                    const likeCountElement = button.closest('.flex').querySelector('.like-count'); // Get the like count element
-                    button.classList.toggle('liked'); // Toggle the "liked" class for the button
+                    const likeCountElement = button.closest('.flex').querySelector('.like-count');
+                    const icon = button.querySelector('svg'); // Select the SVG element (thumbs-up icon)
 
-                    // Make the AJAX call to update the likes
+                    // Make the AJAX call to like/unlike the post
                     fetch('social.php', {
                         method: 'POST',
                         body: new URLSearchParams({
@@ -269,30 +292,31 @@ $posts = $postController->getAllPosts();
                         }
                     })
                         .then(response => response.json())
-                        .then(data => {
-                            // Update the displayed like count with the returned likes value
-                            likeCountElement.textContent = data.likes;
+                        .then(response => { // Using response here instead of data
+                            // Update the like count
+                            likeCountElement.textContent = response.likes;
 
-                            // Change button color (red if liked, black if not)
-                            if (data.liked) {
-                                button.querySelector('i').classList.add('text-red-500');
-                                button.querySelector('i').classList.remove('text-black');
+                            // Dynamically toggle the color based on the current like state
+                            if (response.liked) { // Now we check the 'liked' status correctly
+                                // change like icon to red
+                                icon.classList.add('text-red-500');
+                                icon.classList.remove('text-black');
+
                             } else {
-                                button.querySelector('i').classList.remove('text-red-500');
-                                button.querySelector('i').classList.add('text-black');
+                                // change like icon to black
+                                icon.classList.add('text-black');
+                                icon.classList.remove('text-red-500');
                             }
                         })
                         .catch(error => {
                             console.error('Error:', error);
                         });
                 } else {
-                    // Redirect to login page if not logged in
-                    window.location.href = 'login.php';
+                    window.location.href = 'login.php';  // Redirect to login page if not logged in
                 }
             });
         });
     });
-
 </script>
 
 </body>
