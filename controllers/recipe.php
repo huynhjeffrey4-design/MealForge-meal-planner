@@ -374,7 +374,6 @@ class RedbeanRecipeDataProvider implements RecipeDataProvider {
 		}
 		return $recipe->export();
 	}
-}
 
     public function getRandomRecipeWithImage(): array {
         $recipes = $this->getAllRecipes();
