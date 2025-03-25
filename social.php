@@ -20,6 +20,29 @@ if (isset($_GET['logout'])) {
     exit;
 }
 
+// Handle like button click for logged-in users
+if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['id']) && $isLoggedIn) {
+    $postId = $_POST['id'];
+
+    // Find the post in the database
+    $post = \R::load('post', $postId);
+
+    // Ensure the post exists
+    if ($post->id) {
+        // Increment the likes count
+        $post->likes++;
+        \R::store($post);  // Save the updated post back to the database
+
+        // Return the updated like count and liked status
+        echo json_encode([
+            'likes' => $post->likes,
+            'liked' => true // Indicating the user has liked the post
+        ]);
+        exit;  // Terminate the script to avoid further output
+    }
+}
+
+
 // Get the user's information if logged in
 if ($isLoggedIn) {
     // Check if the user_id exists in the session and assign it
@@ -73,10 +96,10 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['description']) && iss
                 // Store the post in the database and get the generated post ID
                 $postId = \R::store($post);
 
-                // After storing the post, we can use the post_id to rename the image
+                // After storing the post, we can use the post id to rename the image
                 $finalImagePath = $uploadDir . 'image' . $postId . '.' . $extension;
 
-                // Rename the uploaded image to match the post_id
+                // Rename the uploaded image to match the post id
                 rename($temporaryImagePath, $finalImagePath);
 
                 // Update the post in the database with the final image path
@@ -116,6 +139,12 @@ $posts = $postController->getAllPosts();
     <script src="https://cdn.tailwindcss.com"></script>
     <!-- Lucide Icons (New CDN) -->
     <script src="https://unpkg.com/lucide@latest"></script>
+    <style>
+        .liked {
+            color: red; /* Change color to red when liked */
+            font-weight: bold; /* Make the like count bolder */
+        }
+    </style>
 </head>
 
 <body class="bg-gray-50">
@@ -156,52 +185,54 @@ $posts = $postController->getAllPosts();
         <p class="text-sm text-gray-600 mb-6">Showing the most recent posts</p>
 
         <div class="space-y-8">
-            <!-- Check if posts exist -->
-            <?php if (empty($posts)): ?>
-                <div class="bg-white rounded-lg shadow p-8 text-center">
-                    <i data-lucide="search-x" class="h-12 w-12 mx-auto text-gray-400 mb-6"></i>
-                    <h3 class="text-lg font-semibold mb-2">No posts found</h3>
-                    <p class="text-gray-600">No one has posted recipes yet.</p>
-                </div>
-            <?php else: ?>
-                <!-- Loop through the posts and display each one -->
-                <?php foreach ($posts as $post): ?>
-                    <div class="bg-green-50 rounded-lg shadow p-8 mb-8 border border-green-200 max-w-4xl mx-auto">
-                        <div class="flex">
-                            <!-- Left section: Profile Info, Description, and Likes (1/3 of the width) -->
-                            <div class="w-1/3 pr-8">
-                                <div class="flex items-center mb-6">
-                                    <img src="<?= htmlspecialchars($post['profile_picture']) ?>" alt="Profile Picture"
-                                         class="w-20 h-20 rounded-full object-cover mr-6">
-                                    <div>
-                                        <h3 class="font-semibold text-lg text-green-700"><?= htmlspecialchars($post['first_name']) . ' ' . htmlspecialchars($post['last_name']) ?></h3>
-                                        <p class="text-sm text-gray-600"><?= date('F j, Y', strtotime($post['post_time'])) ?></p>
-                                    </div>
-                                </div>
-
-                                <!-- Post Description (Bigger Text) -->
-                                <div class="text-lg text-gray-700 mb-6">
-                                    <p class="font-bold"><?= htmlspecialchars($post['description']) ?></p>
-                                </div>
-
-                                <!-- Like Button (No "Likes" Text) -->
-                                <div class="flex items-center space-x-2">
-                                    <i data-lucide="thumbs-up" class="h-5 w-5 text-black"></i>
-                                    <span class="text-black font-bold"><?= $post['likes'] ?></span>
+            <!-- Loop through the posts and display each one -->
+            <?php foreach ($posts as $post): ?>
+                <div class="bg-green-50 rounded-lg shadow p-8 mb-8 border border-green-200 max-w-4xl mx-auto">
+                    <div class="flex">
+                        <!-- Left section: Profile Info, Description, and Likes (1/3 of the width) -->
+                        <div class="w-1/3 pr-8">
+                            <div class="flex items-center mb-6">
+                                <img src="<?= htmlspecialchars($post['profile_picture']) ?>" alt="Profile Picture"
+                                     class="w-20 h-20 rounded-full object-cover mr-6">
+                                <div>
+                                    <h3 class="font-semibold text-lg text-green-700"><?= htmlspecialchars($post['first_name']) . ' ' . htmlspecialchars($post['last_name']) ?></h3>
+                                    <p class="text-sm text-gray-600"><?= date('F j, Y', strtotime($post['post_time'])) ?></p>
                                 </div>
                             </div>
 
-                            <!-- Right section: Recipe Image (2/3 of the width) -->
-                            <div class="w-2/3">
-                                <div class="relative h-0" style="padding-bottom: 66.67%;"> <!-- Maintain Aspect Ratio -->
-                                    <img src="<?= htmlspecialchars($post['image_url']) ?>" alt="Recipe Image"
-                                         class="absolute top-0 left-0 w-full h-full object-contain rounded-lg">
-                                </div>
+                            <!-- Post Description (Bigger Text) -->
+                            <div class="text-lg text-gray-700 mb-6">
+                                <p class="font-bold"><?= htmlspecialchars($post['description']) ?></p>
+                            </div>
+
+                            <!-- Like Button (No "Likes" Text) -->
+                            <div class="flex items-center space-x-2">
+                                <!-- Like button with dynamic class based on whether user has liked or not -->
+                                <?php if ($isLoggedIn): ?>
+                                    <form action="social.php" method="POST" class="like-form" data-post-id="<?= $post['id'] ?>">
+                                        <button type="submit" class="like-button <?= isset($post['liked_by_user']) && $post['liked_by_user'] ? 'liked' : '' ?>">
+                                            <i data-lucide="thumbs-up" class="h-5 w-5 <?= isset($post['liked_by_user']) && $post['liked_by_user'] ? 'text-red-500' : 'text-black' ?>"></i>
+                                        </button>
+                                    </form>
+                                <?php else: ?>
+                                    <a href="login.php" class="text-primary font-bold no-underline">
+                                        <i data-lucide="thumbs-up" class="h-5 w-5 text-black"></i>
+                                    </a>
+                                <?php endif; ?>
+                                <span class="like-count text-black font-bold <?= isset($post['liked_by_user']) && $post['liked_by_user'] ? 'liked' : '' ?>"><?= $post['likes'] ?></span>
+                            </div>
+                        </div>
+
+                        <!-- Right section: Recipe Image (2/3 of the width) -->
+                        <div class="w-2/3">
+                            <div class="relative h-0" style="padding-bottom: 66.67%;"> <!-- Maintain Aspect Ratio -->
+                                <img src="<?= htmlspecialchars($post['image_url']) ?>" alt="Recipe Image"
+                                     class="absolute top-0 left-0 w-full h-full object-contain rounded-lg">
                             </div>
                         </div>
                     </div>
-                <?php endforeach; ?>
-            <?php endif; ?>
+                </div>
+            <?php endforeach; ?>
         </div>
     </div>
 </div>
@@ -209,6 +240,59 @@ $posts = $postController->getAllPosts();
 <!-- Initialize Lucide icons -->
 <script>
     lucide.createIcons();
+</script>
+
+<script>
+    // Handle like button color change (Only for logged-in users)
+    document.addEventListener('DOMContentLoaded', function() {
+        const likeButtons = document.querySelectorAll('.like-button');
+
+        likeButtons.forEach(button => {
+            button.addEventListener('click', function(e) {
+                // Prevent form submission to prevent page reload (for this effect)
+                e.preventDefault();
+
+                // Check if the user is logged in (only allow liking if logged in)
+                if (<?= json_encode($isLoggedIn) ?>) {
+                    const postId = button.closest('form').dataset.postId;
+                    const likeCountElement = button.closest('.flex').querySelector('.like-count'); // Get the like count element
+                    button.classList.toggle('liked'); // Toggle the "liked" class for the button
+
+                    // Make the AJAX call to update the likes
+                    fetch('social.php', {
+                        method: 'POST',
+                        body: new URLSearchParams({
+                            'id': postId
+                        }),
+                        headers: {
+                            'Content-Type': 'application/x-www-form-urlencoded'
+                        }
+                    })
+                        .then(response => response.json())
+                        .then(data => {
+                            // Update the displayed like count with the returned likes value
+                            likeCountElement.textContent = data.likes;
+
+                            // Change button color (red if liked, black if not)
+                            if (data.liked) {
+                                button.querySelector('i').classList.add('text-red-500');
+                                button.querySelector('i').classList.remove('text-black');
+                            } else {
+                                button.querySelector('i').classList.remove('text-red-500');
+                                button.querySelector('i').classList.add('text-black');
+                            }
+                        })
+                        .catch(error => {
+                            console.error('Error:', error);
+                        });
+                } else {
+                    // Redirect to login page if not logged in
+                    window.location.href = 'login.php';
+                }
+            });
+        });
+    });
+
 </script>
 
 </body>
