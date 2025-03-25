@@ -61,13 +61,14 @@ interface PostDataProvider
      * [
      * 'first_name' => 'John',
      * 'last_name' => 'Doe',
-     * 'message' => 'This is a mock post. Just testing the layout!',
+     * 'description' => 'This is a mock post. Just testing the layout!',
      * 'post_time' => '2025-03-24 10:00 AM',
      * 'profile_picture' => 'prof_pics/default_avatar.png',
      * 'description' => 'A delicious something recipe',
-     * 'imageURL' => 'postimgs/image1.jpg',
+     * 'image_url' => 'postimgs/image1.jpg',
      * 'likes' => 15,
-     * 'post_id' => 1
+     * 'id' => 1,
+     * 'liked_by' => ',dsgulvin@buffalo.edu,foodman@food.com'
      * ]
      *
      *
