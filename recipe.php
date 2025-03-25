@@ -2,9 +2,6 @@
 require_once __DIR__ . '/controllers/recipe.php';
 require_once __DIR__ . '/controllers/bookmark.php';
 
-// TODO: Handle not-logged in user clicking bookmark icon
-// TODO: improved messages when bookmarking
-
 session_start();
 
 $recipeController = new RecipeController(null);
