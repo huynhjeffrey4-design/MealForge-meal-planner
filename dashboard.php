@@ -257,31 +257,101 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                                         </div>
                                     </div>
                                 </div>
-                            <?php endforeach; ?>
-                        <?php endif; ?>
-                        
-                        <button class="add-meal mt-2 w-10 h-10 rounded-full bg-primary text-white flex items-center justify-center mx-auto hover:bg-primary-dark" data-day="Sunday">
-                            <i class="fa fa-plus"></i>
-                        </button>
-                    </div>
+                            </div>
+                        <?php endforeach; ?>
+                    <?php endif; ?>
+                    
+                    <button class="add-meal mt-2 w-10 h-10 rounded-full bg-primary text-white flex items-center justify-center mx-auto hover:bg-primary-dark" data-day="Sunday">
+                        <i class="fa fa-plus"></i>
+                    </button>
                 </div>
             </div>
         </div>
-    </div>
 
-    <!-- Meal Selection Modal -->
-    <div id="meal-modal" class="fixed inset-0 bg-black bg-opacity-50 hidden z-50 flex items-center justify-center p-2 sm:p-4">
-        <div class="bg-white rounded-lg w-full max-w-6xl h-[90vh] flex flex-col">
-            <div class="p-4 border-b flex justify-between items-center">
-                <h2 class="text-xl font-bold">Add Meal</h2>
-                <button id="close-modal" class="text-gray-500 hover:text-gray-700">
-                    <i class="fa fa-times"></i>
-                </button>
+        <div class="relative w-full h-[48rem]">
+            <div class="absolute bottom-[10%] left-1/2 transform -translate-x-1/2 w-[30vw] overflow-x-auto scroll-container px-2">
+                <div class="flex gap-4 py-4" id="slider-content">
+                    <!-- 动态插入 -->
+                </div>
             </div>
-            <iframe id="search-iframe" class="w-full h-full border-0"></iframe>
+
+            <div class="absolute bottom-[5%] left-1/2 transform -translate-x-1/2 text-center">
+                <button onclick="loadRecipes()" class="px-4 py-2 bg-primary text-white rounded hover:bg-primary-dark">Refresh</button>
+            </div>
         </div>
     </div>
+    
+    <script>
+        const scrollContainer = document.querySelector('.scroll-container');
+        let isDown = false;
+        let startX;
+        let scrollLeft;
 
+        scrollContainer.addEventListener('mousedown', (e) => {
+        isDown = true;
+        scrollContainer.classList.add('cursor-grabbing');
+        startX = e.pageX - scrollContainer.offsetLeft;
+        scrollLeft = scrollContainer.scrollLeft;
+        });
+
+        scrollContainer.addEventListener('mouseleave', () => {
+        isDown = false;
+        scrollContainer.classList.remove('cursor-grabbing');
+        });
+
+        scrollContainer.addEventListener('mouseup', () => {
+        isDown = false;
+        scrollContainer.classList.remove('cursor-grabbing');
+        });
+
+        scrollContainer.addEventListener('mousemove', (e) => {
+        if (!isDown) return;
+        e.preventDefault();
+        const x = e.pageX - scrollContainer.offsetLeft;
+        const walk = (x - startX) * 1.5; // 拖动速度倍数
+        scrollContainer.scrollLeft = scrollLeft - walk;
+        });
+
+        function loadRecipes() {
+            fetch('api/get_random_recipes.php')
+                .then(response => response.json())
+                .then(data => {
+                const container = document.getElementById('slider-content');
+                container.innerHTML = '';
+                data.forEach(recipe => {
+                    const card = `
+                    <div class="w-[calc(100%)] h-[calc(100%/3*2)] flex-shrink-0 bg-white shadow rounded-lg flex items-center p-2">
+                        <img src="${recipe.imageURL}" alt="${recipe.meal_name}" class="h-auto w-[calc(50%)] rounded object-cover">
+                        <div class="ml-4 flex flex-col justify-center">
+                        <h4 class="font-bold text-base mb-1">${recipe.meal_name}</h4>
+                        <p class="text-gray-500 text-sm">${recipe.meal_type}</p>
+                        </div>
+                    </div>
+                    `;
+                    container.insertAdjacentHTML('beforeend', card);
+                });
+                });
+            }
+
+            // 页面加载时先随机加载
+            document.addEventListener('DOMContentLoaded', loadRecipes);
+    </script>
+    
+    
+    <!-- Meal Selection Modal -->
+    <div id="meal-modal" class="fixed inset-0 bg-black bg-opacity-50 hidden z-50 flex items-center justify-center p-4">
+    <div class="bg-white rounded-lg w-full max-w-6xl h-[90vh] flex flex-col">
+        <div class="p-4 border-b flex justify-between items-center">
+            <h2 class="text-xl font-bold">Add Meal</h2>
+            <button id="close-modal" class="text-gray-500 hover:text-gray-700">
+                <i class="fa fa-times"></i>
+            </button>
+        </div>
+        <iframe id="search-iframe" class="w-full h-full border-0"></iframe>
+    </div>
+</div>
+</div>
+            
     <!-- Recipe Details Modal -->
     <div id="recipe-modal" class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center hidden z-50 p-2 sm:p-4">
         <div class="bg-white rounded-lg w-full max-w-3xl max-h-[90vh] overflow-y-auto">
@@ -319,7 +389,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             </div>
         </div>
     </div>
-
     <!-- Confirmation Modal -->
     <div id="confirm-modal" class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center hidden z-50 p-2 sm:p-4">
         <div class="bg-white rounded-lg w-[95%] max-w-md p-4 sm:p-6">
