@@ -205,7 +205,7 @@ $posts = $postController->getAllPosts();
                                 <p class="font-bold"><?= htmlspecialchars($post['description']) ?></p>
                             </div>
 
-                            <!-- Like Button (No "Likes" Text) -->
+                            <!-- Like Button -->
                             <div class="flex items-center space-x-2">
                                 <!-- Like button with dynamic class based on whether user has liked or not -->
                                 <?php if ($isLoggedIn): ?>
