@@ -8,35 +8,46 @@ require_once __DIR__ . '/../SetupRedbean.php';
  */
 class RecipeController {
     private $recipeProvider;
-    
+
     public function __construct(?RecipeDataProvider $recipeProvider) {
-	  if ($recipeProvider !== null) {
-		$this->recipeProvider = $recipeProvider;
-	  } else {
-		$env = env('PROVIDER_RECIPE', '');
-        $this->recipeProvider = $env == 'mock' ? new MockRecipeDataProvider() : new RedbeanRecipeDataProvider();
-	  }
+        if ($recipeProvider !== null) {
+            $this->recipeProvider = $recipeProvider;
+        } else {
+            $env = env('PROVIDER_RECIPE', '');
+            $this->recipeProvider = $env == 'mock' ? new MockRecipeDataProvider() : new RedbeanRecipeDataProvider();
+        }
     }
-    
+
     /**
      * Get all recipes without filtering
-     * 
+     *
      * @return array All available recipes
      */
     public function getAllRecipes(): array {
         $recipes =  $this->recipeProvider->getAllRecipes();
-		// Comes in as '["asdf", "asdf"]'
-		foreach ($recipes as $key => $recipe) {
-			$recipes[$key]['tags'] = json_decode($recipe['tags']);
-		}
+        // Comes in as '["asdf", "asdf"]'
+        foreach ($recipes as $key => $recipe) {
+            $recipes[$key]['tags'] = json_decode($recipe['tags']);
+        }
 
-		return $recipes;
+        return $recipes;
     }
 
-    
+    /**
+     * Get a random recipe containing an imageURL from the recipes table
+     *
+     * @return array A single random recipe
+     */
+    public function getRandomRecipeWithImage(): array
+    {
+        $randomRecipe = $this->recipeProvider->getRandomRecipeWithImage();
+        $randomRecipe['tags'] = json_decode($randomRecipe['tags']);
+        return $randomRecipe;
+    }
+
     /**
      * Search for recipes with specified filters
-     * 
+     *
      * @param string|null $search Search term for recipe title/description
      * @param array|null $dietary Array of dietary preferences
      * @param int|null $maxPrepTime Maximum preparation time in minutes
@@ -114,10 +125,10 @@ class RecipeController {
 
         return array_values($filteredRecipes); // Reset array indices
     }
-    
+
     /**
      * Get a recipe by ID
-     * 
+     *
      * @param int $recipeId ID of the recipe to retrieve
      * @return array|null Recipe data or null if not found
      */
@@ -139,11 +150,11 @@ class RecipeController {
  */
 interface RecipeDataProvider
 {
-  /**
-	* Get all available recipes
-	*
-	* NOTE: Assumed format:
-   [[
+    /**
+     * Get all available recipes
+     *
+     * NOTE: Assumed format:
+    [[
     'id' => int,                    // Unique identifier for the recipe
     'title' => string,              // Title/name of the recipe
     'description' => string,        // Description of the recipe
@@ -152,11 +163,11 @@ interface RecipeDataProvider
     'price' => int|float,           // Price in numeric format
     'difficulty' => string,         // Difficulty level (Easy, Medium, Hard)
     'image' => string|null          // Image filename or null if no image
-	]]
-	*
-	*
-	* @return array of recipe data
-    */
+    ]]
+     *
+     *
+     * @return array of recipe data
+     */
     public function getAllRecipes(): array;
 	public function getRecipeById($recipeId): array|null;
 }
@@ -166,11 +177,11 @@ interface RecipeDataProvider
  */
 class MockRecipeDataProvider implements RecipeDataProvider {
     private $recipes = [];
-    
+
     public function __construct() {
         $this->initializeRecipes();
     }
-    
+
     public function getAllRecipes(): array {
         return $this->recipes;
     }
@@ -185,6 +196,7 @@ class MockRecipeDataProvider implements RecipeDataProvider {
 	}
 
     
+
     /**
      * Initialize mock recipe data
      */
@@ -335,6 +347,7 @@ class MockRecipeDataProvider implements RecipeDataProvider {
         'tags' => "['Vegan', 'Gluten-Free', 'Breakfast', 'Snack']"
     ]
   ];
+
     }
 }
 
@@ -361,4 +374,25 @@ class RedbeanRecipeDataProvider implements RecipeDataProvider {
 		}
 		return $recipe->export();
 	}
+}
+
+    public function getRandomRecipeWithImage(): array {
+        $recipes = $this->getAllRecipes();
+
+        // Filter out recipes that have NULL or empty imageURL
+        $recipesWithImage = array_filter($recipes, function($recipe) {
+            // Check if imageURL is not NULL or empty
+            return isset($recipe['imageURL']) && !is_null($recipe['imageURL']) && !empty($recipe['imageURL']);
+        });
+
+        if (empty($recipesWithImage)) {
+            return [];
+        }
+
+        $randomIndex = array_rand($recipesWithImage);
+        $randomRecipe = $recipesWithImage[$randomIndex];
+
+        return (is_array($randomRecipe)) ? $randomRecipe : [];
+    }
+
 }
