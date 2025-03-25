@@ -63,7 +63,22 @@ final class BookmarkCest
 		// Verify the "Browse All Recipes" link is present
 		$I->see('Browse All Recipes', 'a');
 	}
+	/**
+	 * Test that recipes show up in dashboard/bookmarks
+	 */
+	public function bookmarksAppearInDashboardBookmarks(AcceptanceTester $I): void 
+	{
+		$this->loginTestUser($I);
 
+		$I->amOnPage('/recipe.php?id=1');
+		$I->seeElement('i', ['data-lucide' => 'bookmark-plus']);
+		$I->submitForm("#bookmark_form", []);
+
+		$I->amOnPage('/dashboard/bookmarks.php');
+		$I->see('You have 1 bookmarked recipes');
+
+		$I->see('Smoked salmon', 'a');
+	}
 
 	/**
 	 * Helper method to login a test user
@@ -77,6 +92,8 @@ final class BookmarkCest
 		$I->seeInCurrentUrl('profile.php'); // Verify login worked
 		$I->amOnPage('/recipe.php?id=1'); // Navigate to a recipe page
 	}
+
+
 
 	/**
 	 * Test user credentials
