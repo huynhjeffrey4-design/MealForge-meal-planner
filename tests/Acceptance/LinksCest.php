@@ -39,7 +39,7 @@ final class LinksCest
         ],
         'Registration Page' => [
             'url' => '/registration.php',
-            'pageIdentifier' => 'Create a MealForge Profile',
+            'pageIdentifier' => 'Create your MealForge account',
             'links' => [
                 ['text' => 'Login', 'href' => 'login.php', 'expectInUrl' => true]
             ]
