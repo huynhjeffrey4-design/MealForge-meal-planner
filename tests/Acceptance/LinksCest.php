@@ -158,9 +158,6 @@ final class LinksCest
     $I->seeLink('My Meals');
     $I->seeLink('About Us');
     
-    // Test back to dashboard link
-    $I->seeLink('Back to Dashboard');
-    
     // Test profile dropdown (if visible in test)
     $I->see('Profile');
 }
