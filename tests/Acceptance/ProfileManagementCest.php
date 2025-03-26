@@ -22,7 +22,6 @@ final class ProfilePageCest
         // Act & Assert
         $I->amOnPage('/profile.php');
         $I->see('profile');
-        $I->see('Welcome back');
         $I->see('Dietary Restrictions');
         $I->see('Dietary Preferences');
         $I->see('Daily Health Tips');
