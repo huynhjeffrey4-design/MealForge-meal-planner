@@ -8,6 +8,11 @@ final class RecipeSearchCest
     public function _before(AcceptanceTester $I): void
     {
         $_ENV['ENVIRONMENT'] = 'test';
+        // Login before each test
+        $I->amOnPage('/login.php');
+        $I->fillField('email', 'test@email.com');
+        $I->fillField('password', 'password123');
+        $I->click('Continue');
     }
     
     /**
