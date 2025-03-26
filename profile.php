@@ -174,9 +174,10 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['edit_all'])) {
 
 
         <div class="grid md:grid-cols-2 gap-5 mb-8 relative">
+        <form>
             <button id="edit-toggle" class="absolute top-0 right-0 text-primary font-bold">Edit</button>
-            
-            <div class="mb-5 profile-info-section">
+        </form>            
+                <div class="mb-5 profile-info-section">
                 <div class="text-base font-bold text-gray-800 mb-1">First name</div>
                 <div class="text-lg text-gray-600"><?= htmlspecialchars($firstName) ?></div>
             </div>
