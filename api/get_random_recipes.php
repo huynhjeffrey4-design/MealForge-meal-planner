@@ -1,7 +1,12 @@
 <?php
-include 'config.php';
+require_once __DIR__ . '/../setup.php';
+require_once __DIR__ . '/../SetupRedbean.php';
 
-$sql = "SELECT id, recipe AS meal_name, meal_type, imageURL FROM rand_recipes ORDER BY RAND() LIMIT 5";
+$sql = "SELECT id, recipe AS meal_name, meal_type, imageURL
+        FROM rand_recipes 
+        ORDER BY RAND() 
+        LIMIT 5";
+        
 $result = $conn->query($sql);
 
 $recipes = [];

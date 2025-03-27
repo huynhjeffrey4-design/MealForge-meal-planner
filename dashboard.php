@@ -87,6 +87,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>MealForge - Meal Plan</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+    <link type="text/css" href="static/css/dashboard.css" rel="stylesheet">
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://unpkg.com/lucide@latest"></script>
     <script>
@@ -271,7 +272,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         <div class="relative w-full h-[48rem]">
             <div class="absolute bottom-[10%] left-1/2 transform -translate-x-1/2 w-[30vw] overflow-x-auto scroll-container px-2">
                 <div class="flex gap-4 py-4" id="slider-content">
-                    <!-- 动态插入 -->
+                    <!-- Dynamic Insert -->
                 </div>
             </div>
 
@@ -308,7 +309,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         if (!isDown) return;
         e.preventDefault();
         const x = e.pageX - scrollContainer.offsetLeft;
-        const walk = (x - startX) * 1.5; // 拖动速度倍数
+        const walk = (x - startX) * 1.5;
         scrollContainer.scrollLeft = scrollLeft - walk;
         });
 
@@ -371,7 +372,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             });
         }
 
-        // 页面加载时先随机加载
+        // When the page loads, random first
         document.addEventListener('DOMContentLoaded', loadRecipes);
     </script>
     
