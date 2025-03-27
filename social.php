@@ -260,9 +260,14 @@ $posts = $postController->getAllPosts();
                                 $formattedDate = date('m/d/Y', strtotime($comment['comment_time']));
                                 ?>
                                 <div class="comment mb-4 flex items-start">
-                                    <div class="flex-1">
-                                        <p><strong><?= htmlspecialchars($commentUser->first_name) . ' ' . htmlspecialchars($commentUser->last_name) ?>:</strong> <?= htmlspecialchars($comment['comment_body']) ?></p>
-                                        <p class="text-sm text-gray-400"><?= $formattedDate ?></p>
+                                    <div class="flex items-center space-x-4">
+                                        <!-- Profile Picture of the Commenter -->
+                                        <img src="<?= htmlspecialchars($commentUser->profile_picture) ?>" alt="Profile Picture" class="w-9 h-9 rounded-full object-cover">
+
+                                        <div class="flex-1">
+                                            <p><strong><?= htmlspecialchars($commentUser->first_name) . ' ' . htmlspecialchars($commentUser->last_name) ?>:</strong> <?= htmlspecialchars($comment['comment_body']) ?></p>
+                                            <p class="text-sm text-gray-400"><?= $formattedDate ?></p>
+                                        </div>
                                     </div>
                                 </div>
                             <?php endforeach; ?>
@@ -270,6 +275,7 @@ $posts = $postController->getAllPosts();
                             <p>No comments yet. Be the first to comment!</p>
                         <?php endif; ?>
                     </div>
+
 
                     <!-- Comment Form (Only for logged-in users) -->
                     <?php if ($isLoggedIn): ?>
