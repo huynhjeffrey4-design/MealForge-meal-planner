@@ -36,9 +36,13 @@ class ForgotPasswordController {
 	}
 
 	private function sendEmail(string $email, int $userId, string $token): void {
+		// Get the current hostname dynamically
+		$hostname = $_SERVER['HTTP_HOST'] ?? 'localhost';
+		$protocol = isset($_SERVER['HTTPS']) && $_SERVER['HTTPS'] === 'on' ? 'https' : 'http';
+		
 		$subject = 'Reset your password';
 		$message = "Click the link below to reset your password:\n\n";
-		$message .= "http://localhost/reset_password.php?user_id=$userId&token=$token";
+		$message .= "$protocol://$hostname/CSE442/2025-Spring/cse-442v/reset-password.php?user_id=$userId&token=$token";
 		$headers = "From: mealforge@example.com";
 		mail($email, $subject, $message, $headers);
 	}
