@@ -73,6 +73,28 @@ if ($isLoggedIn) {
     }
 }
 
+// Handle comment submission
+if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['comment_body']) && isset($_POST['post_id']) && $isLoggedIn) {
+    $commentBody = $_POST['comment_body'];
+    $postId = $_POST['post_id'];
+    $userId = $_SESSION['user']['id'];
+
+    // Insert the comment into the database
+    $comment = \R::dispense('comment');
+    $comment->post_id = $postId;
+    $comment->user_id = $userId;
+    $comment->comment_body = $commentBody;
+    $comment->comment_time = date('Y-m-d H:i:s');
+
+    // Store the comment
+    \R::store($comment);
+
+    // Redirect back to the social page
+    header('Location: social.php');
+    exit;
+}
+
+
 // Handle post submission
 if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['description']) && isset($_FILES['image'])) {
     if ($isLoggedIn) {
@@ -158,7 +180,7 @@ $posts = $postController->getAllPosts();
 </head>
 
 <body class="bg-gray-50">
-<div class="container mx-auto py-16 px-12">
+<div class="container mx-auto pt-8 px-12">
     <!-- Back to Profile Button -->
     <a href="profile.php" class="flex items-center text-gray-600 mb-6">
         <i data-lucide="arrow-left" class="h-5 w-5 mr-1"></i>
@@ -179,25 +201,36 @@ $posts = $postController->getAllPosts();
 
     <!-- Upload Section (Only Visible to Logged-In Users) -->
     <?php if ($isLoggedIn): ?>
-        <div class="mb-8 bg-white p-6 rounded-lg shadow">
-            <h2 class="text-xl font-semibold mb-4">Upload a New Post</h2>
+        <div class="mb-8 bg-white p-4 rounded-lg shadow"> <!-- Reduced top padding -->
             <form action="social.php" method="POST" enctype="multipart/form-data">
-                <div class="mb-4">
-                    <label for="description" class="block text-sm font-medium text-gray-700">Post Description</label>
-                    <textarea id="description" name="description" rows="4" class="w-full p-2 border border-gray-300 rounded-md" required></textarea>
+                <div class="flex items-center space-x-2 mb-4">
+                    <h2 class="text-xl font-semibold">Upload a New Post:</h2>
+                    <!-- Upload Post Button -->
+                    <button type="submit" class="px-4 py-2 bg-green-500 text-white rounded-md hover:bg-green-600">Upload Post</button>
                 </div>
-                <div class="mb-4">
-                    <label for="image" class="block text-sm font-medium text-gray-700">Upload Image</label>
-                    <input type="file" id="image" name="image" accept="image/jpeg, image/png, image/gif" class="w-full p-2 border border-gray-300 rounded-md" required>
+                <div class="flex space-x-4">
+                    <!-- Post Description (Takes 2/3 of the width) -->
+                    <div class="flex-2 w-2/3"> <!-- 2/3 width for description -->
+                        <label for="description" class="block text-sm font-medium text-gray-700">Post Description</label>
+                        <textarea id="description" name="description" rows="2" class="w-full p-3 border border-gray-300 rounded-md" required></textarea> <!-- Doubled height -->
+                    </div>
+                    <!-- Image File Upload (Takes 1/3 of the width) -->
+                    <div class="flex-1 w-1/3"> <!-- 1/3 width for image file input -->
+                        <label for="image" class="block text-sm font-medium text-gray-700">Upload Image</label>
+                        <input type="file" id="image" name="image" accept="image/jpeg, image/png, image/gif" class="w-full p-2 border border-gray-300 rounded-md" required>
+                    </div>
                 </div>
-                <button type="submit" class="px-4 py-2 bg-green-500 text-white rounded-md hover:bg-green-600">Upload Post</button>
             </form>
         </div>
     <?php endif; ?>
 
+
+
+
+
+
     <!-- Social Feed Section -->
     <div id="social-feed" class="w-full">
-        <p class="text-sm text-gray-600 mb-6">Showing the most recent posts</p>
 
         <div class="space-y-8">
             <!-- Loop through the posts and display each one -->
@@ -256,6 +289,42 @@ $posts = $postController->getAllPosts();
                             </div>
                         </div>
                     </div>
+                    <!-- Display Comments -->
+                    <div class="comments mt-6">
+                        <h3 class="text-3xl font-bold underline mb-3">Comments</h3>  <!-- Larger and underlined header -->
+                        <?php
+                        $comments = $postController->getCommentsForPost($post['id']);
+                        if ($comments):
+                            foreach ($comments as $comment):
+                                $commentUser = \R::load('user', $comment['user_id']);
+                                $formattedDate = date('m/d/Y', strtotime($comment['comment_time'])); // Format the date
+                                ?>
+                                <div class="comment mb-4 flex items-start">
+                                    <div class="flex-1">
+                                        <p><strong><?= htmlspecialchars($commentUser->first_name) . ' ' . htmlspecialchars($commentUser->last_name) ?>:</strong> <?= htmlspecialchars($comment['comment_body']) ?></p>
+                                        <p class="text-sm text-gray-400"><?= $formattedDate ?></p>
+                                    </div>
+                                </div>
+                            <?php endforeach; ?>
+                        <?php else: ?>
+                            <p>No comments yet. Be the first to comment!</p>
+                        <?php endif; ?>
+                    </div>
+
+
+
+                    <!-- Comment Form (Only for logged-in users) -->
+                    <?php if ($isLoggedIn): ?>
+                        <div class="comment-form mt-4">
+                            <form action="social.php" method="POST">
+                                <input type="hidden" name="post_id" value="<?= $post['id'] ?>">
+                                <textarea name="comment_body" rows="3" class="w-full p-2 border border-gray-300 rounded-md" placeholder="Add a comment..." required></textarea>
+                                <button type="submit" class="mt-2 px-4 py-2 bg-green-500 text-white rounded-md hover:bg-green-600">Submit Comment</button>
+                            </form>
+                        </div>
+                    <?php else: ?>
+                        <p class="mt-4 text-sm text-gray-600">Please <a href="login.php" class="text-primary">log in</a> to comment.</p>
+                    <?php endif; ?>
                 </div>
             <?php endforeach; ?>
         </div>
@@ -267,6 +336,7 @@ $posts = $postController->getAllPosts();
     lucide.createIcons();
 </script>
 
+<!-- Dynamic liking -->
 <script>
     document.addEventListener('DOMContentLoaded', function() {
         const likeButtons = document.querySelectorAll('.like-button');

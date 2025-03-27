@@ -30,6 +30,13 @@ class PostController {
         return $posts;
     }
 
+    public function getCommentsForPost($postId): array {
+        $comments = $this->postProvider->getCommentsForPost($postId);
+
+        return $comments;
+    }
+
+
     /**
      * Get a post by ID
      *
@@ -142,8 +149,13 @@ class RedbeanPostDataProvider implements PostDataProvider {
     }
 
     public function getAllPosts(): array {
-        // Modify the query to order by post_time in descending order
         $posts = \R::findAll('post', 'ORDER BY post_time DESC');
         return \R::exportAll($posts);
     }
+
+    public function getCommentsForPost($postId): array {
+        $comments = \R::findAll('comment', 'WHERE post_id = ? ORDER BY comment_time ASC', [$postId]);
+        return \R::exportAll($comments);
+    }
+
 }
