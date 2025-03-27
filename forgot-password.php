@@ -15,13 +15,13 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         try {
             $result = $forgotPasswordController->forgotPassword($_POST['email']);
             
-            if ($result['success']) {
-                $success = 'If an account exists with this email, a password reset link has been sent.';
-            } else {
-                $error = 'An error occurred. Please try again.' . $result['error'] ?? '';
-            }
+            // Always show success message regardless of whether the email exists
+            // This prevents user enumeration attacks
+            $success = 'If an account exists with this email, a password reset link has been sent.';
         } catch (Exception $e) {
-            $error = 'An error occurred. Please try again.' . $e->getMessage();
+            // Log the error but don't expose details to the user
+            error_log('Password reset error: ' . $e->getMessage());
+            $error = 'An error occurred. Please try again.';
         }
     }
 }

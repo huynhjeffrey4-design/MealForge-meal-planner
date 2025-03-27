@@ -7,23 +7,31 @@ session_start();
 $error = '';
 $success = '';
 $validToken = false;
+$userId = 0;
 $email = '';
 $token = '';
 
-// Check if email and token are provided in the URL
-if (isset($_GET['email']) && isset($_GET['token'])) {
-    $email = $_GET['email'];
+// Check if user_id and token are provided in the URL
+if (isset($_GET['user_id']) && isset($_GET['token'])) {
+    $userId = (int)$_GET['user_id'];
     $token = $_GET['token'];
     
     // Verify the token
     $forgotPasswordController = new ForgotPasswordController();
-    $validToken = $forgotPasswordController->verifyToken($email, $token);
+    $validToken = $forgotPasswordController->verifyToken($userId, $token);
     
-    if (!$validToken) {
+    if ($validToken) {
+        // Get the user's email for the password reset
+        $email = $forgotPasswordController->getUserEmail($userId);
+        if (!$email) {
+            $validToken = false;
+            $error = 'User not found. Please request a new password reset link.';
+        }
+    } else {
         $error = 'Invalid or expired password reset link. Please request a new one.';
     }
 } else {
-    $error = 'Missing email or token. Please request a password reset link.';
+    $error = 'Missing user information or token. Please request a password reset link.';
 }
 
 // Handle form submission
@@ -43,7 +51,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && $validToken) {
             
             if ($result['success']) {
                 // Invalidate the token so it can't be used again
-                $forgotPasswordController->invalidateToken($email, $token);
+                $forgotPasswordController->invalidateToken($userId, $token);
                 $success = 'Your password has been reset successfully. You can now login with your new password.';
                 $validToken = false;
             } else {
@@ -117,7 +125,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && $validToken) {
                         </div>
                     </div>
                 <?php elseif ($validToken): ?>
-                    <form method="POST" action="?email=<?php echo urlencode($email); ?>&token=<?php echo urlencode($token); ?>" class="space-y-6">
+                    <form method="POST" action="?user_id=<?php echo urlencode($userId); ?>&token=<?php echo urlencode($token); ?>" class="space-y-6">
                         <div class="space-y-2">
                             <label for="password" class="block font-medium text-gray-700">New Password</label>
                             <input

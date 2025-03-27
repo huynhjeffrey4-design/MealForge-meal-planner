@@ -9,52 +9,74 @@ class ForgotPasswordController {
   	}
 
     /**
-	 * Inserts reset token for given email, and sends email to user with reset link.
+	 * Looks up user by email, inserts reset token for user_id, and sends email with reset link.
      * @return array<bool>
      */
     public function forgotPassword(string $email): array {
-  		$token = bin2hex(random_bytes(32));
-  		$this->forgotPasswordProvider->insertForgotPasswordToken($email, $token);
+        // Look up the user by email
+        $user = \R::findOne('user', 'email = ?', [$email]);
+        
+        // Always return success even if user not found (security best practice)
+        if (!$user) {
+            return [
+                'success' => true,
+            ];
+        }
+        
+        $userId = $user->id;
+        $token = bin2hex(random_bytes(32));
+        $this->forgotPasswordProvider->insertForgotPasswordToken($userId, $token);
 
-		$this->sendEmail($email, $token);
+        $this->sendEmail($email, $userId, $token);
 
-  		return [
-			'token' => $token,
-  			'success' => true,
-  		];
+        return [
+            'token' => $token,
+            'success' => true,
+        ];
 	}
 
-	private function sendEmail(string $email, string $token): void {
+	private function sendEmail(string $email, int $userId, string $token): void {
 		$subject = 'Reset your password';
 		$message = "Click the link below to reset your password:\n\n";
-		$message .= "http://localhost/reset_password.php?email=$email&token=$token";
+		$message .= "http://localhost/reset_password.php?user_id=$userId&token=$token";
 		$headers = "From: webmaster@example.com";
 		mail($email, $subject, $message, $headers);
 	}
 
 	/**
-	 * Verifies if the provided token is valid for the given email
+	 * Verifies if the provided token is valid for the given user_id
 	 * Checks if the token matches the most recently requested token
 	 * 
-	 * @param string $email The email address to verify
+	 * @param int $userId The user ID to verify
 	 * @param string $token The token to verify
 	 * @return bool True if the token is valid, false otherwise
 	 */
-	public function verifyToken(string $email, string $token): bool {
-		$latestToken = $this->forgotPasswordProvider->getLatestToken($email);
+	public function verifyToken(int $userId, string $token): bool {
+		$latestToken = $this->forgotPasswordProvider->getLatestToken($userId);
 		return $latestToken === $token;
 	}
 	
 	/**
 	 * Invalidates a token after it has been used
 	 * 
-	 * @param string $email The email address
+	 * @param int $userId The user ID
 	 * @param string $token The token to invalidate
 	 * @return bool True if successful, false otherwise
 	 */
-	public function invalidateToken(string $email, string $token): bool {
-		return $this->forgotPasswordProvider->invalidateToken($email, $token);
+	public function invalidateToken(int $userId, string $token): bool {
+		return $this->forgotPasswordProvider->invalidateToken($userId, $token);
 	}
+    
+    /**
+     * Gets user email by user ID
+     * 
+     * @param int $userId The user ID
+     * @return string|null The email address or null if not found
+     */
+    public function getUserEmail(int $userId): ?string {
+        $user = \R::load('user', $userId);
+        return $user->id ? $user->email : null;
+    }
 }
 
 class RedBeanForgotPasswordProvider {
@@ -67,32 +89,32 @@ class RedBeanForgotPasswordProvider {
         $dbConnection->setup($config);
     }
 
-	public function insertForgotPasswordToken(string $email, string $token): void
+	public function insertForgotPasswordToken(int $userId, string $token): void
 	{
 		$resetToken = \R::dispense('forgot');
-		$resetToken->email = $email;
+		$resetToken->user_id = $userId;
 		$resetToken->token = $token;
 		$resetToken->created_at = date('Y-m-d H:i:s');
 		\R::store($resetToken);
 	}
 
-	public function getLatestToken(string $email): ?string
+	public function getLatestToken(int $userId): ?string
 	{
-		$token = \R::findOne('forgot', 'email = ? ORDER BY created_at DESC LIMIT 1', [$email]);
+		$token = \R::findOne('forgot', 'user_id = ? ORDER BY created_at DESC LIMIT 1', [$userId]);
 		return $token ? $token->token : null;
 	}
 	
 	/**
 	 * Invalidates a token by removing it from the database
 	 * 
-	 * @param string $email The email address
+	 * @param int $userId The user ID
 	 * @param string $token The token to invalidate
 	 * @return bool True if successful, false otherwise
 	 */
-	public function invalidateToken(string $email, string $token): bool
+	public function invalidateToken(int $userId, string $token): bool
 	{
 		try {
-			$tokenBean = \R::findOne('forgot', 'email = ? AND token = ?', [$email, $token]);
+			$tokenBean = \R::findOne('forgot', 'user_id = ? AND token = ?', [$userId, $token]);
 			if ($tokenBean) {
 				\R::trash($tokenBean);
 				return true;
