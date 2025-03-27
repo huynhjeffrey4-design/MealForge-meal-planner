@@ -58,12 +58,51 @@ if (isset($_SESSION['user']) && isset($_SESSION['user']['id']) && $recipe_id) {
         [data-lucide="bookmark"].filled {
             fill: currentColor;
         }
+
+        @media print {
+        /* Hide elements that don’t need to be printed */
+        .bookmark-button,
+        .sidebar,
+        .back-button,
+        .print-hide,
+        form,
+        button,
+        nav {
+            display: none !important;
+        }
+
+        .container {
+            max-width: 100% !important;
+            padding: 0;
+            margin: 0 auto !important;
+        }
+
+        body {
+            background: white !important;
+            color: black !important;
+            /* Force background colors and images */
+            -webkit-print-color-adjust: exact !important;
+            print-color-adjust: exact !important;
+        }
+
+        /* Only remove outer card borders and shadows */
+        .rounded-lg,
+        .shadow-md {
+            box-shadow: none !important;
+            border-radius: 0 !important;
+        }
+
+        li {
+            break-inside: avoid;
+            page-break-inside: avoid;
+        }
+    }
     </style>
 </head>
 <body class="bg-gray-100">
     <div class="container mx-auto max-w-3xl p-4">
         <!-- Back to Search Button -->
-        <div class="mb-6">
+        <div class="mb-6 print-hide">
             <a href="javascript:history.back()" class="flex items-center text-gray-600 hover:text-gray-900">
                 <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="mr-2">
                     <path d="M19 12H5"></path>
@@ -115,7 +154,7 @@ if (isset($_SESSION['user']) && isset($_SESSION['user']['id']) && $recipe_id) {
                 <h1 class="text-3xl font-bold text-gray-800"><?= htmlspecialchars($recipe['recipe']) ?></h1>
                 <div class="flex space-x-4">
                     <!-- Print Icon -->
-                    <button class="text-gray-500 hover:text-gray-700">
+                    <button id="print-button" class="text-gray-500 hover:text-gray-700">
                         <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
                             <polyline points="6 9 6 2 18 2 18 9"></polyline>
                             <path d="M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2"></path>
@@ -327,6 +366,11 @@ if (isset($_SESSION['user']) && isset($_SESSION['user']['id']) && $recipe_id) {
 	<script>
 		// Initialize Lucide icons
 		lucide.createIcons();
+
+        // Save as PDF
+        document.getElementById('print-button').addEventListener('click', function () {
+            window.print();
+        });
 	</script>
 </body>
 </html>
