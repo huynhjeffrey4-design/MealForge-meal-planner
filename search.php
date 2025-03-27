@@ -177,12 +177,12 @@ $recipesCount = count($recipes);
                     </div>
                     <?php else: ?>
                         <?php foreach ($recipes as $recipe): ?>
-                        <div class="bg-white rounded-lg shadow overflow-hidden">
-                            <?php if (!empty($recipe['image'])): ?>
-                            <div class="w-full">
-                                <img src="<?= htmlspecialchars($recipe['image']) ?>" alt="<?= htmlspecialchars($recipe['recipe']) ?>" class="w-full h-48 object-cover">
-                            </div>
-                            <?php endif; ?>
+                        <a href="recipe.php?id=<?= htmlspecialchars($recipe['id']) ?>" class="block bg-white rounded-lg shadow overflow-hidden hover:shadow-md transition-shadow duration-200">
+                                <?php if (!empty($recipe['image'])): ?>
+                                <div class="w-full">
+                                    <img src="<?= htmlspecialchars($recipe['image']) ?>" alt="<?= htmlspecialchars($recipe['recipe']) ?>" class="w-full h-48 object-cover">
+                                </div>
+                                <?php endif; ?>
                             <div class="flex flex-col md:flex-row">
                                 <div class="p-4">
                                     <h3 class="font-bold text-lg mb-2"><?= htmlspecialchars($recipe['recipe']) ?></h3>
@@ -209,7 +209,7 @@ $recipesCount = count($recipes);
                                     </div>
                                 </div>
                             </div>
-                        </div>
+                        </a>
                         <?php endforeach; ?>
                     <?php endif; ?>
                 </div>
