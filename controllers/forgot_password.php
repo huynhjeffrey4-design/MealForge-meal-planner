@@ -39,7 +39,7 @@ class ForgotPasswordController {
 		$subject = 'Reset your password';
 		$message = "Click the link below to reset your password:\n\n";
 		$message .= "http://localhost/reset_password.php?user_id=$userId&token=$token";
-		$headers = "From: webmaster@example.com";
+		$headers = "From: mealforge@example.com";
 		mail($email, $subject, $message, $headers);
 	}
 
