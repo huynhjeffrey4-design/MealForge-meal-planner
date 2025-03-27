@@ -138,6 +138,7 @@ $defaultProfilePic = 'assets/default-profile.png';
         <ul class="space-y-4">
             <li><a href="dashboard.php" class="text-white no-underline text-lg font-bold flex items-center py-1"><i class="fa fa-home fa-fw mr-2"></i> Dashboard</a></li>
             <li><a href="meal-plan.php" class="text-white no-underline text-lg font-bold flex items-center py-1 bg-primary-dark rounded px-2"><i class="fa fa-calendar fa-fw mr-2"></i> Meal Plan</a></li>
+            <li><a href="dashboard/bookmarks.php" class="text-white no-underline text-lg font-bold flex items-center py-1"><i class="fa fa-bookmark fa-fw mr-2"></i> Bookmarks</a></li>
             <li><a href="#" class="text-white no-underline text-lg font-bold flex items-center py-1"><i class="fa fa-users fa-fw mr-2"></i> Social</a></li>
             <li><a href="#" class="text-white no-underline text-lg font-bold flex items-center py-1"><i class="fa fa-shopping-cart fa-fw mr-2"></i> Shop</a></li>
         </ul>
