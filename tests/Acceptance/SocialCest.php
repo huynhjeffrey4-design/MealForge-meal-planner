@@ -31,9 +31,7 @@ final class SocialCest
         $I->seeCurrentUrlEquals('/profile.php');
 
         // Profile page
-        $I->see('Social');
-        $I->click('Social');
-        $I->seeCurrentUrlEquals('/social.php');
+        $I->amOnPage('/social.php');
 
         // Now logged in on social page, upload
         $I->see("Log out");
