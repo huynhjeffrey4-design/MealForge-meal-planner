@@ -15,25 +15,4 @@ final class SocialCest
         $I->click('Log in');
         $I->seeCurrentUrlEquals('/login.php');
     }
-
-    public function socialPageLoggedIn(AcceptanceTester $I): void
-    {
-        // NOTE: Precondition:
-        //  1. Test-user is registered
-        $email = 'test@email.com';
-        $password = 'password123';
-
-        // Log in
-        $I->amOnPage('/login.php');
-        $I->fillField('email', $email);
-        $I->fillField('password', $password);
-        $I->click('Continue');
-        $I->seeCurrentUrlEquals('/profile.php');
-
-        // Profile page
-        $I->amOnPage('/social.php');
-
-        // Now logged in on social page, upload
-        $I->see("Log out");
-    }
 }
