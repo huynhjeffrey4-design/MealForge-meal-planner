@@ -143,19 +143,24 @@ final class LinksCest
      * Test profile page functionality
      */
     public function testProfilePageFunctionality(AcceptanceTester $I): void
-    {
-        // First login to access profile page
-        $this->loginTestUser($I);
-        
-        // Check that we're on the profile page
-        $I->seeInCurrentUrl('profile.php');
-        $I->see('MealForge');
-        
-        // Test sidebar navigation links
-        $I->seeLink('Dashboard');
-        $I->seeLink('Social');
-        $I->seeLink('Shop');
-    }
+{
+    // First login to access profile page
+    $this->loginTestUser($I);
+    
+    // Check that we're on the profile page
+    $I->seeInCurrentUrl('profile.php');
+    $I->see('MealForge');
+    
+    // Test header navigation links
+    $I->seeLink('Find a Store');
+    $I->seeLink('Search Recipes');
+    $I->seeLink('Recipe Swiper');
+    $I->seeLink('My Meals');
+    $I->seeLink('About Us');
+    
+    // Test profile dropdown (if visible in test)
+    $I->see('Profile');
+}
     
     /**
      * Test map page functionality
