@@ -179,7 +179,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['edit_all'])) {
         </div>
         <ul class="space-y-4">
             <li><a href="dashboard.php" class="text-white no-underline text-lg font-bold flex items-center py-1"><i class="fa fa-home fa-fw mr-2"></i> Dashboard</a></li>
-            <li><a href="#" class="text-white no-underline text-lg font-bold flex items-center py-1"><i class="fa fa-users fa-fw mr-2"></i> Social</a></li>
+            <li><a href="social.php" class="text-white no-underline text-lg font-bold flex items-center py-1"><i class="fa fa-users fa-fw mr-2"></i> Social</a></li>
             <li><a href="#" class="text-white no-underline text-lg font-bold flex items-center py-1"><i class="fa fa-shopping-cart fa-fw mr-2"></i> Shop</a></li>
         </ul>
     </div>

@@ -38,3 +38,6 @@ Thumbs.db
 # Build files
 /build/
 /dist/
+
+# Image files
+postimgs/

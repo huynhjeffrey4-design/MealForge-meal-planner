@@ -321,7 +321,7 @@ class RedBeanUserProvider implements UserDataProviderInterface
 			$user->date_of_birth = null;
 			$user->gender = null;
 			$user->phone_number = null;
-			$user->profile_picture = null;
+			$user->profile_picture = 'prof_pics/default_avatar.png';
 			$user->dietary_restrictions = null;
 			$user->dietary_preferences = null;
 
