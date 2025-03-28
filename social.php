@@ -17,7 +17,6 @@ if (isset($_GET['logout'])) {
     exit;
 }
 
-// Helper function to handle form submissions
 function handlePostSubmission($isLoggedIn) {
     if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['description'], $_FILES['image']) && $isLoggedIn) {
         $description = $_POST['description'];
@@ -31,17 +30,8 @@ function handlePostSubmission($isLoggedIn) {
         }
 
         // Handle file upload
-        $uploadDir = 'postimgs/';
-        if (!is_dir($uploadDir)) mkdir($uploadDir, 0777, true);
-
-        $extension = pathinfo($image['name'], PATHINFO_EXTENSION);
-        $temporaryImagePath = $uploadDir . uniqid('image') . '.' . $extension;
-
-        if (!move_uploaded_file($image['tmp_name'], $temporaryImagePath)) {
-            $_SESSION['error'] = 'Failed to upload the image. Please try again.';
-            header('Location: social.php');
-            exit;
-        }
+        $imageData = file_get_contents($image['tmp_name']);
+        $base64Image = 'data:' . $image['type'] . ';base64,' . base64_encode($imageData);
 
         $userId = $_SESSION['user']['id'];
         $user = getUserController()->getUserById($userId);
@@ -52,20 +42,15 @@ function handlePostSubmission($isLoggedIn) {
         $post->first_name = $user['first_name'];
         $post->last_name = $user['last_name'];
         $post->post_time = date('Y-m-d H:i:s');
-        $post->profile_picture = $user['profile_picture'];
+        $post->profile_picture = $user['profile_picture'] ?: 'prof_pics/default_avatar.png';
         $post->description = $description;
         $post->likes = 0;
-        $post->image_url = $temporaryImagePath;
         $post->liked_by = "";
 
+        // Store the image in Base64 format in the database
+        $post->image_url = $base64Image;
+
         $postId = \R::store($post);
-
-        // Rename the uploaded image
-        $finalImagePath = $uploadDir . 'image' . $postId . '.' . $extension;
-        rename($temporaryImagePath, $finalImagePath);
-
-        $post->image_url = $finalImagePath;
-        \R::store($post);
 
         $_SESSION['message'] = 'Post uploaded successfully';
         header('Location: social.php');
@@ -199,10 +184,11 @@ $posts = $postController->getAllPosts();
                         <!-- Left section: Profile Info, Description, and Likes -->
                         <div class="w-1/3 pr-8">
                             <div class="flex items-center mb-6">
-                                <img src="<?= htmlspecialchars($post['profile_picture']) ?>" alt="Profile Picture"
+                                <img src="<?= htmlspecialchars($post['profile_picture'] ?: 'prof_pics/default_avatar.png') ?>" alt="Profile Picture"
                                      class="w-20 h-20 rounded-full object-cover mr-6">
                                 <div>
-                                    <h3 class="font-semibold text-lg text-green-700"><?= htmlspecialchars($post['first_name']) . ' ' . htmlspecialchars($post['last_name']) ?></h3>
+
+                                <h3 class="font-semibold text-lg text-green-700"><?= htmlspecialchars($post['first_name']) . ' ' . htmlspecialchars($post['last_name']) ?></h3>
                                     <p class="text-sm text-gray-600"><?= date('F j, Y', strtotime($post['post_time'])) ?></p>
                                 </div>
                             </div>
@@ -262,7 +248,7 @@ $posts = $postController->getAllPosts();
                                 <div class="comment mb-4 flex items-start">
                                     <div class="flex items-center space-x-4">
                                         <!-- Profile Picture of the Commenter -->
-                                        <img src="<?= htmlspecialchars($commentUser->profile_picture) ?>" alt="Profile Picture" class="w-9 h-9 rounded-full object-cover">
+                                        <img src="<?= htmlspecialchars($commentUser->profile_picture ?: 'prof_pics/default_avatar.png') ?>" alt="Profile Picture" class="w-9 h-9 rounded-full object-cover">
 
                                         <div class="flex-1">
                                             <p><strong><?= htmlspecialchars($commentUser->first_name) . ' ' . htmlspecialchars($commentUser->last_name) ?>:</strong> <?= htmlspecialchars($comment['comment_body']) ?></p>
