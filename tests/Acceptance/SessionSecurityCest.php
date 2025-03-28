@@ -1,12 +1,12 @@
 <?php
 declare(strict_types=1);
 
-namespace Tests\Unit;
-use Tests\Support\UnitTester;
+namespace Tests\Acceptance;
+use Tests\Support\AcceptanceTester;
 
 final class SessionSecurityCest
 {
-    public function _before(UnitTester $I): void
+    public function _before(AcceptanceTester $I): void
     {
         // Start a session if not already started
         if (session_status() !== PHP_SESSION_ACTIVE) {
@@ -14,7 +14,7 @@ final class SessionSecurityCest
         }
     }
 
-    public function _after(UnitTester $I): void
+    public function _after(AcceptanceTester $I): void
     {
         if (session_status() === PHP_SESSION_ACTIVE) {
             session_destroy();
@@ -24,7 +24,7 @@ final class SessionSecurityCest
     /**
      * Test session ID regeneration
      */
-    public function testSessionIdRegeneration(UnitTester $I): void
+    public function testSessionIdRegeneration(AcceptanceTester $I): void
     {
         // Arrange
         $oldSessionId = session_id();
@@ -49,7 +49,7 @@ final class SessionSecurityCest
     /**
      * Test session fixation protection
      */
-    public function testSessionFixationProtection(UnitTester $I): void
+    public function testSessionFixationProtection(AcceptanceTester $I): void
     {
         // Arrange
         $initialSessionId = session_id();
@@ -84,7 +84,7 @@ final class SessionSecurityCest
     /**
      * Test session timeout functionality
      */
-    public function testSessionTimeout(UnitTester $I): void
+    public function testSessionTimeout(AcceptanceTester $I): void
     {
         // Arrange
         $_SESSION['last_activity'] = time() - 1800; // 30 minutes ago
@@ -131,7 +131,7 @@ final class SessionSecurityCest
     /**
      * Test session hijacking protection
      */
-    public function testSessionHijackingProtection(UnitTester $I): void
+    public function testSessionHijackingProtection(AcceptanceTester $I): void
     {
         // Arrange
         $userAgent = 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36';
