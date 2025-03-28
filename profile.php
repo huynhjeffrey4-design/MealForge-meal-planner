@@ -151,6 +151,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['edit_all'])) {
 <body>
     <?php include 'header.php'; ?>
 
+
     <div class="main-content p-5 max-w-4xl mx-auto">
         <div class="flex justify-between items-center mb-8 pb-2 border-b border-gray-200">
             <h1 class="text-2xl text-gray-800 font-bold"><?= htmlspecialchars($firstName) ?>'s Profile</h1>

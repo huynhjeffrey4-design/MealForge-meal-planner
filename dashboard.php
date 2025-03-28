@@ -134,6 +134,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     <!-- Header inclusion -->
     <?php include 'header.php'; ?>
 
+
     <div class="min-h-screen main-container">
 
         <!-- Main Content Area -->

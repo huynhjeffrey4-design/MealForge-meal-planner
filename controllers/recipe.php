@@ -123,9 +123,6 @@ class RecipeController {
             });
         }
 
-        // Limit number of filtered recipes
-        $filteredRecipes = array_slice($filteredRecipes,0,30);
-
         return array_values($filteredRecipes); // Reset array indices
     }
 
@@ -136,15 +133,15 @@ class RecipeController {
      * @return array|null Recipe data or null if not found
      */
     public function getRecipeById($recipeId): array|null {
-        $recipes = $this->recipeProvider->getAllRecipes();
+	  $recipe = $this->recipeProvider->getRecipeById($recipeId);
 
-        foreach ($recipes as $recipe) {
-            if ($recipe['id'] == $recipeId) {
-                return $recipe;
-            }
-        }
+	  if ($recipe === null) {
+		return null;
+	  }
 
-        return null;
+	  $recipe['tags'] = json_decode($recipe['tags']);
+
+	  return $recipe;
     }
 }
 
@@ -172,6 +169,7 @@ interface RecipeDataProvider
      * @return array of recipe data
      */
     public function getAllRecipes(): array;
+	public function getRecipeById($recipeId): array|null;
 }
 
 /**
@@ -188,171 +186,194 @@ class MockRecipeDataProvider implements RecipeDataProvider {
         return $this->recipes;
     }
 
+	public function getRecipeById($recipeId): ?array
+	{
+	  $filterf = function($recipe) use ($recipeId) {
+						return $recipe['id'] == $recipeId;
+									};
+	  $result = array_filter($this->recipes, $filterf);
+	  return $result[0] ?? null;
+	}
+
+    
+
     /**
      * Initialize mock recipe data
      */
     private function initializeRecipes(): void {
         $this->recipes = [
-            [
-                'id' => 1,
-                'meal_type' => 'Lunch',
-                'subcategory' => 'Bowl',
-                'recipe' => 'Mediterranean Quinoa Bowl',
-                'description' => 'A protein-packed bowl with quinoa, chickpeas, cucumber, tomatoes, and feta cheese.',
-                'dish_type' => 'Main Course',
-                'prep_time' => 15,
-                'cook_time' => 20,
-                'difficulty' => 'Medium',
-                'ingredients' => "1 cup quinoa\n2 cups vegetable broth\n1 can (15 oz) chickpeas, drained and rinsed\n1 medium cucumber, diced\n2 medium tomatoes, diced\n1/2 red onion, finely chopped\n1/2 cup feta cheese, crumbled\n1/4 cup kalamata olives, pitted and sliced\n3 tbsp extra virgin olive oil\n2 tbsp lemon juice\n1 clove garlic, minced\n1 tsp dried oregano\nSalt and pepper to taste\n2 tbsp fresh parsley, chopped",
-                'instructions' => "1. Rinse the quinoa under cold water using a fine mesh strainer.\n2. In a medium saucepan, bring the vegetable broth to a boil.\n3. Add the quinoa, reduce heat to low, cover, and simmer for 15-20 minutes until all liquid is absorbed.\n4. Remove from heat and let stand for 5 minutes, then fluff with a fork and allow to cool to room temperature.\n5. In a large bowl, combine cooled quinoa, chickpeas, cucumber, tomatoes, red onion, feta cheese, and olives.\n6. In a small bowl, whisk together olive oil, lemon juice, garlic, oregano, salt, and pepper.\n7. Pour the dressing over the quinoa mixture and toss gently to combine.\n8. Sprinkle with fresh parsley before serving.\n9. Can be served immediately or refrigerated for up to 3 days.",
-                'serves' => 4,
-                'nutrients_sugars' => '12g',
-                'nutrients_carbs' => '58g',
-                'nutrients_fat' => '16g',
-                'nutrients_saturates' => '3g',
-                'nutrients_protein' => '11g',
-                'nutrients_fibre' => '6g',
-                'nutrients_kcal' => '420 kcal',
-                'nutrients_salt' => '1.8g',
-                'total_time' => 35,
-                'tags' => "'Vegan', 'Thai', 'Dinner', 'Spicy'"
-            ],
-            [
-                'id' => 11,
-                'meal_type' => 'Dinner',
-                'subcategory' => 'Stir-Fry',
-                'recipe' => 'Beef and Broccoli Stir-Fry',
-                'description' => 'Tender beef strips and crisp broccoli in a savory sauce served over rice.',
-                'dish_type' => 'Main Course',
-                'prep_time' => 15,
-                'cook_time' => 15,
-                'difficulty' => 'Medium',
-                'ingredients' => "1 lb flank steak, thinly sliced against the grain\n1 cup jasmine rice\n2 cups water\n2 tbsp vegetable oil, divided\n4 cups broccoli florets\n1 red bell pepper, sliced\n3 cloves garlic, minced\n1 tbsp fresh ginger, grated\n2 tbsp sesame oil\n\nFor the marinade:\n2 tbsp soy sauce\n1 tbsp cornstarch\n1 tsp baking soda (tenderizes the meat)\n\nFor the sauce:\n1/3 cup beef broth\n1/4 cup oyster sauce\n3 tbsp soy sauce\n1 tbsp brown sugar\n1 tbsp cornstarch\n1 tsp rice vinegar",
-                'instructions' => "1. In a medium bowl, combine the marinade ingredients. Add the sliced beef and toss to coat. Let marinate for at least 15 minutes or up to 1 hour in the refrigerator.\n2. Rinse rice until water runs clear. In a medium saucepan, combine rice and water. Bring to a boil, then reduce heat to low, cover, and simmer for 15 minutes. Remove from heat and let stand, covered, for 5 minutes.\n3. In a small bowl, whisk together all sauce ingredients until smooth. Set aside.\n4. Heat 1 tablespoon vegetable oil in a large wok or skillet over high heat.\n5. Add broccoli and bell pepper, and stir-fry for 3-4 minutes until broccoli is bright green and crisp-tender. Remove vegetables and set aside.\n6. Add the remaining tablespoon of vegetable oil to the wok.\n7. Add the marinated beef in a single layer (you may need to do this in batches). Cook without stirring for 1 minute to sear, then stir-fry for another 1-2 minutes until beef is nearly cooked through.\n8. Add garlic and ginger, and stir-fry for 30 seconds until fragrant.\n9. Return the vegetables to the wok and pour in the sauce.\n10. Stir-fry for another 1-2 minutes until the sauce thickens and everything is well coated.\n11. Drizzle with sesame oil and toss to combine.\n12. Serve over cooked jasmine rice.",
-                'serves' => 4,
-                'nutrients_sugars' => '5g',
-                'nutrients_carbs' => '42g',
-                'nutrients_fat' => '18g',
-                'nutrients_saturates' => '5g',
-                'nutrients_protein' => '28g',
-                'nutrients_fibre' => '4g',
-                'nutrients_kcal' => '450 kcal',
-                'nutrients_salt' => '1.5g',
-                'total_time' => 30,
-                'tags' => "'High Protein', 'Chinese', 'Dinner'"
-            ],
-            [
-                'id' => 12,
-                'meal_type' => 'Breakfast',
-                'subcategory' => 'Vegetarian',
-                'recipe' => 'Overnight Chia Pudding',
-                'description' => 'Chia seeds soaked in almond milk, topped with fresh fruit and a drizzle of maple syrup.',
-                'dish_type' => 'Breakfast',
-                'prep_time' => 10,
-                'cook_time' => 0,
-                'difficulty' => 'Easy',
-                'ingredients' => "1/4 cup chia seeds\n1 cup almond milk (or any milk of choice)\n1 tbsp maple syrup or honey\n1/2 tsp vanilla extract\nPinch of salt\nToppings: fresh berries, sliced banana, chopped nuts, coconut flakes, additional maple syrup",
-                'instructions' => "1. In a mason jar or container with a lid, combine chia seeds, almond milk, maple syrup, vanilla extract, and salt.\n2. Stir well to combine, making sure there are no clumps of chia seeds.\n3. Secure the lid and refrigerate for at least 4 hours or overnight.\n4. About halfway through the soaking time, give the mixture another good stir to prevent clumping.\n5. When ready to serve, stir the pudding and check consistency. If it's too thick, add a splash more milk; if too thin, add more chia seeds and wait 10 minutes.\n6. Top with your favorite fresh fruits, nuts, coconut flakes, and a drizzle of additional maple syrup if desired.\n7. Enjoy cold straight from the refrigerator. The pudding will keep for up to 5 days refrigerated.",
-                'serves' => 2,
-                'nutrients_sugars' => '8g',
-                'nutrients_carbs' => '20g',
-                'nutrients_fat' => '12g',
-                'nutrients_saturates' => '1g',
-                'nutrients_protein' => '6g',
-                'nutrients_fibre' => '11g',
-                'nutrients_kcal' => '200 kcal',
-                'nutrients_salt' => '0.2g',
-                'total_time' => 10,
-                'tags' => "'Vegan', 'Gluten-Free', 'Breakfast', 'Snack'"
-            ],
-            [
-                'id' => 13,
-                'meal_type' => 'Dinner',
-                'subcategory' => 'Pizza',
-                'recipe' => 'Cauliflower Pizza with Fresh Vegetables',
-                'description' => 'Low-carb Vegetarian pizza with a cauliflower crust, topped with fresh vegetables and mozzarella.',
-                'dish_type' => 'Main Course',
-                'prep_time' => 30,
-                'cook_time' => 30,
-                'difficulty' => 'Hard',
-                'ingredients' => "1 medium head cauliflower, cut into florets\n1/4 cup grated parmesan cheese\n1/4 cup mozzarella cheese, shredded\n1 large egg\n1 tsp dried oregano\n1/2 tsp garlic powder\nSalt and pepper to taste\n\nFor the toppings:\n1/3 cup tomato sauce or pizza sauce\n1 cup mozzarella cheese, shredded\n1/2 red bell pepper, thinly sliced\n1/2 yellow bell pepper, thinly sliced\n1/4 red onion, thinly sliced\n1/2 cup cherry tomatoes, halved\n1/4 cup black olives, sliced\nFresh basil leaves\nRed pepper flakes (optional)",
-                'instructions' => "1. Preheat oven to 425°F (220°C) and line a baking sheet with parchment paper.\n2. Process cauliflower florets in a food processor until they resemble rice grains.\n3. Transfer the cauliflower rice to a microwave-safe bowl and microwave on high for 5 minutes.\n4. Allow the cauliflower to cool enough to handle, then transfer to a clean kitchen towel and squeeze out as much moisture as possible (this is crucial for a crispy crust).\n5. In a bowl, combine the cauliflower with parmesan, 1/4 cup mozzarella, egg, oregano, garlic powder, salt, and pepper. Mix well.\n6. Transfer the mixture to the prepared baking sheet and shape into a circle about 1/4 inch thick.\n7. Bake for 15-20 minutes until golden brown and firm.\n8. Remove from oven and spread tomato sauce evenly over the crust, leaving a small border around the edges.\n9. Sprinkle with mozzarella cheese and arrange vegetable toppings over the cheese.\n10. Return to the oven and bake for an additional 10-12 minutes until cheese is melted and bubbly.\n11. Garnish with fresh basil leaves and red pepper flakes if desired.\n12. Allow to cool for 5 minutes before slicing and serving.",
-                'serves' => 2,
-                'nutrients_sugars' => '6g',
-                'nutrients_carbs' => '14g',
-                'nutrients_fat' => '18g',
-                'nutrients_saturates' => '9g',
-                'nutrients_protein' => '20g',
-                'nutrients_fibre' => '6g',
-                'nutrients_kcal' => '300 kcal',
-                'nutrients_salt' => '1.2g',
-                'total_time' => 60,
-                'tags' => "'Vegetarian','Gluten-Free' , 'Keto', 'Dinner'"
-            ],
-            [
-                'id' => 14,
-                'meal_type' => 'Dinner',
-                'subcategory' => 'Bowl',
-                'recipe' => 'Korean Bibimbap',
-                'description' => 'Rice bowl topped with seasoned vegetables, beef, a fried egg, and gochujang sauce.',
-                'dish_type' => 'Main Course',
-                'prep_time' => 25,
-                'cook_time' => 30,
-                'difficulty' => 'Hard',
-                'ingredients' => "1 1/2 cups short-grain rice\n2 cups water\n1/2 lb lean ground beef or thinly sliced beef\n2 tbsp soy sauce, divided\n2 tsp sesame oil, divided\n2 tsp brown sugar\n2 cloves garlic, minced\n1 cup spinach\n1 cup bean sprouts\n1 medium zucchini, julienned\n1 large carrot, julienned\n1/2 cup shiitake mushrooms, sliced\n4 eggs\nSalt to taste\n2 green onions, sliced\n1 tbsp sesame seeds\n\nFor the gochujang sauce:\n3 tbsp gochujang (Korean chili paste)\n1 tbsp sesame oil\n1 tbsp water\n1 tsp rice vinegar\n1 tsp brown sugar\n1 clove garlic, minced",
-                'instructions' => "1. Rinse rice until water runs clear. Cook rice with 2 cups water in a rice cooker or stovetop according to package directions.\n2. In a small bowl, mix 1 tablespoon soy sauce, 1 teaspoon sesame oil, brown sugar, and half the minced garlic. Toss with the beef and marinate for 15 minutes.\n3. Prepare the gochujang sauce by mixing all sauce ingredients in a small bowl. Set aside.\n4. Blanch spinach for 30 seconds in boiling water, then drain and rinse with cold water. Squeeze out excess water and season with a pinch of salt and a few drops of sesame oil.\n5. Blanch bean sprouts for 1 minute, drain, and season with a pinch of salt and a few drops of sesame oil.\n6. In a large skillet, sauté zucchini over medium-high heat for 2-3 minutes until tender-crisp. Season with a pinch of salt and set aside.\n7. In the same skillet, sauté carrots for 2-3 minutes. Season with a pinch of salt and set aside.\n8. Sauté mushrooms with the remaining garlic for 3-4 minutes. Season with 1 teaspoon soy sauce and set aside.\n9. In the same skillet, cook the marinated beef over medium-high heat until browned and cooked through, about 5-6 minutes. Set aside.\n10. Wipe the skillet clean and fry the eggs sunny-side up or over easy.\n11. To assemble, divide the cooked rice among 4 bowls. Arrange the beef and vegetables in separate sections around the rice.\n12. Place a fried egg in the center of each bowl.\n13. Sprinkle with green onions and sesame seeds.\n14. Serve with gochujang sauce on the side or drizzled over the top.",
-                'serves' => 4,
-                'nutrients_sugars' => '5g',
-                'nutrients_carbs' => '58g',
-                'nutrients_fat' => '16g',
-                'nutrients_saturates' => '4g',
-                'nutrients_protein' => '24g',
-                'nutrients_fibre' => '5g',
-                'nutrients_kcal' => '470 kcal',
-                'nutrients_salt' => '1.8g',
-                'total_time' => 55,
-                'tags' => "'Korean', 'High Protein', 'Dinner'"
-            ],
-            [
-                'id' => 15,
-                'meal_type' => 'Breakfast',
-                'subcategory' => 'Smoothie Bowl',
-                'recipe' => 'Mango Berry Smoothie Bowl',
-                'description' => 'Frozen mango and mixed berries blended and topped with granola and fresh fruit.',
-                'dish_type' => 'Breakfast',
-                'prep_time' => 15,
-                'cook_time' => 0,
-                'difficulty' => 'Easy',
-                'ingredients' => "1 cup frozen mango chunks\n1 cup frozen mixed berries (strawberries, blueberries, raspberries)\n1 ripe banana\n1/4 cup unsweetened almond milk or coconut milk\n1 tbsp honey or maple syrup (optional)\n\nFor toppings:\n1/4 cup granola\n1/2 banana, sliced\n1/4 cup fresh berries\n1 tbsp chia seeds\n1 tbsp coconut flakes\nHoney or maple syrup for drizzling",
-                'instructions' => "1. Add frozen mango, frozen mixed berries, banana, and milk to a high-powered blender.\n2. Blend on low speed initially, then increase to high until smooth and creamy. You want a thick consistency that can be eaten with a spoon.\n3. If the mixture is too thick, add a little more milk, one tablespoon at a time. If too thin, add more frozen fruit.\n4. Add honey or maple syrup if desired and blend briefly to incorporate.\n5. Pour the smoothie mixture into a bowl.\n6. Arrange toppings artfully on top of the smoothie: sliced banana, fresh berries, granola, chia seeds, and coconut flakes.\n7. Drizzle with a small amount of honey or maple syrup if desired.\n8. Serve immediately with a spoon.",
-                'serves' => 2,
-                'nutrients_sugars' => '22g',
-                'nutrients_carbs' => '40g',
-                'nutrients_fat' => '6g',
-                'nutrients_saturates' => '2g',
-                'nutrients_protein' => '5g',
-                'nutrients_fibre' => '9g',
-                'nutrients_kcal' => '230 kcal',
-                'nutrients_salt' => '0.1g',
-                'total_time' => 15,
-                'tags' => "'Vegan', 'Gluten-Free', 'Breakfast', 'Snack'"
-            ]
-        ];
+    [
+        'id' => 1,
+        'meal_type' => 'Lunch',
+        'subcategory' => 'Bowl',
+        'recipe' => 'Mediterranean Quinoa Bowl',
+        'description' => 'A protein-packed bowl with quinoa, chickpeas, cucumber, tomatoes, and feta cheese.',
+        'dish_type' => 'Main Course',
+        'prep_time' => 15,
+        'cook_time' => 20,
+        'difficulty' => 'Medium',
+        'ingredients' => "1 cup quinoa\n2 cups vegetable broth\n1 can (15 oz) chickpeas, drained and rinsed\n1 medium cucumber, diced\n2 medium tomatoes, diced\n1/2 red onion, finely chopped\n1/2 cup feta cheese, crumbled\n1/4 cup kalamata olives, pitted and sliced\n3 tbsp extra virgin olive oil\n2 tbsp lemon juice\n1 clove garlic, minced\n1 tsp dried oregano\nSalt and pepper to taste\n2 tbsp fresh parsley, chopped",
+        'instructions' => "1. Rinse the quinoa under cold water using a fine mesh strainer.\n2. In a medium saucepan, bring the vegetable broth to a boil.\n3. Add the quinoa, reduce heat to low, cover, and simmer for 15-20 minutes until all liquid is absorbed.\n4. Remove from heat and let stand for 5 minutes, then fluff with a fork and allow to cool to room temperature.\n5. In a large bowl, combine cooled quinoa, chickpeas, cucumber, tomatoes, red onion, feta cheese, and olives.\n6. In a small bowl, whisk together olive oil, lemon juice, garlic, oregano, salt, and pepper.\n7. Pour the dressing over the quinoa mixture and toss gently to combine.\n8. Sprinkle with fresh parsley before serving.\n9. Can be served immediately or refrigerated for up to 3 days.",
+        'serves' => 4,
+        'nutrients_sugars' => '12g',
+        'nutrients_carbs' => '58g',
+        'nutrients_fat' => '16g',
+        'nutrients_saturates' => '3g',
+        'nutrients_protein' => '11g',
+        'nutrients_fibre' => '6g',
+        'nutrients_kcal' => '420 kcal',
+        'nutrients_salt' => '1.8g',
+        'total_time' => 35,
+        'tags' => "['Vegan', 'Thai', 'Dinner', 'Spicy']"
+    ],
+    [
+        'id' => 11,
+        'meal_type' => 'Dinner',
+        'subcategory' => 'Stir-Fry',
+        'recipe' => 'Beef and Broccoli Stir-Fry',
+        'description' => 'Tender beef strips and crisp broccoli in a savory sauce served over rice.',
+        'dish_type' => 'Main Course',
+        'prep_time' => 15,
+        'cook_time' => 15,
+        'difficulty' => 'Medium',
+        'ingredients' => "1 lb flank steak, thinly sliced against the grain\n1 cup jasmine rice\n2 cups water\n2 tbsp vegetable oil, divided\n4 cups broccoli florets\n1 red bell pepper, sliced\n3 cloves garlic, minced\n1 tbsp fresh ginger, grated\n2 tbsp sesame oil\n\nFor the marinade:\n2 tbsp soy sauce\n1 tbsp cornstarch\n1 tsp baking soda (tenderizes the meat)\n\nFor the sauce:\n1/3 cup beef broth\n1/4 cup oyster sauce\n3 tbsp soy sauce\n1 tbsp brown sugar\n1 tbsp cornstarch\n1 tsp rice vinegar",
+        'instructions' => "1. In a medium bowl, combine the marinade ingredients. Add the sliced beef and toss to coat. Let marinate for at least 15 minutes or up to 1 hour in the refrigerator.\n2. Rinse rice until water runs clear. In a medium saucepan, combine rice and water. Bring to a boil, then reduce heat to low, cover, and simmer for 15 minutes. Remove from heat and let stand, covered, for 5 minutes.\n3. In a small bowl, whisk together all sauce ingredients until smooth. Set aside.\n4. Heat 1 tablespoon vegetable oil in a large wok or skillet over high heat.\n5. Add broccoli and bell pepper, and stir-fry for 3-4 minutes until broccoli is bright green and crisp-tender. Remove vegetables and set aside.\n6. Add the remaining tablespoon of vegetable oil to the wok.\n7. Add the marinated beef in a single layer (you may need to do this in batches). Cook without stirring for 1 minute to sear, then stir-fry for another 1-2 minutes until beef is nearly cooked through.\n8. Add garlic and ginger, and stir-fry for 30 seconds until fragrant.\n9. Return the vegetables to the wok and pour in the sauce.\n10. Stir-fry for another 1-2 minutes until the sauce thickens and everything is well coated.\n11. Drizzle with sesame oil and toss to combine.\n12. Serve over cooked jasmine rice.",
+        'serves' => 4,
+        'nutrients_sugars' => '5g',
+        'nutrients_carbs' => '42g',
+        'nutrients_fat' => '18g',
+        'nutrients_saturates' => '5g',
+        'nutrients_protein' => '28g',
+        'nutrients_fibre' => '4g',
+        'nutrients_kcal' => '450 kcal',
+        'nutrients_salt' => '1.5g',
+        'total_time' => 30,
+        'tags' => "['High Protein', 'Chinese', 'Dinner']"
+    ],
+    [
+        'id' => 12,
+        'meal_type' => 'Breakfast',
+        'subcategory' => 'Vegetarian',
+        'recipe' => 'Overnight Chia Pudding',
+        'description' => 'Chia seeds soaked in almond milk, topped with fresh fruit and a drizzle of maple syrup.',
+        'dish_type' => 'Breakfast',
+        'prep_time' => 10,
+        'cook_time' => 0,
+        'difficulty' => 'Easy',
+        'ingredients' => "1/4 cup chia seeds\n1 cup almond milk (or any milk of choice)\n1 tbsp maple syrup or honey\n1/2 tsp vanilla extract\nPinch of salt\nToppings: fresh berries, sliced banana, chopped nuts, coconut flakes, additional maple syrup",
+        'instructions' => "1. In a mason jar or container with a lid, combine chia seeds, almond milk, maple syrup, vanilla extract, and salt.\n2. Stir well to combine, making sure there are no clumps of chia seeds.\n3. Secure the lid and refrigerate for at least 4 hours or overnight.\n4. About halfway through the soaking time, give the mixture another good stir to prevent clumping.\n5. When ready to serve, stir the pudding and check consistency. If it's too thick, add a splash more milk; if too thin, add more chia seeds and wait 10 minutes.\n6. Top with your favorite fresh fruits, nuts, coconut flakes, and a drizzle of additional maple syrup if desired.\n7. Enjoy cold straight from the refrigerator. The pudding will keep for up to 5 days refrigerated.",
+        'serves' => 2,
+        'nutrients_sugars' => '8g',
+        'nutrients_carbs' => '20g',
+        'nutrients_fat' => '12g',
+        'nutrients_saturates' => '1g',
+        'nutrients_protein' => '6g',
+        'nutrients_fibre' => '11g',
+        'nutrients_kcal' => '200 kcal',
+        'nutrients_salt' => '0.2g',
+        'total_time' => 10,
+        'tags' => "['Vegan', 'Gluten-Free', 'Breakfast', 'Snack']"
+    ],
+    [
+        'id' => 13,
+        'meal_type' => 'Dinner',
+        'subcategory' => 'Pizza',
+        'recipe' => 'Cauliflower Pizza with Fresh Vegetables',
+        'description' => 'Low-carb Vegetarian pizza with a cauliflower crust, topped with fresh vegetables and mozzarella.',
+        'dish_type' => 'Main Course',
+        'prep_time' => 30,
+        'cook_time' => 30,
+        'difficulty' => 'Hard',
+        'ingredients' => "1 medium head cauliflower, cut into florets\n1/4 cup grated parmesan cheese\n1/4 cup mozzarella cheese, shredded\n1 large egg\n1 tsp dried oregano\n1/2 tsp garlic powder\nSalt and pepper to taste\n\nFor the toppings:\n1/3 cup tomato sauce or pizza sauce\n1 cup mozzarella cheese, shredded\n1/2 red bell pepper, thinly sliced\n1/2 yellow bell pepper, thinly sliced\n1/4 red onion, thinly sliced\n1/2 cup cherry tomatoes, halved\n1/4 cup black olives, sliced\nFresh basil leaves\nRed pepper flakes (optional)",
+        'instructions' => "1. Preheat oven to 425°F (220°C) and line a baking sheet with parchment paper.\n2. Process cauliflower florets in a food processor until they resemble rice grains.\n3. Transfer the cauliflower rice to a microwave-safe bowl and microwave on high for 5 minutes.\n4. Allow the cauliflower to cool enough to handle, then transfer to a clean kitchen towel and squeeze out as much moisture as possible (this is crucial for a crispy crust).\n5. In a bowl, combine the cauliflower with parmesan, 1/4 cup mozzarella, egg, oregano, garlic powder, salt, and pepper. Mix well.\n6. Transfer the mixture to the prepared baking sheet and shape into a circle about 1/4 inch thick.\n7. Bake for 15-20 minutes until golden brown and firm.\n8. Remove from oven and spread tomato sauce evenly over the crust, leaving a small border around the edges.\n9. Sprinkle with mozzarella cheese and arrange vegetable toppings over the cheese.\n10. Return to the oven and bake for an additional 10-12 minutes until cheese is melted and bubbly.\n11. Garnish with fresh basil leaves and red pepper flakes if desired.\n12. Allow to cool for 5 minutes before slicing and serving.",
+        'serves' => 2,
+        'nutrients_sugars' => '6g',
+        'nutrients_carbs' => '14g',
+        'nutrients_fat' => '18g',
+        'nutrients_saturates' => '9g',
+        'nutrients_protein' => '20g',
+        'nutrients_fibre' => '6g',
+        'nutrients_kcal' => '300 kcal',
+        'nutrients_salt' => '1.2g',
+        'total_time' => 60,
+        'tags' => "['Vegetarian','Gluten-Free' , 'Keto', 'Dinner']"
+    ],
+    [
+        'id' => 14,
+        'meal_type' => 'Dinner',
+        'subcategory' => 'Bowl',
+        'recipe' => 'Korean Bibimbap',
+        'description' => 'Rice bowl topped with seasoned vegetables, beef, a fried egg, and gochujang sauce.',
+        'dish_type' => 'Main Course',
+        'prep_time' => 25,
+        'cook_time' => 30,
+        'difficulty' => 'Hard',
+        'ingredients' => "1 1/2 cups short-grain rice\n2 cups water\n1/2 lb lean ground beef or thinly sliced beef\n2 tbsp soy sauce, divided\n2 tsp sesame oil, divided\n2 tsp brown sugar\n2 cloves garlic, minced\n1 cup spinach\n1 cup bean sprouts\n1 medium zucchini, julienned\n1 large carrot, julienned\n1/2 cup shiitake mushrooms, sliced\n4 eggs\nSalt to taste\n2 green onions, sliced\n1 tbsp sesame seeds\n\nFor the gochujang sauce:\n3 tbsp gochujang (Korean chili paste)\n1 tbsp sesame oil\n1 tbsp water\n1 tsp rice vinegar\n1 tsp brown sugar\n1 clove garlic, minced",
+        'instructions' => "1. Rinse rice until water runs clear. Cook rice with 2 cups water in a rice cooker or stovetop according to package directions.\n2. In a small bowl, mix 1 tablespoon soy sauce, 1 teaspoon sesame oil, brown sugar, and half the minced garlic. Toss with the beef and marinate for 15 minutes.\n3. Prepare the gochujang sauce by mixing all sauce ingredients in a small bowl. Set aside.\n4. Blanch spinach for 30 seconds in boiling water, then drain and rinse with cold water. Squeeze out excess water and season with a pinch of salt and a few drops of sesame oil.\n5. Blanch bean sprouts for 1 minute, drain, and season with a pinch of salt and a few drops of sesame oil.\n6. In a large skillet, sauté zucchini over medium-high heat for 2-3 minutes until tender-crisp. Season with a pinch of salt and set aside.\n7. In the same skillet, sauté carrots for 2-3 minutes. Season with a pinch of salt and set aside.\n8. Sauté mushrooms with the remaining garlic for 3-4 minutes. Season with 1 teaspoon soy sauce and set aside.\n9. In the same skillet, cook the marinated beef over medium-high heat until browned and cooked through, about 5-6 minutes. Set aside.\n10. Wipe the skillet clean and fry the eggs sunny-side up or over easy.\n11. To assemble, divide the cooked rice among 4 bowls. Arrange the beef and vegetables in separate sections around the rice.\n12. Place a fried egg in the center of each bowl.\n13. Sprinkle with green onions and sesame seeds.\n14. Serve with gochujang sauce on the side or drizzled over the top.",
+        'serves' => 4,
+        'nutrients_sugars' => '5g',
+        'nutrients_carbs' => '58g',
+        'nutrients_fat' => '16g',
+        'nutrients_saturates' => '4g',
+        'nutrients_protein' => '24g',
+        'nutrients_fibre' => '5g',
+        'nutrients_kcal' => '470 kcal',
+        'nutrients_salt' => '1.8g',
+        'total_time' => 55,
+        'tags' => "['Korean', 'High Protein', 'Dinner']"
+    ],
+    [
+        'id' => 15,
+        'meal_type' => 'Breakfast',
+        'subcategory' => 'Smoothie Bowl',
+        'recipe' => 'Mango Berry Smoothie Bowl',
+        'description' => 'Frozen mango and mixed berries blended and topped with granola and fresh fruit.',
+        'dish_type' => 'Breakfast',
+        'prep_time' => 15,
+        'cook_time' => 0,
+        'difficulty' => 'Easy',
+        'ingredients' => "1 cup frozen mango chunks\n1 cup frozen mixed berries (strawberries, blueberries, raspberries)\n1 ripe banana\n1/4 cup unsweetened almond milk or coconut milk\n1 tbsp honey or maple syrup (optional)\n\nFor toppings:\n1/4 cup granola\n1/2 banana, sliced\n1/4 cup fresh berries\n1 tbsp chia seeds\n1 tbsp coconut flakes\nHoney or maple syrup for drizzling",
+        'instructions' => "1. Add frozen mango, frozen mixed berries, banana, and milk to a high-powered blender.\n2. Blend on low speed initially, then increase to high until smooth and creamy. You want a thick consistency that can be eaten with a spoon.\n3. If the mixture is too thick, add a little more milk, one tablespoon at a time. If too thin, add more frozen fruit.\n4. Add honey or maple syrup if desired and blend briefly to incorporate.\n5. Pour the smoothie mixture into a bowl.\n6. Arrange toppings artfully on top of the smoothie: sliced banana, fresh berries, granola, chia seeds, and coconut flakes.\n7. Drizzle with a small amount of honey or maple syrup if desired.\n8. Serve immediately with a spoon.",
+        'serves' => 2,
+        'nutrients_sugars' => '22g',
+        'nutrients_carbs' => '40g',
+        'nutrients_fat' => '6g',
+        'nutrients_saturates' => '2g',
+        'nutrients_protein' => '5g',
+        'nutrients_fibre' => '9g',
+        'nutrients_kcal' => '230 kcal',
+        'nutrients_salt' => '0.1g',
+        'total_time' => 15,
+        'tags' => "['Vegan', 'Gluten-Free', 'Breakfast', 'Snack']"
+    ]
+  ];
+
     }
 }
 
 class RedbeanRecipeDataProvider implements RecipeDataProvider {
-
+    /**
+     * @param array<int,mixed> $config
+     */
     public function __construct(array $config = [])
-    {
-        $dbConnection = DatabaseConnection::getInstance();
-        $dbConnection->setup($config);
-    }
+	{
+		$dbConnection = DatabaseConnection::getInstance();
+		$dbConnection->setup($config);
+	}
 
-    public function getAllRecipes(): array {
-        $recipes = \R::findAll('recipes');
-        return \R::exportAll($recipes);
-    }
+	public function getAllRecipes(): array {
+		$recipes = \R::findAll('recipes');
+		return \R::exportAll($recipes);
+	}
+
+	public function getRecipeById($recipeId): ?array
+	{
+		$recipe = \R::load('recipes', $recipeId);
+		if ($recipe->id === 0 && !isset($recipe['recipe'])) {
+			return null; // Recipe not found
+		}
+		return $recipe->export();
+	}
 
     public function getRandomRecipeWithImage(): array {
         $recipes = $this->getAllRecipes();

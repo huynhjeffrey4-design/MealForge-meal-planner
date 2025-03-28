@@ -285,7 +285,7 @@ class RedBeanUserProvider implements UserDataProviderInterface
 			$user->date_of_birth = null;
 			$user->gender = null;
 			$user->phone_number = null;
-			$user->profile_picture = null;
+			$user->profile_picture = 'prof_pics/default_avatar.png';
 			$user->dietary_restrictions = null;
 			$user->dietary_preferences = null;
 
@@ -452,7 +452,10 @@ class MockUserProvider implements UserDataProviderInterface
             'phone_number' => null,
             'profile_picture' => null,
             'dietary_restrictions' => null,
-            'dietary_preferences' => null
+            'dietary_preferences' => null,
+
+			// Relation
+			'sharedRecipeList' => []
         ];
         return ['success' => true, 'user' => self::$users[$userId]];
     }
