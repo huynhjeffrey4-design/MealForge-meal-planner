@@ -159,6 +159,12 @@ if (!isset($_SESSION['user'])) {
       />
       <span id="rangeValue">5 km</span>
     </div>
+    
+    <!-- Open Now filter -->
+    <div class="filter-container" style="margin-bottom: 20px; display: flex; align-items: center;">
+      <input type="checkbox" id="openNowFilter" style="margin-right: 5px;">
+      <label for="openNowFilter">Show only stores that are open now</label>
+    </div>
 
     <div id="map"></div>
 

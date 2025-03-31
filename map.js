@@ -123,22 +123,31 @@ function handleResults(results, status) {
 
 function filterAndDisplayResults() {
   const rangeValue = parseFloat(document.getElementById("distanceRange").value);
+  const openNowOnly = document.getElementById("openNowFilter").checked;
 
   // 清除旧的标记和列表
   markers.forEach((marker) => marker.setMap(null));
   markers = [];
   document.getElementById("stores-list").innerHTML = "";
 
-  // 根据滑块范围过滤结果
+  // 根据滑块范围和开放状态过滤结果
   const filteredResults = globalResults.filter((store) => {
     if (!store.geometry || !store.geometry.location || !currentLocation)
       return false;
+    
+    // 距离过滤
     const distance =
       google.maps.geometry.spherical.computeDistanceBetween(
         currentLocation,
         store.geometry.location
       ) / 1000;
-    return distance <= rangeValue;
+    
+    // 开放状态过滤
+    const openNowCondition = openNowOnly ? 
+      (store.opening_hours && store.opening_hours.open_now) : 
+      true;
+    
+    return distance <= rangeValue && openNowCondition;
   });
 
   // 显示过滤后的结果
@@ -152,6 +161,13 @@ function filterAndDisplayResults() {
 document.getElementById("distanceRange").addEventListener("input", function () {
   const value = this.value;
   document.getElementById("rangeValue").innerText = value + " km";
+  if (globalResults.length > 0) {
+    filterAndDisplayResults();
+  }
+});
+
+// 监听"Open Now"复选框变化并更新列表
+document.getElementById("openNowFilter").addEventListener("change", function() {
   if (globalResults.length > 0) {
     filterAndDisplayResults();
   }
