@@ -52,7 +52,6 @@ function handlePostSubmission($isLoggedIn) {
 
         $postId = \R::store($post);
 
-        $_SESSION['message'] = 'Post uploaded successfully';
         header('Location: social.php');
         exit;
     }
