@@ -13,6 +13,7 @@ if (!isset($_SESSION['user'])) {
   <title>MealForge - Find Grocery Stores</title>
   <script src="https://cdn.tailwindcss.com"></script>
   <script src="https://unpkg.com/lucide@latest"></script>
+  <script src="https://unpkg.com/lucide@latest/dist/umd/lucide.min.js"></script>
   <script>
     tailwind.config = {
         theme: {
@@ -27,128 +28,44 @@ if (!isset($_SESSION['user'])) {
         }
     }
   </script>
-  <style>
-    body {
-      padding-top: 5rem; /* Match the padding in header.php */
-      font-family: Arial, sans-serif;
-    }
-    
-    main {
-      max-width: 1200px;
-      margin: 0 auto;
-      padding: 20px;
-    }
-    
-    h2 {
-      font-size: 24px;
-      margin-bottom: 20px;
-      text-align: center;
-      color: #333;
-    }
-    
-    .search-container {
-      display: flex;
-      margin-bottom: 20px;
-      gap: 10px;
-    }
-    
-    #searchBox {
-      flex: 1;
-      padding: 10px;
-      border: 1px solid #ddd;
-      border-radius: 4px;
-    }
-    
-    #searchButton, #currentLocationButton {
-      padding: 10px 15px;
-      background-color: #00A651;
-      color: white;
-      border: none;
-      border-radius: 4px;
-      cursor: pointer;
-    }
-    
-    #currentLocationButton {
-      white-space: nowrap;
-    }
-    
-    .range-container {
-      margin-bottom: 20px;
-      display: flex;
-      align-items: center;
-      gap: 10px;
-    }
-    
-    #distanceRange {
-      flex: 1;
-    }
-    
-    #map {
-      height: 400px;
-      width: 100%;
-      margin-bottom: 20px;
-      border-radius: 8px;
-      border: 1px solid #ddd;
-    }
-    
-    #stores-list {
-      list-style: none;
-      padding: 0;
-    }
-    
-    #stores-list li {
-      padding: 15px;
-      border-bottom: 1px solid #eee;
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-    }
-    
-    #stores-list li:hover {
-      background-color: #f9f9f9;
-    }
-    
-    .store-name {
-      font-weight: bold;
-      color: #333;
-    }
-    
-    .store-address {
-      color: #666;
-      font-size: 14px;
-    }
-    
-    .store-distance {
-      color: #00A651;
-      font-weight: bold;
-    }
-    
-    @media (max-width: 768px) {
-      .search-container {
-        flex-direction: column;
-      }
-      
-      #currentLocationButton {
-        width: 100%;
-      }
-    }
-  </style>
 </head>
-<body>
+<body class="bg-gray-50">
   <?php include 'header.php'; ?>
   
-  <main>
-    <h2>Find a Grocery Store Near You</h2>
+  <main class="max-w-6xl mx-auto px-4 py-8 mt-16">
+    <h2 class="text-3xl font-bold text-center text-gray-800 mb-8">Find a Grocery Store Near You</h2>
 
-    <div class="search-container">
-      <input type="text" id="searchBox" placeholder="Enter your address, city or zip" />
-      <button id="searchButton">⬅</button>
-      <button id="currentLocationButton">📍 Use my current location</button>
+    <!-- Search Container -->
+    <div class="flex flex-col md:flex-row gap-3 mb-6">
+      <div class="relative flex-grow">
+        <span class="absolute inset-y-0 left-0 flex items-center pl-3 text-gray-500">
+          <i data-lucide="search" class="w-5 h-5"></i>
+        </span>
+        <input 
+          type="text" 
+          id="searchBox" 
+          placeholder="Enter your address, city or zip" 
+          class="w-full pl-10 pr-4 py-3 rounded-lg border border-gray-300 focus:ring-2 focus:ring-primary focus:border-primary transition"
+        />
+      </div>
+      <button 
+        id="searchButton" 
+        class="bg-primary hover:bg-primary-dark text-white py-3 px-6 rounded-lg transition flex items-center justify-center"
+      >
+        <i data-lucide="arrow-right" class="w-5 h-5"></i>
+      </button>
+      <button 
+        id="currentLocationButton" 
+        class="bg-primary hover:bg-primary-dark text-white py-3 px-6 rounded-lg transition flex items-center justify-center whitespace-nowrap gap-2"
+      >
+        <i data-lucide="map-pin" class="w-5 h-5"></i>
+        <span>Use my location</span>
+      </button>
     </div>
 
     <!-- Range slider to filter stores by distance -->
-    <div class="range-container">
-      <label for="distanceRange">Distance Range (km):</label>
+    <div class="flex items-center gap-4 mb-6">
+      <label for="distanceRange" class="font-medium text-gray-700">Distance Range:</label>
       <input
         type="range"
         id="distanceRange"
@@ -156,21 +73,57 @@ if (!isset($_SESSION['user'])) {
         max="10"
         step="0.1"
         value="5"
+        class="w-full h-2 bg-gray-300 rounded-lg appearance-none cursor-pointer"
       />
-      <span id="rangeValue">5 km</span>
+      <span id="rangeValue" class="font-medium text-primary min-w-[4rem] text-center">5 km</span>
     </div>
     
     <!-- Open Now filter -->
-    <div class="filter-container" style="margin-bottom: 20px; display: flex; align-items: center;">
-      <input type="checkbox" id="openNowFilter" style="margin-right: 5px;">
-      <label for="openNowFilter">Show only stores that are open now</label>
+    <div class="flex items-center mb-6">
+      <div class="relative inline-block w-10 mr-2 align-middle select-none">
+        <input 
+          type="checkbox" 
+          id="openNowFilter" 
+          class="checkbox opacity-0 absolute h-6 w-6 cursor-pointer"
+        />
+        <div class="toggle-bg bg-gray-300 h-6 w-10 rounded-full"></div>
+        <style>
+          .toggle-bg:after {
+            content: '';
+            position: absolute;
+            top: 0.125rem;
+            left: 0.125rem;
+            width: 1.25rem;
+            height: 1.25rem;
+            background-color: white;
+            border-radius: 50%;
+            transition: transform 0.3s ease;
+          }
+          .checkbox:checked + .toggle-bg {
+            background-color: #00A651;
+          }
+          .checkbox:checked + .toggle-bg:after {
+            transform: translateX(1rem);
+          }
+        </style>
+      </div>
+      <label for="openNowFilter" class="text-gray-700">Only show stores that are open now</label>
     </div>
 
-    <div id="map"></div>
+    <!-- Map Container -->
+    <div id="map" class="w-full h-96 rounded-xl overflow-hidden shadow-md mb-8 border border-gray-200"></div>
 
-    <ul id="stores-list"></ul>
+    <!-- Stores List -->
+    <div class="bg-white rounded-xl shadow-md overflow-hidden border border-gray-200">
+      <h3 class="text-xl font-semibold p-4 border-b border-gray-200 bg-gray-50">Nearby Grocery Stores</h3>
+      <ul id="stores-list" class="divide-y divide-gray-200"></ul>
+    </div>
   </main>
 
+  <script>
+    // Initialize Lucide icons
+    lucide.createIcons();
+  </script>
   <script src="map.js"></script>
   <script async defer src="https://maps.googleapis.com/maps/api/js?key=AIzaSyCy_Mlx0IaBsrSlxmJw8f6luCc09nNcLYs&callback=initMap&libraries=places,geometry"></script>
 </body>

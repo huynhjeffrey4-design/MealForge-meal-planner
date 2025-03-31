@@ -1,22 +1,35 @@
 let map;
 let service;
-let infowindow;
 let currentLocation; // Store the user's current location
 let globalResults = []; // Store the search results
 let markers = []; // Store the map markers
-let arrowMarker = null; // 用于表示地址/当前位置的箭头，确保永远只有一个
+let arrowMarker = null; // User location marker
+let currentInfoWindow = null; // Track the currently open InfoWindow
 
 function initMap() {
   map = new google.maps.Map(document.getElementById("map"), {
     center: { lat: 42.976, lng: -78.744 }, // Default map center
     zoom: 12,
+    styles: [
+      {
+        featureType: "poi.business",
+        elementType: "labels",
+        stylers: [{ visibility: "off" }],
+      },
+    ],
   });
 
   service = new google.maps.places.PlacesService(map);
-  infowindow = new google.maps.InfoWindow();
+  
+  // Close InfoWindow when clicking on the map
+  google.maps.event.addListener(map, 'click', function() {
+    if (currentInfoWindow) {
+      currentInfoWindow.close();
+    }
+  });
 }
 
-// 点击搜索按钮
+// Click search button
 document.getElementById("searchButton").addEventListener("click", () => {
   const query = document.getElementById("searchBox").value;
   if (query) {
@@ -24,9 +37,17 @@ document.getElementById("searchButton").addEventListener("click", () => {
   }
 });
 
-// 点击“Use my current location”按钮
+// Click "Use my location" button
 document.getElementById("currentLocationButton").addEventListener("click", () => {
   if (navigator.geolocation) {
+    // Show loading indicator
+    document.getElementById("currentLocationButton").innerHTML = `
+      <svg class="animate-spin h-5 w-5 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+        <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+        <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+      </svg>
+    `;
+    
     navigator.geolocation.getCurrentPosition(
       (position) => {
         const userLocation = {
@@ -34,12 +55,10 @@ document.getElementById("currentLocationButton").addEventListener("click", () =>
           lng: position.coords.longitude,
         };
 
-        currentLocation = userLocation; // 保存用户位置
-
-        // 将地图中心定位到用户位置
+        currentLocation = userLocation;
         map.setCenter(userLocation);
 
-        // 使用 arrowMarker 显示当前位置（确保只有一个）
+        // Create or update user location marker
         if (arrowMarker) {
           arrowMarker.setPosition(userLocation);
         } else {
@@ -48,16 +67,37 @@ document.getElementById("currentLocationButton").addEventListener("click", () =>
             map: map,
             title: "Your Location",
             icon: {
-              url: "https://upload.wikimedia.org/wikipedia/commons/8/88/Map_marker.svg",
-              scaledSize: new google.maps.Size(40, 40),
+              path: google.maps.SymbolPath.CIRCLE,
+              fillColor: "#00A651",
+              fillOpacity: 1,
+              strokeColor: "#FFFFFF",
+              strokeWeight: 2,
+              scale: 10,
             },
+            zIndex: 999,
           });
         }
 
-        // 搜索附近商店
+        // Search for nearby stores
         searchNearbyStores(userLocation);
+        
+        // Restore button text
+        document.getElementById("currentLocationButton").innerHTML = `
+          <i data-lucide="map-pin" class="w-5 h-5"></i>
+          <span>Use my location</span>
+        `;
+        lucide.createIcons();
       },
-      () => alert("Geolocation failed."),
+      (error) => {
+        // Restore button text
+        document.getElementById("currentLocationButton").innerHTML = `
+          <i data-lucide="map-pin" class="w-5 h-5"></i>
+          <span>Use my location</span>
+        `;
+        lucide.createIcons();
+        
+        alert("Error getting your location: " + error.message);
+      },
       { enableHighAccuracy: true, timeout: 10000 }
     );
   } else {
@@ -66,10 +106,23 @@ document.getElementById("currentLocationButton").addEventListener("click", () =>
 });
 
 /**
- * 搜索商店的主要逻辑
- * location 参数可以是字符串地址或 LatLng 对象
+ * Main search function
+ * location parameter can be a string address or LatLng object
  */
 function searchNearbyStores(location) {
+  // Show loading state
+  document.getElementById("stores-list").innerHTML = `
+    <li class="p-6 flex justify-center">
+      <div class="flex items-center">
+        <svg class="animate-spin h-6 w-6 text-primary mr-3" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+          <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+          <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+        </svg>
+        <span class="text-gray-600">Searching for grocery stores...</span>
+      </div>
+    </li>
+  `;
+
   const request = {
     location: typeof location === "string" ? null : location,
     rankBy: google.maps.places.RankBy.DISTANCE,
@@ -77,17 +130,17 @@ function searchNearbyStores(location) {
   };
 
   if (typeof location === "string") {
-    // 如果用户输入地址，先进行地理编码
+    // If user entered an address, geocode it first
     const geocoder = new google.maps.Geocoder();
     geocoder.geocode({ address: location }, (results, status) => {
       if (status === "OK") {
         request.location = results[0].geometry.location;
         currentLocation = results[0].geometry.location;
 
-        // 将地图中心定位到搜索地址
+        // Center the map on the geocoded address
         map.setCenter(currentLocation);
 
-        // 使用 arrowMarker 显示搜索地址位置
+        // Create or update location marker
         if (arrowMarker) {
           arrowMarker.setPosition(currentLocation);
         } else {
@@ -96,27 +149,45 @@ function searchNearbyStores(location) {
             map: map,
             title: "Your location",
             icon: {
-              url: "https://upload.wikimedia.org/wikipedia/commons/8/88/Map_marker.svg",
-              scaledSize: new google.maps.Size(40, 40),
+              path: google.maps.SymbolPath.CIRCLE,
+              fillColor: "#00A651",
+              fillOpacity: 1,
+              strokeColor: "#FFFFFF",
+              strokeWeight: 2,
+              scale: 10,
             },
+            zIndex: 999,
           });
         }
 
-        // 搜索附近的杂货店
+        // Search for nearby grocery stores
         service.nearbySearch(request, handleResults);
       } else {
-        alert("Geocode was not successful: " + status);
+        document.getElementById("stores-list").innerHTML = `
+          <li class="p-6 text-center text-red-600">
+            Could not find this location. Please try again with a different address.
+          </li>
+        `;
+        console.error("Geocode was not successful: " + status);
       }
     });
   } else {
-    // 如果已经是 LatLng 对象，直接调用 nearbySearch
+    // If already a LatLng object, search directly
     service.nearbySearch(request, handleResults);
   }
 }
 
 function handleResults(results, status) {
-  if (status !== "OK" || !results) return;
-  // 存储全局结果，然后过滤距离
+  if (status !== "OK" || !results) {
+    document.getElementById("stores-list").innerHTML = `
+      <li class="p-6 text-center text-red-600">
+        No grocery stores found in this area. Try expanding your search range.
+      </li>
+    `;
+    return;
+  }
+  
+  // Store global results, then filter by distance
   globalResults = results;
   filterAndDisplayResults();
 }
@@ -125,24 +196,24 @@ function filterAndDisplayResults() {
   const rangeValue = parseFloat(document.getElementById("distanceRange").value);
   const openNowOnly = document.getElementById("openNowFilter").checked;
 
-  // 清除旧的标记和列表
+  // Clear old markers and list
   markers.forEach((marker) => marker.setMap(null));
   markers = [];
   document.getElementById("stores-list").innerHTML = "";
 
-  // 根据滑块范围和开放状态过滤结果
+  // Filter results by range slider and open status
   const filteredResults = globalResults.filter((store) => {
     if (!store.geometry || !store.geometry.location || !currentLocation)
       return false;
     
-    // 距离过滤
+    // Distance filter
     const distance =
       google.maps.geometry.spherical.computeDistanceBetween(
         currentLocation,
         store.geometry.location
       ) / 1000;
     
-    // 开放状态过滤
+    // Open now filter
     const openNowCondition = openNowOnly ? 
       (store.opening_hours && store.opening_hours.open_now) : 
       true;
@@ -150,14 +221,23 @@ function filterAndDisplayResults() {
     return distance <= rangeValue && openNowCondition;
   });
 
-  // 显示过滤后的结果
-  filteredResults.forEach((store, index) => {
-    addStoreMarker(store, index + 1);
-    addStoreToList(store, index + 1);
-  });
+  // Display filtered results
+  if (filteredResults.length === 0) {
+    document.getElementById("stores-list").innerHTML = `
+      <li class="p-6 text-center text-gray-600">
+        No stores found within ${rangeValue} km${openNowOnly ? " that are currently open" : ""}.
+        Try increasing your search distance or adjusting filters.
+      </li>
+    `;
+  } else {
+    filteredResults.forEach((store, index) => {
+      addStoreMarker(store, index + 1);
+      addStoreToList(store, index + 1);
+    });
+  }
 }
 
-// 监听滑块变化并更新列表
+// Listen for range slider changes and update displayed value
 document.getElementById("distanceRange").addEventListener("input", function () {
   const value = this.value;
   document.getElementById("rangeValue").innerText = value + " km";
@@ -166,7 +246,7 @@ document.getElementById("distanceRange").addEventListener("input", function () {
   }
 });
 
-// 监听"Open Now"复选框变化并更新列表
+// Listen for "Open Now" checkbox changes and update list
 document.getElementById("openNowFilter").addEventListener("change", function() {
   if (globalResults.length > 0) {
     filterAndDisplayResults();
@@ -174,7 +254,7 @@ document.getElementById("openNowFilter").addEventListener("change", function() {
 });
 
 /**
- * 将 Google Places 的 price_level (0-4) 转换为自定义的消费范围
+ * Convert Google Places price_level (0-4) to custom spend range
  */
 function getSpendRange(priceLevel) {
   switch (priceLevel) {
@@ -194,16 +274,12 @@ function getSpendRange(priceLevel) {
 }
 
 /**
- * 为每个商店添加标记，并在 InfoWindow 中创建信息：
- * - 路径链接
- * - 简化的营业状态（Open/Closed）
- * - 查看详情（显示详细营业时间）
- * - 访问网站
+ * Add map marker for each store
  */
 function addStoreMarker(store, number) {
   if (!store.geometry || !store.geometry.location) return;
 
-  // 计算距离（单位：km）
+  // Calculate distance in km
   let distanceText = "N/A";
   if (currentLocation) {
     const distance =
@@ -214,7 +290,7 @@ function addStoreMarker(store, number) {
     distanceText = distance.toFixed(2) + " km";
   }
 
-  // 获取消费范围
+  // Get spend range
   let perCapita =
     typeof store.price_level === "number"
       ? getSpendRange(store.price_level)
@@ -222,210 +298,176 @@ function addStoreMarker(store, number) {
 
   const lat = store.geometry.location.lat();
   const lng = store.geometry.location.lng();
-  // 构造 Google Maps 路径链接
+  // Create Google Maps directions link
   const directionsUrl = `https://www.google.com/maps/dir/?api=1&destination=${lat},${lng}`;
 
-  // 营业状态（仅 nearbySearch 返回 open_now）
+  // Opening hours status
   let openingStatusHtml = "N/A";
   if (store.opening_hours) {
     if (store.opening_hours.open_now) {
-      openingStatusHtml = `<span class="open-status-open">Open</span>`;
+      openingStatusHtml = `<span style="color: #00A651; font-weight: bold;">Open</span>`;
     } else {
-      openingStatusHtml = `<span class="open-status-closed">Closed</span>`;
+      openingStatusHtml = `<span style="color: #EF4444; font-weight: bold;">Closed</span>`;
     }
   }
 
-  // InfoWindow 内容
+  // InfoWindow content - simplified version
   let infoContent = `
-    <b>${number}. ${store.name}</b><br>
-    ${store.vicinity}<br>
-    ⭐ Rating: ${store.rating || "N/A"}<br>
-    💰 Average Spend: ${perCapita}<br>
-    📏 Distance: ${distanceText}<br>
-    🕒 Opening Hours: ${openingStatusHtml}<br>
-    🚗 <a href="${directionsUrl}" target="_blank">Get directions</a><br><br>
-    <button onclick="showPlaceDetails('${store.place_id}')">Merchant Information</button>
-    <button onclick="visitWebsite('${store.place_id}')">Visit Website</button>
+    <div style="padding: 12px; max-width: 300px; font-family: Arial, sans-serif;">
+      <h3 style="font-size: 16px; font-weight: bold; margin-bottom: 5px;">${number}. ${store.name}</h3>
+      <p style="margin: 5px 0; color: #4B5563; font-size: 14px;">${store.vicinity}</p>
+      <div style="display: flex; flex-wrap: wrap; gap: 8px; margin-top: 10px;">
+        <div style="display: flex; align-items: center; gap: 4px;">
+          <span style="color: #F59E0B;">★</span>
+          <span style="font-size: 14px;">${store.rating || "N/A"}</span>
+        </div>
+        <div style="display: flex; align-items: center; gap: 4px;">
+          <span style="color: #10B981;">💰</span>
+          <span style="font-size: 14px;">${perCapita}</span>
+        </div>
+        <div style="display: flex; align-items: center; gap: 4px;">
+          <span style="color: #6366F1;">📏</span>
+          <span style="font-size: 14px;">${distanceText}</span>
+        </div>
+        <div style="display: flex; align-items: center; gap: 4px;">
+          <span style="color: #F97316;">🕒</span>
+          <span style="font-size: 14px;">${openingStatusHtml}</span>
+        </div>
+      </div>
+      <div style="margin-top: 12px;">
+        <a href="${directionsUrl}" target="_blank" style="display: inline-block; background-color: #00A651; color: white; padding: 6px 12px; border-radius: 4px; text-decoration: none; font-size: 14px;">
+          Get Directions
+        </a>
+      </div>
+    </div>
   `;
 
-  // 在地图上创建标记
+  // Create marker on map
   const marker = new google.maps.Marker({
     position: store.geometry.location,
     map: map,
-    label: String(number),
+    label: {
+      text: String(number),
+      color: "#FFFFFF",
+      fontWeight: "bold"
+    },
     title: store.name,
     icon: {
       url: "https://maps.gstatic.com/mapfiles/place_api/icons/v1/png_71/shopping-71.png",
-      scaledSize: new google.maps.Size(40, 40),
+      scaledSize: new google.maps.Size(32, 32),
+      labelOrigin: new google.maps.Point(16, 16)
     },
+    animation: google.maps.Animation.DROP
   });
   markers.push(marker);
 
-  const infoWindow = new google.maps.InfoWindow({
-    content: infoContent,
-  });
-
   marker.addListener("click", () => {
-    infoWindow.open(map, marker);
+    // Close any existing InfoWindow
+    if (currentInfoWindow) {
+      currentInfoWindow.close();
+    }
+    
+    // Create a new InfoWindow
+    const markerInfoWindow = new google.maps.InfoWindow({
+      content: infoContent,
+      maxWidth: 320
+    });
+    
+    // Set as current and open
+    currentInfoWindow = markerInfoWindow;
+    markerInfoWindow.open(map, marker);
   });
 }
 
 /**
- * 将商店信息添加到页面下方的列表中
+ * Add store information to the list below the map
  */
 function addStoreToList(store, number) {
   const storesList = document.getElementById("stores-list");
 
-  // 计算距离
+  // Calculate distance
   let distanceText = "N/A";
+  let distanceValue = null;
   if (currentLocation) {
-    const distance =
-      google.maps.geometry.spherical.computeDistanceBetween(
-        currentLocation,
-        store.geometry.location
-      ) / 1000;
-    distanceText = distance.toFixed(2) + " km";
+    distanceValue = google.maps.geometry.spherical.computeDistanceBetween(
+      currentLocation,
+      store.geometry.location
+    ) / 1000;
+    distanceText = distanceValue.toFixed(2) + " km";
   }
 
-  // 消费范围
+  // Spend range
   let perCapita =
     typeof store.price_level === "number"
       ? getSpendRange(store.price_level)
       : "N/A";
 
-  // 营业状态（简化）
-  let openingStatusHtml = "N/A";
+  // Opening status
+  let openingStatusHtml = "";
   if (store.opening_hours) {
     if (store.opening_hours.open_now) {
-      openingStatusHtml = `<span class="open-status-open">Open</span>`;
+      openingStatusHtml = `<span class="text-green-600 font-medium">Open</span>`;
     } else {
-      openingStatusHtml = `<span class="open-status-closed">Closed</span>`;
+      openingStatusHtml = `<span class="text-red-600 font-medium">Closed</span>`;
     }
   }
 
-  // 路径链接
+  // Directions link
   const lat = store.geometry.location.lat();
   const lng = store.geometry.location.lng();
   const directionsUrl = `https://www.google.com/maps/dir/?api=1&destination=${lat},${lng}`;
 
-  // 创建列表项内容
+  // Create list item
   const listItem = document.createElement("li");
+  listItem.className = "p-4 hover:bg-gray-50 transition cursor-pointer";
+
+  // Create click handler for the list item
+  listItem.addEventListener("click", () => {
+    // Close any existing infowindow
+    if (currentInfoWindow) {
+      currentInfoWindow.close();
+    }
+    
+    // Pan to this marker and trigger click
+    map.panTo(store.geometry.location);
+    google.maps.event.trigger(markers[number - 1], "click");
+  });
+
   listItem.innerHTML = `
-    <b>${number}. ${store.name}</b> - ${store.vicinity}<br>
-    ⭐ ${store.rating || "N/A"} |
-    💰 Average Spend: ${perCapita} |
-    📏 Distance: ${distanceText} |
-    🕒 ${openingStatusHtml}<br>
-    📍 <a class="get-directions" href="${directionsUrl}" target="_blank">Get directions</a><br><br>
-    <button onclick="showPlaceDetails('${store.place_id}')">Merchant Information</button>
-    <button onclick="visitWebsite('${store.place_id}')">Visit Website</button>
+    <div class="flex flex-col md:flex-row md:items-center justify-between gap-4">
+      <div class="flex-grow">
+        <div class="flex items-center gap-2">
+          <span class="flex items-center justify-center w-6 h-6 rounded-full bg-primary text-white text-sm font-bold">${number}</span>
+          <h3 class="font-semibold text-gray-900">${store.name}</h3>
+          ${store.rating ? 
+            `<div class="flex items-center text-yellow-500 ml-2">
+              <i data-lucide="star" class="w-4 h-4 fill-current"></i>
+              <span class="ml-1 text-sm font-medium">${store.rating}</span>
+            </div>` : ''}
+        </div>
+        <p class="text-gray-600 text-sm mt-1">${store.vicinity}</p>
+        <div class="flex flex-wrap gap-4 mt-2">
+          <div class="flex items-center text-sm text-gray-600">
+            <i data-lucide="wallet" class="w-4 h-4 mr-1"></i> ${perCapita}
+          </div>
+          <div class="flex items-center text-sm text-gray-600">
+            <i data-lucide="map-pin" class="w-4 h-4 mr-1"></i> ${distanceText}
+          </div>
+          <div class="flex items-center text-sm">
+            <i data-lucide="clock" class="w-4 h-4 mr-1"></i> ${openingStatusHtml}
+          </div>
+        </div>
+      </div>
+      <div class="mt-3 md:mt-0">
+        <a href="${directionsUrl}" target="_blank" class="inline-flex items-center px-3 py-2 text-sm font-medium rounded-md text-white bg-primary hover:bg-primary-dark transition">
+          <i data-lucide="navigation" class="w-4 h-4 mr-1"></i>
+          Directions
+        </a>
+      </div>
+    </div>
   `;
   storesList.appendChild(listItem);
-}
-
-/**
- * 显示商店的详细信息，包括更完整的营业时间
- */
-function showPlaceDetails(placeId) {
-  service.getDetails({ placeId: placeId }, (place, status) => {
-    if (status === google.maps.places.PlacesServiceStatus.OK) {
-      // 获取详细营业状态信息
-      const openingStatus = getDetailedOpeningStatus(place);
-
-      let detailsContent = `
-        <div>
-          <h3>${place.name}</h3>
-          <p><strong>Address:</strong> ${place.formatted_address || "N/A"}</p>
-          <p><strong>Phone:</strong> ${place.formatted_phone_number || "N/A"}</p>
-          <p><strong>Hours:</strong> ${openingStatus}</p>
-        </div>
-      `;
-
-      infowindow.setContent(detailsContent);
-      infowindow.setPosition(place.geometry.location);
-      infowindow.open(map);
-    } else {
-      alert("Details not available.");
-    }
-  });
-}
-
-/**
- * 打开商店的官网（如果有的话）
- * 为了兼容 Safari，先立即打开一个空白窗口，再在回调中更新窗口 URL
- */
-function visitWebsite(placeId) {
-  // 立即打开空白窗口（必须是用户点击的直接结果）
-  const newWindow = window.open('', '_blank');
-  service.getDetails(
-    { placeId: placeId, fields: ["website", "name"] },
-    (place, status) => {
-      console.log("getDetails status:", status, "place:", place);
-      if (status === google.maps.places.PlacesServiceStatus.OK) {
-        if (place.website) {
-          newWindow.location.href = place.website;
-        } else {
-          newWindow.close();
-          alert("Website not available for " + (place.name || "this place") + ".");
-        }
-      } else {
-        newWindow.close();
-        alert("Details not available. Status: " + status);
-      }
-    }
-  );
-}
-
-/**
- * 返回详细营业状态，例如 "Open · Closes 12:00 AM" 或 "Closed · Opens 9:00 AM"
- */
-function getDetailedOpeningStatus(place) {
-  if (!place.opening_hours) {
-    return "No opening hours info.";
-  }
-
-  const isOpen = place.opening_hours.isOpen();
-  const periods = place.opening_hours.periods;
-
-  if (!periods) {
-    return isOpen
-      ? '<span style="color: green;">Open</span>'
-      : '<span style="color: red;">Closed</span>';
-  }
-
-  const today = new Date().getDay();
-  const todayPeriod = periods.find((p) => p.open.day === today);
-
-  if (!todayPeriod) {
-    return isOpen
-      ? '<span style="color: green;">Open</span>'
-      : '<span style="color: red;">Closed</span>';
-  }
-
-  if (isOpen) {
-    if (todayPeriod.close) {
-      const closeTime = formatTimeString(todayPeriod.close.time);
-      return `<span style="color: green;">Open</span> · Closes ${closeTime}`;
-    } else {
-      return `<span style="color: green;">Open</span>`;
-    }
-  } else {
-    return `<span style="color: red;">Closed</span>`;
-  }
-}
-
-/**
- * 将 "HHmm" 格式（例如 "2200"）转换为 12 小时格式（例如 "10:00 PM"）
- */
-function formatTimeString(timeStr) {
-  if (timeStr.length < 3) return timeStr;
-  let hh = parseInt(timeStr.slice(0, 2), 10);
-  let mm = parseInt(timeStr.slice(2), 10);
-
-  const suffix = hh >= 12 ? "PM" : "AM";
-  hh = hh % 12;
-  if (hh === 0) hh = 12;
-
-  const mmStr = mm.toString().padStart(2, "0");
-  return `${hh}:${mmStr} ${suffix}`;
+  
+  // Re-initialize Lucide icons in the new content
+  lucide.createIcons();
 }
