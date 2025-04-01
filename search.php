@@ -210,40 +210,41 @@ $recipesCount = count($recipes);
                     </div>
                     <?php else: ?>
                         <?php foreach ($recipes as $recipe): ?>
-                        <a href="recipe.php?id=<?= htmlspecialchars($recipe['id']) ?>" class="block bg-white rounded-lg shadow overflow-hidden hover:shadow-md transition-shadow duration-200">
+                            <a href="recipe.php?id=<?= htmlspecialchars($recipe['id']) ?>" class="block bg-white rounded-lg shadow overflow-hidden hover:shadow-md transition-shadow duration-200">
                                 <?php if (!empty($recipe['image'])): ?>
-                                <div class="w-full">
-                                    <img src="<?= htmlspecialchars($recipe['image']) ?>" alt="<?= htmlspecialchars($recipe['recipe']) ?>" class="w-full h-48 object-cover">
-                                </div>
+                                    <div class="w-full">
+                                        <img src="<?= htmlspecialchars($recipe['image']) ?>" alt="<?= htmlspecialchars($recipe['recipe']) ?>" class="w-full h-48 object-cover">
+                                    </div>
                                 <?php endif; ?>
-                            <div class="flex flex-col md:flex-row">
-                                <div class="p-4">
-                                    <h3 class="font-bold text-lg mb-2"><?= htmlspecialchars($recipe['recipe']) ?></h3>
-                                    
-                                    <?php if (!empty($recipe['description'])): ?>
-                                    <p class="text-gray-600 text-sm mb-3"><?= htmlspecialchars($recipe['description']) ?></p>
-                                    <?php endif; ?>
-                                    
-                                    <div class="flex flex-wrap gap-2 mb-4">
-                                        <?php foreach ($recipe['tags'] as $tag): ?>
-                                        <span class="inline-block px-2 py-1 text-xs rounded-xl bg-green-100 text-green-800"><?= htmlspecialchars($tag) ?></span>
-                                        <?php endforeach; ?>
-                                    </div>
-                                    
-                                    <div class="flex items-center gap-4">
-                                        <div class="flex items-center">
-                                            <i data-lucide="clock" class="h-5 w-5 text-gray-500 mr-1"></i>
-                                            <span class="text-sm text-gray-600"><?= $recipe['prep_time'] ?> mins</span>
+                                <div class="flex flex-col md:flex-row">
+                                    <div class="p-4">
+                                        <h3 class="font-bold text-lg mb-2"><?= htmlspecialchars($recipe['recipe']) ?></h3>
+
+                                        <?php if (!empty($recipe['description'])): ?>
+                                            <p class="text-gray-600 text-sm mb-3"><?= htmlspecialchars($recipe['description']) ?></p>
+                                        <?php endif; ?>
+
+                                        <div class="flex flex-wrap gap-2 mb-4">
+                                            <?php foreach ($recipe['tags'] as $tag): ?>
+                                                <span class="inline-block px-2 py-1 text-xs rounded-xl bg-green-100 text-green-800"><?= htmlspecialchars($tag) ?></span>
+                                            <?php endforeach; ?>
                                         </div>
-                                        <div class="flex items-center">
-                                            <i data-lucide="gauge" class="h-5 w-5 text-gray-500 mr-1"></i>
-                                            <span class="text-sm text-gray-600"><?= htmlspecialchars($recipe['difficulty']) ?></span>
+
+                                        <div class="flex items-center gap-4">
+                                            <div class="flex items-center">
+                                                <i data-lucide="clock" class="h-5 w-5 text-gray-500 mr-1"></i>
+                                                <span class="text-sm text-gray-600"><?= $recipe['prep_time'] ?> mins</span>
+                                            </div>
+                                            <div class="flex items-center">
+                                                <i data-lucide="gauge" class="h-5 w-5 text-gray-500 mr-1"></i>
+                                                <span class="text-sm text-gray-600"><?= htmlspecialchars($recipe['difficulty']) ?></span>
+                                            </div>
                                         </div>
                                     </div>
                                 </div>
-                            </div>
-                        </a>
+                            </a>
                         <?php endforeach; ?>
+
                         <div class="mt-6 flex justify-between items-center">
                             <!-- Previous Page Link -->
                             <?php if ($page > 1): ?>
