@@ -17,7 +17,7 @@ if (isset($_GET['logout'])) {
     exit;
 }
 
-function handlePostSubmission($isLoggedIn) {
+function handlePostSubmission($isLoggedIn, $postController) {
     if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['description'], $_FILES['image']) && $isLoggedIn) {
         $description = $_POST['description'];
         $image = $_FILES['image'];
@@ -29,28 +29,16 @@ function handlePostSubmission($isLoggedIn) {
             exit;
         }
 
+        $userId = $_SESSION['user']['id'];
+        $user = getUserController()->getUserById($userId);
+
         // Handle file upload
         $imageData = file_get_contents($image['tmp_name']);
         $base64Image = 'data:' . $image['type'] . ';base64,' . base64_encode($imageData);
 
-        $userId = $_SESSION['user']['id'];
-        $user = getUserController()->getUserById($userId);
-
-        // Store the post
-        $post = \R::dispense('post');
-        $post->user_id = $userId;
-        $post->first_name = $user['first_name'];
-        $post->last_name = $user['last_name'];
-        $post->post_time = date('Y-m-d H:i:s');
-        $post->profile_picture = $user['profile_picture'] ?: 'prof_pics/default_avatar.png';
-        $post->description = $description;
-        $post->likes = 0;
-        $post->liked_by = "";
-
-        // Store the image in Base64 format in the database
-        $post->image_url = $base64Image;
-
-        $postId = \R::store($post);
+        // Profile picture
+        $profile_picture = $user['profile_picture'] ?: 'prof_pics/default_avatar.png';
+        $postController->addPost($userId, $user['first_name'], $user['last_name'], $description, $base64Image, $profile_picture);
 
         header('Location: social.php');
         exit;
@@ -58,18 +46,13 @@ function handlePostSubmission($isLoggedIn) {
 }
 
 // Helper function to handle comment submissions
-function handleCommentSubmission($isLoggedIn) {
+function handleCommentSubmission($isLoggedIn, $postController) {
     if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['comment_body'], $_POST['post_id']) && $isLoggedIn) {
         $commentBody = $_POST['comment_body'];
         $postId = $_POST['post_id'];
         $userId = $_SESSION['user']['id'];
 
-        $comment = \R::dispense('comment');
-        $comment->post_id = $postId;
-        $comment->user_id = $userId;
-        $comment->comment_body = $commentBody;
-        $comment->comment_time = date('Y-m-d H:i:s');
-        \R::store($comment);
+        $postController->addComment($postId, $userId, $commentBody);
 
         header('Location: social.php');
         exit;
@@ -77,38 +60,20 @@ function handleCommentSubmission($isLoggedIn) {
 }
 
 // Helper function to handle like submissions
-function handleLikeAction($isLoggedIn) {
+function handleLikeAction($isLoggedIn, $postController) {
     if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['id']) && $isLoggedIn) {
         $postId = $_POST['id'];
         $userEmail = $_SESSION['user']['email'];
 
-        $post = \R::load('post', $postId);
-        if ($post->id) {
-            $likedBy = explode(',', $post->liked_by);
+        $postController->toggleLike($postId, $userEmail);
 
-            if (in_array($userEmail, $likedBy)) {
-                $likedBy = array_diff($likedBy, [$userEmail]);
-                $post->likes--;
-            } else {
-                $likedBy[] = $userEmail;
-                $post->likes++;
-            }
-
-            $post->liked_by = implode(',', $likedBy);
-            \R::store($post);
-
-            echo json_encode([
-                'likes' => $post->likes,
-                'liked' => in_array($userEmail, $likedBy)
-            ]);
-            exit;
-        }
+        exit;
     }
 }
 
-handlePostSubmission($isLoggedIn);
-handleCommentSubmission($isLoggedIn);
-handleLikeAction($isLoggedIn);
+handlePostSubmission($isLoggedIn, $postController);
+handleCommentSubmission($isLoggedIn, $postController);
+handleLikeAction($isLoggedIn, $postController);
 
 // Fetch posts from the database
 $posts = $postController->getAllPosts();
@@ -187,7 +152,7 @@ $posts = $postController->getAllPosts();
                                      class="w-20 h-20 rounded-full object-cover mr-6">
                                 <div>
 
-                                <h3 class="font-semibold text-lg text-green-700"><?= htmlspecialchars($post['first_name']) . ' ' . htmlspecialchars($post['last_name']) ?></h3>
+                                    <h3 class="font-semibold text-lg text-green-700"><?= htmlspecialchars($post['first_name']) . ' ' . htmlspecialchars($post['last_name']) ?></h3>
                                     <p class="text-sm text-gray-600"><?= date('F j, Y', strtotime($post['post_time'])) ?></p>
                                 </div>
                             </div>
@@ -238,10 +203,11 @@ $posts = $postController->getAllPosts();
                     <div class="comments mt-6">
                         <h3 class="text-3xl font-bold underline mb-3">Comments</h3>
                         <?php
-                        $comments = $postController->getCommentsForPost($post['id']);
-                        if ($comments):
-                            foreach ($comments as $comment):
-                                $commentUser = \R::load('user', $comment['user_id']);
+                        $commentsWithUserData = $postController->getCommentsForPost($post['id']);
+                        if ($commentsWithUserData):
+                            foreach ($commentsWithUserData as $commentData):
+                                $comment = $commentData['comment'];
+                                $commentUser = $commentData['user'];
                                 $formattedDate = date('m/d/Y', strtotime($comment['comment_time']));
                                 ?>
                                 <div class="comment mb-4 flex items-start">
