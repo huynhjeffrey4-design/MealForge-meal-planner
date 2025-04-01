@@ -60,7 +60,9 @@ class RecipeController {
         ?string $dietary = null,
         ?int $maxPrepTime = null,
         ?string $mealType = null,
-        ?string $priceRange = null
+        ?string $priceRange = null,
+        ?int $page = 1,
+        ?int $perPage = 15
     ): array {
 
         // Get all recipes first
@@ -123,7 +125,20 @@ class RecipeController {
             });
         }
 
-        return array_values($filteredRecipes); // Reset array indices
+        // Pagination logic: calculate the starting index
+        $totalRecipes = count($filteredRecipes);
+        $totalPages = ceil($totalRecipes / $perPage);
+        $offset = ($page - 1) * $perPage;
+
+        // Slice the filtered recipes array to get the correct page
+        $paginatedRecipes = array_slice($filteredRecipes, $offset, $perPage);
+
+        // Return both the paginated recipes and total page count
+        return [
+            'recipes' => $paginatedRecipes,
+            'totalPages' => $totalPages,
+            'currentPage' => $page
+        ];
     }
 
     /**
@@ -376,22 +391,16 @@ class RedbeanRecipeDataProvider implements RecipeDataProvider {
 	}
 
     public function getRandomRecipeWithImage(): array {
-        $recipes = $this->getAllRecipes();
+        $recipes = \R::findAll('recipes','WHERE imageURL IS NOT NULL');
+        $rand_recipes = \R::exportAll($recipes);
 
-        // Filter out recipes that have NULL or empty imageURL
-        $recipesWithImage = array_filter($recipes, function($recipe) {
-            // Check if imageURL is not NULL or empty
-            return isset($recipe['imageURL']) && !is_null($recipe['imageURL']) && !empty($recipe['imageURL']);
-        });
-
-        if (empty($recipesWithImage)) {
+        if (empty($rand_recipes)) {
             return [];
         }
 
-        $randomIndex = array_rand($recipesWithImage);
-        $randomRecipe = $recipesWithImage[$randomIndex];
+        $randomIndex = array_rand($rand_recipes);
+        $randomRecipe = $rand_recipes[$randomIndex];
 
-        return (is_array($randomRecipe)) ? $randomRecipe : [];
+        return $randomRecipe;
     }
-
 }
