@@ -105,7 +105,7 @@ class RecipeController {
         $params[] = $offset;
 
         // Execute the query using RedBean
-        $recipes = RedBeanPHP\Facade::getAll('SELECT * FROM recipes ' . $query, $params);
+        $recipes = \R::getAll('SELECT * FROM recipes ' . $query, $params);
 
         // Loop through each recipe and clean the tags (optional)
         foreach ($recipes as &$recipe) {
@@ -118,7 +118,7 @@ class RecipeController {
         }
 
         // Return the data (you might also want to include the total count of recipes for pagination)
-        $totalRecipes = RedBeanPHP\Facade::getCell('SELECT COUNT(*) FROM recipes ' . $query, $params);
+        $totalRecipes = \R::getCell('SELECT COUNT(*) FROM recipes ' . $query, $params);
         $totalPages = ceil($totalRecipes / $perPage);
 
         return [
