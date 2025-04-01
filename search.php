@@ -3,6 +3,10 @@ session_start();
 // Include the controller
 require_once __DIR__ .  '/controllers/recipe.php';
 
+// Get current page and perPage from the query parameters (default to 1 and 10 if not set)
+$page = isset($_GET['page']) ? (int)$_GET['page'] : 1;
+$perPage = isset($_GET['perPage']) ? (int)$_GET['perPage'] : 15;
+
 // Initialize the controller
 $recipeController = new \RecipeController(null);
 
@@ -15,18 +19,23 @@ $priceRange = $_GET['price_range'] ?? null;
 $isModal = isset($_GET['modal']) && $_GET['modal'] === 'true';
 
 // Use the controller to get filtered recipes
-$recipes = $recipeController->searchAction(
+$recipesData = $recipeController->searchAction(
     $search,
     $dietary,
     $maxPrepTime,
     $mealType,
-    $priceRange
+    $priceRange,
+    $page,
+    $perPage
 );
 
 // Get all dietary options for filter radio buttons
 $dietaryOptions = ['Vegetarian', 'Vegan', 'Gluten-Free', 'Dairy-Free', 'Keto', 'Paleo'];
 $mealTypeOptions = ['Breakfast', 'Lunch', 'Dinner', 'Snack', 'Dessert'];
 
+$recipes = $recipesData['recipes'];
+$totalPages = $recipesData['totalPages'];
+$currentPage = $recipesData['currentPage'];
 // Calculate recipes count
 $recipesCount = count($recipes);
 ?>
@@ -235,6 +244,27 @@ $recipesCount = count($recipes);
                             </div>
                         </a>
                         <?php endforeach; ?>
+                        <div class="mt-6 flex justify-between items-center">
+                            <!-- Previous Page Link -->
+                            <?php if ($page > 1): ?>
+                                <a href="?page=<?= $page - 1 ?>&perPage=<?= $perPage ?>&search=<?= htmlspecialchars($search ?? '') ?>&dietary=<?= htmlspecialchars($dietary ?? '') ?>&max_prep_time=<?= htmlspecialchars($maxPrepTime ?? '') ?>&meal_type=<?= htmlspecialchars($mealType ?? '') ?>"
+                                   class="px-4 py-2 bg-gray-300 text-gray-700 rounded-md hover:bg-gray-400">
+                                    Previous
+                                </a>
+                            <?php else: ?>
+                                <span class="px-4 py-2 bg-gray-200 text-gray-400 rounded-md">Previous</span>
+                            <?php endif; ?>
+
+                            <!-- Next Page Link -->
+                            <?php if ($page < $totalPages): ?>
+                                <a href="?page=<?= $page + 1 ?>&perPage=<?= $perPage ?>&search=<?= htmlspecialchars($search ?? '') ?>&dietary=<?= htmlspecialchars($dietary ?? '') ?>&max_prep_time=<?= htmlspecialchars($maxPrepTime ?? '') ?>&meal_type=<?= htmlspecialchars($mealType ?? '') ?>"
+                                   class="px-4 py-2 bg-gray-300 text-gray-700 rounded-md hover:bg-gray-400">
+                                    Next
+                                </a>
+                            <?php else: ?>
+                                <span class="px-4 py-2 bg-gray-200 text-gray-400 rounded-md">Next</span>
+                            <?php endif; ?>
+                        </div>
                     <?php endif; ?>
                 </div>
             </div>

@@ -81,7 +81,7 @@ $totalTime = $randomRecipe["total_time"];
                     X
                 </button>
                 <!-- Green check navigates to link -->
-                <a href="https://se-dev.cse.buffalo.edu/CSE442/2025-Spring/cse-442v/display.php?" class="bg-green-600 hover:bg-green-700 text-white py-8 px-12 rounded-lg text-4xl font-bold w-auto">
+                <a href="recipe.php?id=<?= urlencode($randomRecipe['id']) ?>" class="bg-green-600 hover:bg-green-700 text-white py-8 px-12 rounded-lg text-4xl font-bold w-auto">
                     ✓
                 </a>
             </div>
