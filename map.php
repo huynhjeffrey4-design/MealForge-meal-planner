@@ -79,34 +79,36 @@ if (!isset($_SESSION['user'])) {
     
     <!-- Open Now filter -->
     <div class="flex items-center mb-6">
-      <div class="relative inline-block w-10 mr-2 align-middle select-none">
-        <input 
-          type="checkbox" 
-          id="openNowFilter" 
-          class="checkbox opacity-0 absolute h-6 w-6 cursor-pointer"
-        />
-        <div class="toggle-bg bg-gray-300 h-6 w-10 rounded-full"></div>
-        <style>
-          .toggle-bg:after {
-            content: '';
-            position: absolute;
-            top: 0.125rem;
-            left: 0.125rem;
-            width: 1.25rem;
-            height: 1.25rem;
-            background-color: white;
-            border-radius: 50%;
-            transition: transform 0.3s ease;
-          }
-          .checkbox:checked + .toggle-bg {
-            background-color: #00A651;
-          }
-          .checkbox:checked + .toggle-bg:after {
-            transform: translateX(1rem);
-          }
-        </style>
-      </div>
-      <label for="openNowFilter" class="text-gray-700">Only show stores that are open now</label>
+      <label class="flex items-center cursor-pointer">
+        <div class="relative inline-block w-10 mr-2 align-middle select-none">
+          <input 
+            type="checkbox" 
+            id="openNowFilter" 
+            class="checkbox opacity-0 absolute h-6 w-10 cursor-pointer z-10"
+          />
+          <div class="toggle-bg bg-gray-300 h-6 w-10 rounded-full"></div>
+          <style>
+            .toggle-bg:after {
+              content: '';
+              position: absolute;
+              top: 0.125rem;
+              left: 0.125rem;
+              width: 1.25rem;
+              height: 1.25rem;
+              background-color: white;
+              border-radius: 50%;
+              transition: transform 0.3s ease;
+            }
+            .checkbox:checked + .toggle-bg {
+              background-color: #00A651;
+            }
+            .checkbox:checked + .toggle-bg:after {
+              transform: translateX(1rem);
+            }
+          </style>
+        </div>
+        <span class="text-gray-700">Only show stores that are open now</span>
+      </label>
     </div>
 
     <!-- Map Container -->
