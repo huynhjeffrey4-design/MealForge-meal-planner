@@ -52,7 +52,7 @@ final class RecipeControllerCest
         $searchResults = $this->controller->searchAction();
         
         // Assert
-        $T->assertEquals(count($allRecipes), count($searchResults));
+        $T->assertEquals(15, count($searchResults["recipes"]));
     }
     
     /**
@@ -63,7 +63,7 @@ final class RecipeControllerCest
         // Act
         $vegetarianRecipes = $this->controller->searchAction(
 				dietary: 'Vegetarian'
-        );
+        )["recipes"];
         
         // Assert
         $T->assertNotEmpty($vegetarianRecipes);
@@ -85,7 +85,7 @@ final class RecipeControllerCest
             $maxTime,
             null,
             null
-        );
+        )["recipes"];
         
         // Assert
         $T->assertNotEmpty($quickRecipes);
@@ -108,7 +108,7 @@ final class RecipeControllerCest
             null,
             'Breakfast',
             null
-        );
+        )["recipes"];
         
         // Assert
         $T->assertNotEmpty($breakfastRecipes);
@@ -136,7 +136,7 @@ final class RecipeControllerCest
             null,
             null,
             null
-        );
+        )["recipes"];
         
         // Assert
         $T->assertNotEmpty($recipes);
@@ -162,7 +162,7 @@ final class RecipeControllerCest
             null,
             null,
             null
-        );
+        )["recipes"];
         
         // Assert
         $T->assertNotEmpty($recipes);
@@ -191,7 +191,7 @@ final class RecipeControllerCest
             null,
             null,
             null
-        );
+        )["recipes"];
         
         // Assert
         $T->assertNotEmpty($recipes);
@@ -214,11 +214,19 @@ final class RecipeControllerCest
         // Arrange
         $lowerCaseSearch = 'mediterranean';
         $upperCaseSearch = 'MEDITERRANEAN';
-        
+        $perPage = 1000;
+
         // Act
-        $lowerCaseResults = $this->controller->searchAction($lowerCaseSearch);
-        $upperCaseResults = $this->controller->searchAction($upperCaseSearch);
-        
+        $lowerCaseResults = $this->controller->searchAction(
+            search: $lowerCaseSearch,
+            perPage: $perPage
+        )["recipes"];
+
+        $upperCaseResults = $this->controller->searchAction(
+            search: $upperCaseSearch,
+            perPage: $perPage
+        )["recipes"];
+
         // Assert
         $T->assertEquals(count($lowerCaseResults), count($upperCaseResults));
     }
@@ -233,7 +241,7 @@ final class RecipeControllerCest
             dietary: 'Vegan', // dietary
             maxPrepTime: 30,             // maxPrepTime
             mealType: 'Breakfast',    // mealType
-        );
+        )["recipes"];
         
         // Assert
         if (!empty($recipes)) {
@@ -291,7 +299,7 @@ final class RecipeControllerCest
         // Act
         $quickTotalRecipes = $this->controller->searchAction(
             maxPrepTime: $maxTotalTime,
-        );
+        )["recipes"];
         
         // Assert
         $T->assertNotEmpty($quickTotalRecipes);
