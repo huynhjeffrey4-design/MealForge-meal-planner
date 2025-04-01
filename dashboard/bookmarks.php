@@ -33,16 +33,17 @@ if ($bookmarksResponse['success'] && !empty($bookmarksResponse['bookmarks'])) {
     }
 }
 
-// Get user info for the sidebar (similar to dashboard.php)
+// Get user info
 require_once __DIR__ . '/../controllers/user.php';
 $userController = getUserController();
 $user = $userController->getUserById($userId);
 $firstName = $user['first_name'] ?? 'User';
-$profilePicture = $user['profile_picture'] ?? '';
-$defaultProfilePic = '../assets/default-profile.png';
 
 // Calculate recipes count
 $recipesCount = count($bookmarkedRecipes);
+
+// Define a constant so the header knows we're in a subdirectory
+define('IN_SUBDIRECTORY', true);
 ?>
 
 <!DOCTYPE html>
@@ -51,7 +52,6 @@ $recipesCount = count($bookmarkedRecipes);
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>MealForge - My Bookmarks</title>
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://unpkg.com/lucide@latest"></script>
     <script>
@@ -69,44 +69,36 @@ $recipesCount = count($bookmarkedRecipes);
         }
     </script>
 </head>
-<body class="flex flex-col md:flex-row min-h-screen bg-green-50">
-    <!-- Sidebar -->
-    <div class="w-full md:w-64 bg-primary text-white p-5 flex flex-col">
-        <div class="text-2xl font-bold mb-8">MealForge</div>
-        <div class="w-44 h-44 rounded-full bg-gray-100 mx-auto mb-5 overflow-hidden relative">
-            <img src="<?php 
-                if (!empty($profilePicture)) {
-                    echo $profilePicture;
-                } else {
-                    echo $defaultProfilePic;
-                }
-            ?>" alt="Profile Picture" class="w-full h-full object-cover">
-        </div>
-        <div class="text-center mb-10 text-lg">
-            Welcome back, <span class="font-bold"><?php echo htmlspecialchars($firstName); ?>!</span>
-        </div>
-        <ul class="space-y-4">
-            <li><a href="../dashboard.php" class="text-white no-underline text-lg font-bold flex items-center py-1"><i class="fa fa-home fa-fw mr-2"></i> Dashboard</a></li>
-            <li><a href="../meal-plan.php" class="text-white no-underline text-lg font-bold flex items-center py-1"><i class="fa fa-calendar fa-fw mr-2"></i> Meal Plan</a></li>
-            <li><a href="bookmarks.php" class="text-white no-underline text-lg font-bold flex items-center py-1 bg-primary-dark rounded px-2"><i class="fa fa-bookmark fa-fw mr-2"></i> Bookmarks</a></li>
-            <li><a href="#" class="text-white no-underline text-lg font-bold flex items-center py-1"><i class="fa fa-users fa-fw mr-2"></i> Social</a></li>
-            <li><a href="#" class="text-white no-underline text-lg font-bold flex items-center py-1"><i class="fa fa-shopping-cart fa-fw mr-2"></i> Shop</a></li>
-        </ul>
-    </div>
-
-    <!-- Main Content -->
-    <div class="flex-1 p-5 overflow-y-auto">
-        <div class="flex justify-between items-center mb-8 pb-2 border-b border-gray-200">
-            <a href="../profile.php" class="text-gray-600 no-underline flex items-center">
-                <i class="fa fa-arrow-left mr-2"></i> Back to Profile
-            </a>
-            <a href="../logout.php" class="text-primary font-bold no-underline">Log out</a>
-        </div>
+<body class="bg-gray-50">
+    <?php 
+    // Include the header with the correct path
+    include_once __DIR__ . '/../header.php'; 
+    ?>
+    
+    <div class="container mx-auto py-8 px-4 md:px-12">
+        <header class="mb-8 pb-2 border-b border-gray-200">
+            <div class="flex justify-between items-center">
+                <h1 class="text-3xl font-semibold">My Bookmarked Recipes</h1>
+                <div class="text-gray-600">
+                    <span>Welcome, <span class="font-semibold"><?= htmlspecialchars($firstName) ?></span>!</span>
+                </div>
+            </div>
+            <p class="text-gray-600 mt-2">You have <?= $recipesCount ?> bookmarked recipes</p>
+        </header>
         
-        <div class="text-center mb-8">
-            <h1 class="text-4xl font-bold text-gray-800">My Bookmarked Recipes</h1>
-            <p class="text-gray-600 mt-2">You have <?php echo $recipesCount; ?> bookmarked recipes</p>
-        </div>
+        <?php if (isset($_SESSION['message'])): ?>
+            <div class="bg-green-100 border-l-4 border-green-500 text-green-700 p-4 mb-6" role="alert">
+                <p><?= $_SESSION['message']; ?></p>
+            </div>
+            <?php unset($_SESSION['message']); ?>
+        <?php endif; ?>
+        
+        <?php if (isset($_SESSION['error'])): ?>
+            <div class="bg-red-100 border-l-4 border-red-500 text-red-700 p-4 mb-6" role="alert">
+                <p><?= $_SESSION['error']; ?></p>
+            </div>
+            <?php unset($_SESSION['error']); ?>
+        <?php endif; ?>
         
         <!-- Recipe Results -->
         <div id="results" class="w-full">
@@ -116,7 +108,7 @@ $recipesCount = count($bookmarkedRecipes);
                     <i data-lucide="bookmark-x" class="h-12 w-12 mx-auto text-gray-400 mb-4"></i>
                     <h3 class="text-lg font-semibold mb-2">No bookmarked recipes</h3>
                     <p class="text-gray-600 mb-4">You haven't bookmarked any recipes yet.</p>
-                    <a href="../search.php" class="inline-block py-2 px-4 bg-red-600 hover:bg-red-700 text-white font-medium rounded-lg transition duration-150 ease-in-out">
+                    <a href="../search.php" class="inline-block py-2 px-4 bg-green-600 hover:bg-green-700 text-white font-medium rounded-lg transition duration-150 ease-in-out">
                         Browse Recipes
                     </a>
                 </div>
@@ -136,19 +128,21 @@ $recipesCount = count($bookmarkedRecipes);
                             <?php endif; ?>
                             
                             <div class="flex flex-wrap gap-2 mb-4">
-                                <?php foreach ($recipe['tags'] as $tag): ?>
-                                <span class="inline-block px-2 py-1 text-xs rounded-xl bg-green-100 text-green-800"><?= htmlspecialchars($tag) ?></span>
-                                <?php endforeach; ?>
+                                <?php if (isset($recipe['tags']) && is_array($recipe['tags'])): ?>
+                                    <?php foreach ($recipe['tags'] as $tag): ?>
+                                    <span class="inline-block px-2 py-1 text-xs rounded-xl bg-green-100 text-green-800"><?= htmlspecialchars($tag) ?></span>
+                                    <?php endforeach; ?>
+                                <?php endif; ?>
                             </div>
                             
                             <div class="flex items-center gap-4">
                                 <div class="flex items-center">
                                     <i data-lucide="clock" class="h-5 w-5 text-gray-500 mr-1"></i>
-                                    <span class="text-sm text-gray-600"><?= $recipe['prep_time'] ?> mins</span>
+                                    <span class="text-sm text-gray-600"><?= $recipe['prep_time'] ?? '-' ?> mins</span>
                                 </div>
                                 <div class="flex items-center">
                                     <i data-lucide="gauge" class="h-5 w-5 text-gray-500 mr-1"></i>
-                                    <span class="text-sm text-gray-600"><?= htmlspecialchars($recipe['difficulty']) ?></span>
+                                    <span class="text-sm text-gray-600"><?= htmlspecialchars($recipe['difficulty'] ?? 'Easy') ?></span>
                                 </div>
                             </div>
                         </div>

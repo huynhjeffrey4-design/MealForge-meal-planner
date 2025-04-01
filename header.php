@@ -23,6 +23,12 @@ if (!defined('HEADER_SCRIPT_RUN')) {
     
     // Get current page to highlight active nav item
     $currentPage = basename($_SERVER['PHP_SELF']);
+    
+    // Determine base path based on whether we're in a subdirectory
+    $basePath = '';
+    if (defined('IN_SUBDIRECTORY') && IN_SUBDIRECTORY) {
+        $basePath = '../';
+    }
 ?>
 <header class="bg-white shadow-sm fixed w-full top-0 z-50">
     <nav class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
@@ -30,32 +36,36 @@ if (!defined('HEADER_SCRIPT_RUN')) {
         <div class="flex justify-between items-center h-20 pt-4 pb-4">
             <!-- Logo section - adjusted alignment -->
             <div class="flex-shrink-0 flex items-center">
-                <a href="dashboard.php" class="text-2xl font-bold text-green-600 hover:text-green-700 transition-colors">MealForge</a>
+                <a href="<?= $basePath ?>dashboard.php" class="text-2xl font-bold text-green-600 hover:text-green-700 transition-colors">MealForge</a>
             </div>
             
             <!-- Navigation links -->
             <div class="hidden md:flex space-x-8 items-center">
-                <a href="map.php" class="flex items-center text-gray-700 hover:text-green-600 transition-colors <?= $currentPage === 'map.php' ? 'text-green-600 font-semibold' : '' ?>">
+                <a href="<?= $basePath ?>map.php" class="flex items-center text-gray-700 hover:text-green-600 transition-colors <?= $currentPage === 'map.php' ? 'text-green-600 font-semibold' : '' ?>">
                     <i data-lucide="map-pin" class="w-5 h-5 mr-1"></i>
                     Find a Store
                 </a>
-                <a href="search.php" class="flex items-center text-gray-700 hover:text-green-600 transition-colors <?= $currentPage === 'search.php' ? 'text-green-600 font-semibold' : '' ?>">
+                <a href="<?= $basePath ?>search.php" class="flex items-center text-gray-700 hover:text-green-600 transition-colors <?= $currentPage === 'search.php' ? 'text-green-600 font-semibold' : '' ?>">
                     <i data-lucide="search" class="w-5 h-5 mr-1"></i>
                     Search Recipes
                 </a>
-                <a href="match.php" class="flex items-center text-gray-700 hover:text-green-600 transition-colors <?= $currentPage === 'match.php' ? 'text-green-600 font-semibold' : '' ?>">
+                <a href="<?= $basePath ?>match.php" class="flex items-center text-gray-700 hover:text-green-600 transition-colors <?= $currentPage === 'match.php' ? 'text-green-600 font-semibold' : '' ?>">
                     <i data-lucide="heart-handshake" class="w-5 h-5 mr-1"></i>
                     Recipe Swiper
                 </a>
-                <a href="dashboard.php" class="flex items-center text-gray-700 hover:text-green-600 transition-colors <?= $currentPage === 'dashboard.php' ? 'text-green-600 font-semibold' : '' ?>">
+                <a href="<?= $basePath ?>dashboard.php" class="flex items-center text-gray-700 hover:text-green-600 transition-colors <?= $currentPage === 'dashboard.php' ? 'text-green-600 font-semibold' : '' ?>">
                     <i data-lucide="utensils" class="w-5 h-5 mr-1"></i>
                     My Meals
                 </a>
-                <a href="social.php" class="flex items-center text-gray-700 hover:text-green-600 transition-colors <?= $currentPage === 'social.php' ? 'text-green-600 font-semibold' : '' ?>">
+                <a href="<?= $basePath ?>dashboard/bookmarks.php" class="flex items-center text-gray-700 hover:text-green-600 transition-colors <?= $currentPage === 'bookmarks.php' ? 'text-green-600 font-semibold' : '' ?>">
+                    <i data-lucide="bookmark" class="w-5 h-5 mr-1"></i>
+                    Bookmarks
+                </a>
+                <a href="<?= $basePath ?>social.php" class="flex items-center text-gray-700 hover:text-green-600 transition-colors <?= $currentPage === 'social.php' ? 'text-green-600 font-semibold' : '' ?>">
                     <i data-lucide="users" class="w-5 h-5 mr-1"></i>
                     Social Feed
                 </a>
-                <a href="AboutLoggedIn.php" class="flex items-center text-gray-700 hover:text-green-600 transition-colors <?= $currentPage === 'AboutLoggedIn.php' ? 'text-green-600 font-semibold' : '' ?>">
+                <a href="<?= $basePath ?>AboutLoggedIn.php" class="flex items-center text-gray-700 hover:text-green-600 transition-colors <?= $currentPage === 'AboutLoggedIn.php' ? 'text-green-600 font-semibold' : '' ?>">
                     <i data-lucide="info" class="w-5 h-5 mr-1"></i>
                     About Us
                 </a>
@@ -73,18 +83,23 @@ if (!defined('HEADER_SCRIPT_RUN')) {
                 <button id="profile-menu-button" class="flex items-center focus:outline-none">
                     <!-- Increased image size -->
                     <img class="h-10 w-10 rounded-full object-cover border-2 border-gray-200" 
-                         src="<?= htmlspecialchars($profilePicture) ?>" 
+                         src="<?= htmlspecialchars($basePath . $profilePicture) ?>" 
                          alt="Profile picture">
                     <i data-lucide="chevron-down" class="w-4 h-4 ml-2 text-gray-600"></i>
                 </button>
 
                 <div id="profile-menu" class="hidden absolute right-0 mt-2 top-full w-48 bg-white rounded-md shadow-lg py-1 ring-1 ring-black ring-opacity-5 z-[9999]">
-                    <a href="profile.php" 
+                    <a href="<?= $basePath ?>profile.php" 
                        class="flex items-center px-4 py-2 text-sm text-gray-700 hover:bg-gray-100">
                        <i data-lucide="user" class="w-4 h-4 mr-2"></i>
                        Profile
                     </a>
-                    <a href="login.php?logout" 
+                    <a href="<?= $basePath ?>dashboard/bookmarks.php" 
+                       class="flex items-center px-4 py-2 text-sm text-gray-700 hover:bg-gray-100">
+                       <i data-lucide="bookmark" class="w-4 h-4 mr-2"></i>
+                       My Bookmarks
+                    </a>
+                    <a href="<?= $basePath ?>login.php?logout" 
                        class="flex items-center px-4 py-2 text-sm text-gray-700 hover:bg-gray-100">
                        <i data-lucide="log-out" class="w-4 h-4 mr-2"></i>
                        Logout
@@ -96,28 +111,31 @@ if (!defined('HEADER_SCRIPT_RUN')) {
         <!-- Mobile menu -->
         <div id="mobile-menu" class="md:hidden hidden pb-3">
             <div class="px-2 pt-2 pb-3 space-y-1">
-                <a href="map.php" class="block px-3 py-2 rounded-md <?= $currentPage === 'map.php' ? 'bg-green-100 text-green-600 font-medium' : 'text-gray-700 hover:bg-gray-100' ?>">
+                <a href="<?= $basePath ?>map.php" class="block px-3 py-2 rounded-md <?= $currentPage === 'map.php' ? 'bg-green-100 text-green-600 font-medium' : 'text-gray-700 hover:bg-gray-100' ?>">
                     Find a Store
                 </a>
-                <a href="search.php" class="block px-3 py-2 rounded-md <?= $currentPage === 'search.php' ? 'bg-green-100 text-green-600 font-medium' : 'text-gray-700 hover:bg-gray-100' ?>">
+                <a href="<?= $basePath ?>search.php" class="block px-3 py-2 rounded-md <?= $currentPage === 'search.php' ? 'bg-green-100 text-green-600 font-medium' : 'text-gray-700 hover:bg-gray-100' ?>">
                     Search Recipes
                 </a>
-                <a href="match.php" class="block px-3 py-2 rounded-md <?= $currentPage === 'match.php' ? 'bg-green-100 text-green-600 font-medium' : 'text-gray-700 hover:bg-gray-100' ?>">
+                <a href="<?= $basePath ?>match.php" class="block px-3 py-2 rounded-md <?= $currentPage === 'match.php' ? 'bg-green-100 text-green-600 font-medium' : 'text-gray-700 hover:bg-gray-100' ?>">
                     Recipe Swiper
                 </a>
-                <a href="dashboard.php" class="block px-3 py-2 rounded-md <?= $currentPage === 'dashboard.php' ? 'bg-green-100 text-green-600 font-medium' : 'text-gray-700 hover:bg-gray-100' ?>">
+                <a href="<?= $basePath ?>dashboard.php" class="block px-3 py-2 rounded-md <?= $currentPage === 'dashboard.php' ? 'bg-green-100 text-green-600 font-medium' : 'text-gray-700 hover:bg-gray-100' ?>">
                     My Meals
                 </a>
-                <a href="social.php" class="block px-3 py-2 rounded-md <?= $currentPage === 'social.php' ? 'bg-green-100 text-green-600 font-medium' : 'text-gray-700 hover:bg-gray-100' ?>">
+                <a href="<?= $basePath ?>dashboard/bookmarks.php" class="block px-3 py-2 rounded-md <?= $currentPage === 'bookmarks.php' ? 'bg-green-100 text-green-600 font-medium' : 'text-gray-700 hover:bg-gray-100' ?>">
+                    Bookmarks
+                </a>
+                <a href="<?= $basePath ?>social.php" class="block px-3 py-2 rounded-md <?= $currentPage === 'social.php' ? 'bg-green-100 text-green-600 font-medium' : 'text-gray-700 hover:bg-gray-100' ?>">
                     Social Feed
                 </a>
-                <a href="AboutLoggedIn.php" class="block px-3 py-2 rounded-md <?= $currentPage === 'AboutLoggedIn.php' ? 'bg-green-100 text-green-600 font-medium' : 'text-gray-700 hover:bg-gray-100' ?>">
+                <a href="<?= $basePath ?>AboutLoggedIn.php" class="block px-3 py-2 rounded-md <?= $currentPage === 'AboutLoggedIn.php' ? 'bg-green-100 text-green-600 font-medium' : 'text-gray-700 hover:bg-gray-100' ?>">
                     About Us
                 </a>
-                <a href="profile.php" class="block px-3 py-2 rounded-md text-gray-700 hover:bg-gray-100">
+                <a href="<?= $basePath ?>profile.php" class="block px-3 py-2 rounded-md text-gray-700 hover:bg-gray-100">
                     Profile
                 </a>
-                <a href="login.php?logout" class="block px-3 py-2 rounded-md text-gray-700 hover:bg-gray-100">
+                <a href="<?= $basePath ?>login.php?logout" class="block px-3 py-2 rounded-md text-gray-700 hover:bg-gray-100">
                     Logout
                 </a>
             </div>
