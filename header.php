@@ -47,7 +47,7 @@ if (!defined('HEADER_SCRIPT_RUN')) {
             </div>
             
             <!-- Navigation links -->
-            <div class="hidden md:flex space-x-8 items-center">
+            <div class="hidden xl:flex space-x-8 items-center">
                 <?php if ($isLoggedIn): ?>
                     <a href="<?= $basePath ?>map.php" class="flex items-center text-gray-700 hover:text-green-600 transition-colors <?= $currentPage === 'map.php' ? 'text-green-600 font-semibold' : '' ?>">
                         <i data-lucide="map-pin" class="w-5 h-5 mr-1"></i>
@@ -81,7 +81,7 @@ if (!defined('HEADER_SCRIPT_RUN')) {
             </div>
 
             <!-- Mobile menu button -->
-            <div class="md:hidden ml-auto">
+            <div class="xl:hidden ml-auto">
                 <button id="mobile-menu-button" class="text-gray-500 hover:text-gray-700 focus:outline-none">
                     <i data-lucide="menu" class="h-6 w-6"></i>
                 </button>
@@ -129,7 +129,7 @@ if (!defined('HEADER_SCRIPT_RUN')) {
         </div>
 
         <!-- Mobile menu -->
-        <div id="mobile-menu" class="md:hidden hidden pb-3">
+        <div id="mobile-menu" class="xl:hidden hidden pb-3">
             <div class="px-2 pt-2 pb-3 space-y-1">
                 <?php if ($isLoggedIn): ?>
                     <a href="<?= $basePath ?>map.php" class="block px-3 py-2 rounded-md <?= $currentPage === 'map.php' ? 'bg-green-100 text-green-600 font-medium' : 'text-gray-700 hover:bg-gray-100' ?>">
