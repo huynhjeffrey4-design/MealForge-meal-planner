@@ -269,16 +269,16 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             </div>
         </div>
 
-        <div class="relative w-full h-[48rem]">
-            <div class="absolute bottom-[10%] left-1/2 transform -translate-x-1/2 w-[30vw] overflow-x-auto scroll-container px-2">
-                <div class="flex gap-4 py-4" id="slider-content">
+        <div class="relative w-full mt-8 flex justify-center">
+            <div class="w-full max-w-[420px] overflow-x-auto scroll-container px-4">
+                <div class="flex gap-4 snap-x snap-mandatory" id="slider-content">
                     <!-- Dynamic Insert -->
                 </div>
             </div>
+        </div>
 
-            <div class="absolute bottom-[5%] left-1/2 transform -translate-x-1/2 text-center">
-                <button onclick="loadRecipes()" class="px-4 py-2 bg-primary text-white rounded hover:bg-primary-dark">Refresh</button>
-            </div>
+        <div class="text-center mt-4">
+            <button onclick="loadRecipes()" class="px-4 py-2 bg-primary text-white rounded hover:bg-primary-dark">Refresh</button>
         </div>
     </div>
     
@@ -321,7 +321,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 container.innerHTML = '';
                 data.forEach(recipe => {
                     const card = document.createElement('div');
-                    card.className = "w-[calc(100%)] h-[calc(100%/3*2)] flex-shrink-0 cursor-pointer";
+                    card.className = "w-full flex-shrink-0 cursor-pointer";
 
                     card.innerHTML = `
                         <div class="w-full h-full bg-white shadow rounded-lg flex items-center p-2 hover:shadow-lg transition">
@@ -346,7 +346,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                         const timeDiff = new Date().getTime() - startTime;
 
                         if (diffX < 5 && diffY < 5 && timeDiff < 500) {
-                            window.open(`/recipe.php?id=${recipe.id}`, '_blank');
+                            window.location.href = `./recipe.php?id=${recipe.id}`;
                         }
                     });
 
@@ -363,7 +363,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                         const timeDiff = new Date().getTime() - startTime;
 
                         if (diffX < 5 && diffY < 5 && timeDiff < 500) {
-                            window.open(`/recipe.php?id=${recipe.id}`, '_blank');
+                            window.location.href = `./recipe.php?id=${recipe.id}`;
                         }
                     });
 
