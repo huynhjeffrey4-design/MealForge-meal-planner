@@ -87,6 +87,42 @@ class UserController
 
 		return ['success' => true, 'user' => $user];
 	}
+	
+	/**
+	 * Reset user password
+	 * @param string $email Email of the user
+	 * @param string $newPassword New password to set
+	 * @return array Result with success status
+	 */
+	public function resetPassword(string $email, string $newPassword): array
+	{
+		$validation = new ValidationResult();
+		
+		// Validate password
+		$passwordError = $this->validatePassword($newPassword);
+		if ($passwordError !== false) {
+			$validation->addError('password', $passwordError);
+			return ['success' => false, 'validation' => $validation];
+		}
+		
+		// Get user by email
+		$user = $this->provider->getUserByEmail($email);
+		if (!$user) {
+			$validation->addError('general', 'User not found');
+			return ['success' => false, 'validation' => $validation];
+		}
+		
+		// Update user password
+		$userData = ['password' => $newPassword];
+		$result = $this->provider->updateUser($user['id'], $userData);
+		
+		if (!$result) {
+			$validation->addError('general', 'Failed to update password');
+			return ['success' => false, 'validation' => $validation];
+		}
+		
+		return ['success' => true];
+	}
 
 	/**
 	 * Get user by ID
@@ -285,7 +321,7 @@ class RedBeanUserProvider implements UserDataProviderInterface
 			$user->date_of_birth = null;
 			$user->gender = null;
 			$user->phone_number = null;
-			$user->profile_picture = null;
+			$user->profile_picture = 'prof_pics/default_avatar.png';
 			$user->dietary_restrictions = null;
 			$user->dietary_preferences = null;
 
