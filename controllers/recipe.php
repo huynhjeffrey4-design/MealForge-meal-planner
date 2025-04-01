@@ -55,91 +55,81 @@ class RecipeController {
      * @param string|null $priceRange Price range category (budget, moderate, premium)
      * @return array Filtered recipes
      */
-    public function searchAction(
-        ?string $search = null,
-        ?string $dietary = null,
-        ?int $maxPrepTime = null,
-        ?string $mealType = null,
-        ?string $priceRange = null,
-        ?int $page = 1,
-        ?int $perPage = 15
-    ): array {
-
-        // Get all recipes first
-        $recipes = $this->getAllRecipes();
-        $filteredRecipes = $recipes;
-
-        // Filter by dietary preferences
-        if (!empty($dietary)) {
-            $filteredRecipes = array_filter($filteredRecipes, function($recipe) use ($dietary) {
-                // Normalize the dietary preference by removing hyphens for "gluten-free" or "dairy-free"
-                $dietaryNormalized = strtolower(str_replace('-', ' ', $dietary));
-
-                // Check if the subcategory matches the dietary preference
-                $subcategoryMatch = $recipe['subcategory'] == $dietary;
-
-                // Check if dietary value exists in recipe['recipe'], recipe['dish_type'], or recipe['description']
-                $containsDietaryInRecipe = str_contains(strtolower($recipe['recipe']), $dietaryNormalized);
-                $containsDietaryInDishType = str_contains(strtolower($recipe['dish_type']), $dietaryNormalized);
-                $containsDietaryInDescription = str_contains(strtolower($recipe['description']), $dietaryNormalized);
-
-                // Also include the variations of dietary (gluten-free -> gluten free, dairy-free -> dairy free)
-                // Check for the non-hyphenated form by replacing hyphens with spaces
-                $containsDietaryInRecipeWithoutHyphen = str_contains(strtolower(str_replace('-', ' ', $recipe['recipe'])), $dietaryNormalized);
-                $containsDietaryInDishTypeWithoutHyphen = str_contains(strtolower(str_replace('-', ' ', $recipe['dish_type'])), $dietaryNormalized);
-                $containsDietaryInDescriptionWithoutHyphen = str_contains(strtolower(str_replace('-', ' ', $recipe['description'])), $dietaryNormalized);
-
-                // Return true if any of the conditions is met
-                return $subcategoryMatch ||
-                    $containsDietaryInRecipe ||
-                    $containsDietaryInDishType ||
-                    $containsDietaryInDescription ||
-                    $containsDietaryInRecipeWithoutHyphen ||
-                    $containsDietaryInDishTypeWithoutHyphen ||
-                    $containsDietaryInDescriptionWithoutHyphen;
-            });
-        }
-
-
-
-        // Filter by max preparation time
-        if (!empty($maxPrepTime)) {
-            $filteredRecipes = array_filter($filteredRecipes, function($recipe) use ($maxPrepTime) {
-                return $recipe['total_time'] <= $maxPrepTime;
-            });
-        }
-
-        // Filter by meal type
-        if (!empty($mealType)) {
-            $filteredRecipes = array_filter($filteredRecipes, function($recipe) use ($mealType) {
-                return $recipe['meal_type'] == $mealType;
-            });
-        }
-
-        // Search by title or keywords
-        if (!empty($search)) {
-            $search = strtolower($search);
-            $filteredRecipes = array_filter($filteredRecipes, function($recipe) use ($search) {
-                return strpos(strtolower($recipe['recipe']), $search) !== false ||
-                    strpos(strtolower($recipe['description']), $search) !== false;
-            });
-        }
-
-        // Pagination logic: calculate the starting index
-        $totalRecipes = count($filteredRecipes);
-        $totalPages = ceil($totalRecipes / $perPage);
+    public function searchAction($search = null, $dietary = null, $maxPrepTime = 60, $mealType = null, $priceRange = null, $page = 1, $perPage = 15) {
+        // Calculate the offset for pagination
         $offset = ($page - 1) * $perPage;
 
-        // Slice the filtered recipes array to get the correct page
-        $paginatedRecipes = array_slice($filteredRecipes, $offset, $perPage);
+        // Start building the query
+        $query = 'WHERE 1=1';
+        $params = [];
 
-        // Return both the paginated recipes and total page count
+        // Add search filter if provided
+        if ($search) {
+            $query .= ' AND (recipe LIKE ? OR description LIKE ? OR dish_type LIKE ?)';
+            $params[] = '%' . $search . '%';
+            $params[] = '%' . $search . '%';
+            $params[] = '%' . $search . '%';
+        }
+
+        // Add dietary filter if provided
+        if ($dietary) {
+            $dietaryNormalized = strtolower(str_replace('-', ' ', $dietary));  // Normalize the dietary string
+            $query .= ' AND (subcategory LIKE ? OR LOWER(recipe) LIKE ? OR LOWER(dish_type) LIKE ? OR LOWER(description) LIKE ?)';
+            // Add conditions to check for dietary preference in multiple fields
+            $params[] = '%' . $dietary . '%';  // Check subcategory
+            $params[] = '%' . $dietaryNormalized . '%';  // Check recipe (normalized)
+            $params[] = '%' . $dietaryNormalized . '%';  // Check dish_type (normalized)
+            $params[] = '%' . $dietaryNormalized . '%';  // Check description (normalized)
+        }
+
+        // Add max preparation time filter if provided
+        if ($maxPrepTime) {
+            $query .= ' AND prep_time <= ?';
+            $params[] = $maxPrepTime;
+        }
+
+        // Add meal type filter if provided
+        if ($mealType) {
+            $query .= ' AND meal_type LIKE ?';
+            $params[] = '%' . $mealType . '%';
+        }
+
+        // Add price range filter if provided
+        if ($priceRange) {
+            $query .= ' AND price_range <= ?';
+            $params[] = $priceRange;
+        }
+
+        // Apply pagination with LIMIT and OFFSET
+        $query .= ' LIMIT ? OFFSET ?';
+        $params[] = $perPage;
+        $params[] = $offset;
+
+        // Execute the query using RedBean
+        $recipes = RedBeanPHP\Facade::getAll('SELECT * FROM recipes ' . $query, $params);
+
+        // Loop through each recipe and clean the tags (optional)
+        foreach ($recipes as &$recipe) {
+            if (isset($recipe['tags'])) {
+                $recipe['tags'] = is_string($recipe['tags']) ? json_decode($recipe['tags'], true) : $recipe['tags'];
+                if (json_last_error() !== JSON_ERROR_NONE) {
+                    $recipe['tags'] = [];
+                }
+            }
+        }
+
+        // Return the data (you might also want to include the total count of recipes for pagination)
+        $totalRecipes = RedBeanPHP\Facade::getCell('SELECT COUNT(*) FROM recipes ' . $query, $params);
+        $totalPages = ceil($totalRecipes / $perPage);
+
         return [
-            'recipes' => $paginatedRecipes,
+            'recipes' => $recipes,
             'totalPages' => $totalPages,
-            'currentPage' => $page
+            'currentPage' => $page,
         ];
     }
+
+
 
     /**
      * Get a recipe by ID
