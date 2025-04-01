@@ -76,9 +76,9 @@ class RecipeController {
             $query .= ' AND (subcategory LIKE ? OR LOWER(recipe) LIKE ? OR LOWER(dish_type) LIKE ? OR LOWER(description) LIKE ?)';
             // Add conditions to check for dietary preference in multiple fields
             $params[] = '%' . $dietary . '%';  // Check subcategory
-            $params[] = '%' . $dietary . '%';  // Check recipe (normalized)
-            $params[] = '%' . $dietary . '%';  // Check dish_type (normalized)
-            $params[] = '%' . $dietary . '%';  // Check description (normalized)
+            $params[] = '%' . $dietary . '%';  // Check recipe
+            $params[] = '%' . $dietary . '%';  // Check dish_type
+            $params[] = '%' . $dietary . '%';  // Check description
         }
 
         // Add max preparation time filter if provided
