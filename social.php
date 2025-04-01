@@ -161,6 +161,12 @@ $posts = $postController->getAllPosts();
 <?php include 'header.php'; ?>
 
 <div class="container mx-auto py-8 px-4 md:px-12">
+    <!-- Back to Profile Button -->
+    <a href="profile.php" class="flex items-center text-gray-600 mb-6">
+        <i data-lucide="arrow-left" class="h-5 w-5 mr-1"></i>
+        Back to Profile
+    </a>
+    
     <!-- Header -->
     <header class="mb-8 pb-2 border-b border-gray-200">
         <div class="flex justify-between items-center">

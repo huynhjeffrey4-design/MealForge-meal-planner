@@ -1,4 +1,5 @@
 <?php
+session_start();
 // Include the controller
 require_once __DIR__ .  '/controllers/recipe.php';
 
@@ -38,8 +39,31 @@ $recipesCount = count($recipes);
     <title>Recipe Search</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://unpkg.com/lucide@latest"></script>
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        primary: {
+                            DEFAULT: '#00A651',
+                            dark: '#008c44'
+                        }
+                    }
+                }
+            }
+        }
+    </script>
+    <style>
+        body {
+            padding-top: 4rem; /* Space for fixed header */
+        }
+    </style>
 </head>
 <body class="bg-green-50">
+    <?php if (!$isModal): ?>
+        <?php include 'header.php'; ?>
+    <?php endif; ?>
+
     <div class="container mx-auto p-4">
         <?php if (!$isModal): ?>
         <a href="profile.php" class="flex items-center text-gray-600 mb-6">
@@ -177,12 +201,12 @@ $recipesCount = count($recipes);
                     </div>
                     <?php else: ?>
                         <?php foreach ($recipes as $recipe): ?>
-                        <div class="bg-white rounded-lg shadow overflow-hidden">
-                            <?php if (!empty($recipe['image'])): ?>
-                            <div class="w-full">
-                                <img src="<?= htmlspecialchars($recipe['image']) ?>" alt="<?= htmlspecialchars($recipe['recipe']) ?>" class="w-full h-48 object-cover">
-                            </div>
-                            <?php endif; ?>
+                        <a href="recipe.php?id=<?= htmlspecialchars($recipe['id']) ?>" class="block bg-white rounded-lg shadow overflow-hidden hover:shadow-md transition-shadow duration-200">
+                                <?php if (!empty($recipe['image'])): ?>
+                                <div class="w-full">
+                                    <img src="<?= htmlspecialchars($recipe['image']) ?>" alt="<?= htmlspecialchars($recipe['recipe']) ?>" class="w-full h-48 object-cover">
+                                </div>
+                                <?php endif; ?>
                             <div class="flex flex-col md:flex-row">
                                 <div class="p-4">
                                     <h3 class="font-bold text-lg mb-2"><?= htmlspecialchars($recipe['recipe']) ?></h3>
@@ -209,7 +233,7 @@ $recipesCount = count($recipes);
                                     </div>
                                 </div>
                             </div>
-                        </div>
+                        </a>
                         <?php endforeach; ?>
                     <?php endif; ?>
                 </div>

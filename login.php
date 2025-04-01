@@ -15,6 +15,10 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
 		if ($res['success']) {
 			$_SESSION['user'] = $res['user'];
+			if (isset($_GET['redirect'])) {
+				header('Location: ' . $_GET['redirect']);
+				exit;
+			}
 			header('Location: profile.php');
 			exit;
 		} else {
@@ -87,7 +91,7 @@ if ($registration_success) {
 					</div>
 				<?php endif; ?>
 
-				<form method="POST" action="" class="space-y-6">
+				<form method="POST" action="" class="space-y-6" id="login-form">
 					<div class="space-y-2">
 						<label for="email" class="block font-medium text-gray-700">Email</label>
 						<input
