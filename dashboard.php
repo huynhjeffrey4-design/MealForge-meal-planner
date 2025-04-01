@@ -270,7 +270,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     </div>
 
     <!-- Meal Selection Modal -->
-    <div id="meal-modal" class="fixed inset-0 bg-black bg-opacity-50 hidden z-50 flex items-center justify-center p-4">
+    <div id="meal-modal" class="fixed inset-0 bg-black bg-opacity-50 hidden z-50 flex items-center justify-center p-2 sm:p-4">
         <div class="bg-white rounded-lg w-full max-w-6xl h-[90vh] flex flex-col">
             <div class="p-4 border-b flex justify-between items-center">
                 <h2 class="text-xl font-bold">Add Meal</h2>
@@ -283,7 +283,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     </div>
 
     <!-- Recipe Details Modal -->
-    <div id="recipe-modal" class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center hidden z-50">
+    <div id="recipe-modal" class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center hidden z-50 p-2 sm:p-4">
         <div class="bg-white rounded-lg w-full max-w-3xl max-h-[90vh] overflow-y-auto">
             <div class="p-4 border-b border-gray-200 flex justify-between items-center">
                 <div class="flex items-center">
@@ -321,8 +321,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     </div>
 
     <!-- Confirmation Modal -->
-    <div id="confirm-modal" class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center hidden z-50">
-        <div class="bg-white rounded-lg w-full max-w-md p-6">
+    <div id="confirm-modal" class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center hidden z-50 p-2 sm:p-4">
+        <div class="bg-white rounded-lg w-[95%] max-w-md p-4 sm:p-6">
             <h3 class="text-lg font-bold mb-4" id="confirm-title">Remove this meal?</h3>
             <p class="text-gray-700 mb-6" id="confirm-message">Are you sure you want to remove this meal?</p>
             

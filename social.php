@@ -222,21 +222,21 @@ $posts = $postController->getAllPosts();
             <?php else: ?>
                 <!-- Loop through the posts and display each one -->
                 <?php foreach ($posts as $post): ?>
-                    <div class="bg-green-50 rounded-lg shadow p-8 mb-8 border border-green-200 max-w-4xl mx-auto">
+                    <div class="bg-green-50 rounded-lg shadow p-4 sm:p-6 md:p-8 mb-8 border border-green-200 max-w-4xl mx-auto">
                         <div class="flex flex-col md:flex-row">
                             <!-- Left section: Profile Info, Description, and Likes (1/3 of the width) -->
                             <div class="w-full md:w-1/3 md:pr-8 mb-6 md:mb-0">
                                 <div class="flex items-center mb-6">
                                     <img src="<?= htmlspecialchars($post['profile_picture']) ?>" alt="Profile Picture"
-                                         class="w-20 h-20 rounded-full object-cover mr-6">
+                                         class="w-16 h-16 sm:w-20 sm:h-20 rounded-full object-cover mr-4 sm:mr-6">
                                     <div>
-                                        <h3 class="font-semibold text-lg text-green-700"><?= htmlspecialchars($post['first_name']) . ' ' . htmlspecialchars($post['last_name']) ?></h3>
-                                        <p class="text-sm text-gray-600"><?= date('F j, Y', strtotime($post['post_time'])) ?></p>
+                                        <h3 class="font-semibold text-base sm:text-lg text-green-700"><?= htmlspecialchars($post['first_name']) . ' ' . htmlspecialchars($post['last_name']) ?></h3>
+                                        <p class="text-xs sm:text-sm text-gray-600"><?= date('F j, Y', strtotime($post['post_time'])) ?></p>
                                     </div>
                                 </div>
 
                                 <!-- Post Description (Bigger Text) -->
-                                <div class="text-lg text-gray-700 mb-6">
+                                <div class="text-base sm:text-lg text-gray-700 mb-6">
                                     <p class="font-bold"><?= htmlspecialchars($post['description']) ?></p>
                                 </div>
 
