@@ -52,7 +52,7 @@ final class RecipeControllerCest
         $searchResults = $this->controller->searchAction();
         
         // Assert
-        $T->assertEquals(15, count($searchResults["recipes"]));
+        $T->assertEquals(count($allRecipes), count($searchResults["recipes"]));
     }
     
     /**
