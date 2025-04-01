@@ -71,7 +71,6 @@ define('IN_SUBDIRECTORY', true);
 </head>
 <body class="bg-gray-50">
     <?php 
-    // Include the header with the correct path
     include_once __DIR__ . '/../header.php'; 
     ?>
     
