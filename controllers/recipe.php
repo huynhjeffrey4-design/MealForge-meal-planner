@@ -62,33 +62,53 @@ class RecipeController {
         ?string $mealType = null,
         ?string $priceRange = null
     ): array {
+
         // Get all recipes first
-        $recipes = $this->recipeProvider->getAllRecipes();
+        $recipes = $this->getAllRecipes();
         $filteredRecipes = $recipes;
 
         // Filter by dietary preferences
         if (!empty($dietary)) {
             $filteredRecipes = array_filter($filteredRecipes, function($recipe) use ($dietary) {
-                foreach ($dietary as $diet) {
-                    if (in_array($diet, $recipe['tags'])) {
-                        return true;
-                    }
-                }
-                return false;
+                // Normalize the dietary preference by removing hyphens for "gluten-free" or "dairy-free"
+                $dietaryNormalized = strtolower(str_replace('-', ' ', $dietary));
+
+                // Check if the subcategory matches the dietary preference
+                $subcategoryMatch = $recipe['subcategory'] == $dietary;
+
+                // Check if dietary value exists in recipe['recipe'], recipe['dish_type'], or recipe['description']
+                $containsDietaryInRecipe = str_contains(strtolower($recipe['recipe']), $dietaryNormalized);
+                $containsDietaryInDishType = str_contains(strtolower($recipe['dish_type']), $dietaryNormalized);
+                $containsDietaryInDescription = str_contains(strtolower($recipe['description']), $dietaryNormalized);
+
+                // Also include the variations of dietary (gluten-free -> gluten free, dairy-free -> dairy free)
+                // Check for the non-hyphenated form by replacing hyphens with spaces
+                $containsDietaryInRecipeWithoutHyphen = str_contains(strtolower(str_replace('-', ' ', $recipe['recipe'])), $dietaryNormalized);
+                $containsDietaryInDishTypeWithoutHyphen = str_contains(strtolower(str_replace('-', ' ', $recipe['dish_type'])), $dietaryNormalized);
+                $containsDietaryInDescriptionWithoutHyphen = str_contains(strtolower(str_replace('-', ' ', $recipe['description'])), $dietaryNormalized);
+
+                // Return true if any of the conditions is met
+                return $subcategoryMatch ||
+                    $containsDietaryInRecipe ||
+                    $containsDietaryInDishType ||
+                    $containsDietaryInDescription ||
+                    $containsDietaryInRecipeWithoutHyphen ||
+                    $containsDietaryInDishTypeWithoutHyphen ||
+                    $containsDietaryInDescriptionWithoutHyphen;
             });
         }
 
         // Filter by max preparation time
         if (!empty($maxPrepTime)) {
             $filteredRecipes = array_filter($filteredRecipes, function($recipe) use ($maxPrepTime) {
-                return $recipe['prep_time'] <= $maxPrepTime;
+                return $recipe['total_time'] <= $maxPrepTime;
             });
         }
 
         // Filter by meal type
         if (!empty($mealType)) {
             $filteredRecipes = array_filter($filteredRecipes, function($recipe) use ($mealType) {
-                return in_array($mealType, $recipe['tags']);
+                return $recipe['meal_type'] == $mealType;
             });
         }
 
@@ -96,10 +116,13 @@ class RecipeController {
         if (!empty($search)) {
             $search = strtolower($search);
             $filteredRecipes = array_filter($filteredRecipes, function($recipe) use ($search) {
-                return strpos(strtolower($recipe['title']), $search) !== false ||
+                return strpos(strtolower($recipe['recipe']), $search) !== false ||
                     strpos(strtolower($recipe['description']), $search) !== false;
             });
         }
+
+        // Limit number of filtered recipes
+        $filteredRecipes = array_slice($filteredRecipes,0,30);
 
         return array_values($filteredRecipes); // Reset array indices
     }
