@@ -94,21 +94,18 @@ $posts = $postController->getAllPosts();
 </head>
 
 <body class="bg-gray-50">
-<div class="container mx-auto pt-8 px-12">
-    <!-- Back to Profile Button -->
-    <a href="profile.php" class="flex items-center text-gray-600 mb-6">
-        <i data-lucide="arrow-left" class="h-5 w-5 mr-1"></i>
-        Back to Profile
-    </a>
+<?php include 'header.php'; ?>
+
+<div class="container mx-auto py-8 px-4 md:px-12">
     <!-- Header -->
     <header class="mb-8 pb-2 border-b border-gray-200">
         <div class="flex justify-between items-center">
             <h1 class="text-3xl font-semibold">Recipe Social Feed</h1>
-            <!-- Updated Logout Button -->
-            <?php if ($isLoggedIn): ?>
-                <a href="?logout=true" class="text-primary font-bold no-underline">Log out</a>
-            <?php else: ?>
-                <a href="login.php" class="text-primary font-bold no-underline">Log in</a>
+            <?php if (!$isLoggedIn): ?>
+                <div>
+                    <a href="login.php" class="bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded-md text-sm font-medium mr-2">Log in</a>
+                    <a href="signup.php" class="border border-green-600 text-green-600 hover:bg-green-50 px-4 py-2 rounded-md text-sm font-medium">Sign up</a>
+                </div>
             <?php endif; ?>
         </div>
     </header>
@@ -136,6 +133,14 @@ $posts = $postController->getAllPosts();
                 </div>
             </form>
         </div>
+    <?php else: ?>
+        <div class="mb-8 bg-green-50 p-6 rounded-lg border border-green-200">
+            <p class="text-gray-700">
+                <a href="login.php" class="text-green-600 font-semibold">Log in</a> or 
+                <a href="signup.php" class="text-green-600 font-semibold">sign up</a> 
+                to share your own recipes and like posts!
+            </p>
+        </div>
     <?php endif; ?>
 
     <!-- Social Feed Section -->
@@ -154,41 +159,40 @@ $posts = $postController->getAllPosts();
 
                                     <h3 class="font-semibold text-lg text-green-700"><?= htmlspecialchars($post['first_name']) . ' ' . htmlspecialchars($post['last_name']) ?></h3>
                                     <p class="text-sm text-gray-600"><?= date('F j, Y', strtotime($post['post_time'])) ?></p>
+
                                 </div>
-                            </div>
 
                             <!-- Post Description -->
                             <div class="text-lg text-gray-700 mb-6">
                                 <p class="font-bold"><?= htmlspecialchars($post['description']) ?></p>
                             </div>
+                                <!-- Like Button -->
+                                <div class="flex items-center space-x-2">
+                                    <!-- Like button with dynamic class based on whether user has liked or not -->
+                                    <?php if ($isLoggedIn): ?>
+                                        <form action="social.php" method="POST" class="like-form" data-post-id="<?= $post['id'] ?>">
+                                            <?php
+                                            // Get the logged-in user's email
+                                            $userEmail = $_SESSION['user']['email'];
 
-                            <!-- Like Button -->
-                            <div class="flex items-center space-x-2">
-                                <!-- Like button with dynamic class based on whether user has liked or not -->
-                                <?php if ($isLoggedIn): ?>
-                                    <form action="social.php" method="POST" class="like-form" data-post-id="<?= $post['id'] ?>">
-                                        <?php
-                                        // Get the logged-in user's email
-                                        $userEmail = $_SESSION['user']['email'];
+                                            // Get the liked_by field and convert it to an array
+                                            $likedByArray = explode(',', $post['liked_by']);
 
-                                        // Get the liked_by field and convert it to an array
-                                        $likedByArray = explode(',', $post['liked_by']);
-
-                                        // Check if the user's email is in the liked_by array
-                                        $isLiked = in_array($userEmail, $likedByArray);
-                                        ?>
-                                        <button type="submit" class="like-button <?= $isLiked ? 'liked' : '' ?>">
-                                            <i data-lucide="thumbs-up" class="h-5 w-5 <?= $isLiked ? 'text-red-500' : 'text-black' ?>"></i>
-                                        </button>
-                                    </form>
-                                <?php else: ?>
-                                    <a href="login.php" class="text-primary font-bold no-underline">
-                                        <i data-lucide="thumbs-up" class="h-5 w-5 text-black"></i>
-                                    </a>
-                                <?php endif; ?>
-                                <span class="like-count text-black font-bold <?= $isLiked ? 'liked' : '' ?>"><?= $post['likes'] ?></span>
+                                            // Check if the user's email is in the liked_by array
+                                            $isLiked = in_array($userEmail, $likedByArray);
+                                            ?>
+                                            <button type="submit" class="like-button <?= $isLiked ? 'liked' : '' ?>">
+                                                <i data-lucide="thumbs-up" class="h-5 w-5 <?= $isLiked ? 'text-red-500' : 'text-black' ?>"></i>
+                                            </button>
+                                        </form>
+                                    <?php else: ?>
+                                        <a href="login.php" class="text-primary font-bold no-underline">
+                                            <i data-lucide="thumbs-up" class="h-5 w-5 text-black"></i>
+                                        </a>
+                                    <?php endif; ?>
+                                    <span class="like-count text-black font-bold <?= isset($isLiked) && $isLiked ? 'liked' : '' ?>"><?= $post['likes'] ?></span>
+                                </div>
                             </div>
-                        </div>
 
                         <!-- Right section: Recipe Image -->
                         <div class="w-2/3">
