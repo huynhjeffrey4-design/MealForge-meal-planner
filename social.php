@@ -136,8 +136,8 @@ $posts = $postController->getAllPosts();
     <?php else: ?>
         <div class="mb-8 bg-green-50 p-6 rounded-lg border border-green-200">
             <p class="text-gray-700">
-                <a href="login.php" class="text-green-600 font-semibold">Log in</a> or 
-                <a href="signup.php" class="text-green-600 font-semibold">sign up</a> 
+                <a href="login.php" class="text-green-600 font-semibold">Log in</a> or
+                <a href="signup.php" class="text-green-600 font-semibold">sign up</a>
                 to share your own recipes and like posts!
             </p>
         </div>
@@ -156,43 +156,41 @@ $posts = $postController->getAllPosts();
                                 <img src="<?= htmlspecialchars($post['profile_picture'] ?: 'prof_pics/default_avatar.png') ?>" alt="Profile Picture"
                                      class="w-20 h-20 rounded-full object-cover mr-6">
                                 <div>
-
                                     <h3 class="font-semibold text-lg text-green-700"><?= htmlspecialchars($post['first_name']) . ' ' . htmlspecialchars($post['last_name']) ?></h3>
                                     <p class="text-sm text-gray-600"><?= date('F j, Y', strtotime($post['post_time'])) ?></p>
-
                                 </div>
-
+                            </div>
                             <!-- Post Description -->
                             <div class="text-lg text-gray-700 mb-6">
                                 <p class="font-bold"><?= htmlspecialchars($post['description']) ?></p>
                             </div>
-                                <!-- Like Button -->
-                                <div class="flex items-center space-x-2">
-                                    <!-- Like button with dynamic class based on whether user has liked or not -->
-                                    <?php if ($isLoggedIn): ?>
-                                        <form action="social.php" method="POST" class="like-form" data-post-id="<?= $post['id'] ?>">
-                                            <?php
-                                            // Get the logged-in user's email
-                                            $userEmail = $_SESSION['user']['email'];
+                            <!-- Like Button -->
+                            <div class="flex items-center space-x-2">
+                                <!-- Like button with dynamic class based on whether user has liked or not -->
+                                <?php if ($isLoggedIn): ?>
+                                    <form action="social.php" method="POST" class="like-form" data-post-id="<?= $post['id'] ?>">
+                                        <?php
+                                        // Get the logged-in user's email
+                                        $userEmail = $_SESSION['user']['email'];
 
-                                            // Get the liked_by field and convert it to an array
-                                            $likedByArray = explode(',', $post['liked_by']);
+                                        // Get the liked_by field and convert it to an array
+                                        $likedByArray = explode(',', $post['liked_by']);
 
-                                            // Check if the user's email is in the liked_by array
-                                            $isLiked = in_array($userEmail, $likedByArray);
-                                            ?>
-                                            <button type="submit" class="like-button <?= $isLiked ? 'liked' : '' ?>">
-                                                <i data-lucide="thumbs-up" class="h-5 w-5 <?= $isLiked ? 'text-red-500' : 'text-black' ?>"></i>
-                                            </button>
-                                        </form>
-                                    <?php else: ?>
-                                        <a href="login.php" class="text-primary font-bold no-underline">
-                                            <i data-lucide="thumbs-up" class="h-5 w-5 text-black"></i>
-                                        </a>
-                                    <?php endif; ?>
-                                    <span class="like-count text-black font-bold <?= isset($isLiked) && $isLiked ? 'liked' : '' ?>"><?= $post['likes'] ?></span>
-                                </div>
+                                        // Check if the user's email is in the liked_by array
+                                        $isLiked = in_array($userEmail, $likedByArray);
+                                        ?>
+                                        <button type="submit" class="like-button <?= $isLiked ? 'liked' : '' ?>">
+                                            <i data-lucide="thumbs-up" class="h-5 w-5 <?= $isLiked ? 'text-red-500' : 'text-black' ?>"></i>
+                                        </button>
+                                    </form>
+                                <?php else: ?>
+                                    <a href="login.php" class="text-primary font-bold no-underline">
+                                        <i data-lucide="thumbs-up" class="h-5 w-5 text-black"></i>
+                                    </a>
+                                <?php endif; ?>
+                                <span class="like-count text-black font-bold <?= $isLiked ? 'liked' : '' ?>"><?= $post['likes'] ?></span>
                             </div>
+                        </div>
 
                         <!-- Right section: Recipe Image -->
                         <div class="w-2/3">
@@ -230,7 +228,6 @@ $posts = $postController->getAllPosts();
                             <p>No comments yet. Be the first to comment!</p>
                         <?php endif; ?>
                     </div>
-
 
                     <!-- Comment Form (Only for logged-in users) -->
                     <?php if ($isLoggedIn): ?>
