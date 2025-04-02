@@ -171,7 +171,7 @@ final class LinksCest
         $this->loginTestUser($I);
         
         // Navigate to the map page
-        $I->amOnPage('/map.html');
+        $I->amOnPage('/map.php');
         
         // Check for main content elements
         $I->see('MealForge');

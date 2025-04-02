@@ -341,7 +341,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['edit_all'])) {
         </div>
     </div>
 
-    <form id="profile-picture-form" method="POST" action="upload_profile_picture.php" enctype="multipart/form-data" class="hidden">
+    <form id="profile-picture-form" method="POST" action="actions/upload_profile_picture.php" enctype="multipart/form-data" class="hidden">
         <input type="file" name="profile_picture" id="profile_picture_hidden">
     </form>
 
