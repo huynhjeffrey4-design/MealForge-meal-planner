@@ -19,7 +19,7 @@ $priceRange = $_GET['price_range'] ?? null;
 $isModal = isset($_GET['modal']) && $_GET['modal'] === 'true';
 
 // Use the controller to get filtered recipes
-$recipesData = $recipeController->searchAction(
+$recipesData = $recipeController->searchActionRedbean(
     $search,
     $dietary,
     $maxPrepTime,

@@ -44,6 +44,71 @@ class RecipeController {
         return $randomRecipe;
     }
 
+    public function searchAction(
+        ?string $search = null,
+        ?array $dietary = null,
+        ?int $maxPrepTime = null,
+        ?string $mealType = null,
+        ?string $priceRange = null
+    ): array {
+        // Get all recipes first
+        $recipes = $this->recipeProvider->getAllRecipes();
+        $filteredRecipes = $recipes;
+
+        // Filter by dietary preferences
+        if (!empty($dietary)) {
+            $filteredRecipes = array_filter($filteredRecipes, function($recipe) use ($dietary) {
+                foreach ($dietary as $diet) {
+                    if (in_array($diet, $recipe['tags'])) {
+                        return true;
+                    }
+                }
+                return false;
+            });
+        }
+
+        // Filter by max preparation time
+        if (!empty($maxPrepTime)) {
+            $filteredRecipes = array_filter($filteredRecipes, function($recipe) use ($maxPrepTime) {
+                return $recipe['prep_time'] <= $maxPrepTime;
+            });
+        }
+
+        // Filter by meal type
+        if (!empty($mealType)) {
+            $filteredRecipes = array_filter($filteredRecipes, function($recipe) use ($mealType) {
+                return in_array($mealType, $recipe['tags']);
+            });
+        }
+
+        // Filter by price range
+        if (!empty($priceRange)) {
+            $filteredRecipes = array_filter($filteredRecipes, function($recipe) use ($priceRange) {
+                switch($priceRange) {
+                    case 'budget':
+                        return $recipe['price'] < 5;
+                    case 'moderate':
+                        return $recipe['price'] >= 5 && $recipe['price'] <= 10;
+                    case 'premium':
+                        return $recipe['price'] > 10;
+                    default:
+                        return true;
+                }
+            });
+        }
+
+        // Search by title or keywords
+        if (!empty($search)) {
+            $search = strtolower($search);
+            $filteredRecipes = array_filter($filteredRecipes, function($recipe) use ($search) {
+                return strpos(strtolower($recipe['title']), $search) !== false ||
+                    strpos(strtolower($recipe['description']), $search) !== false;
+            });
+        }
+
+        return array_values($filteredRecipes); // Reset array indices
+    }
+
     /**
      * Search for recipes with specified filters
      *
@@ -54,7 +119,7 @@ class RecipeController {
      * @param string|null $priceRange Price range category (budget, moderate, premium)
      * @return array Filtered recipes
      */
-    public function searchAction($search = null, $dietary = null, $maxPrepTime = 60, $mealType = null, $priceRange = null, $page = 1, $perPage = 15) {
+    public function searchActionRedbean($search = null, $dietary = null, $maxPrepTime = 60, $mealType = null, $priceRange = null, $page = 1, $perPage = 15) {
         // Calculate the offset for pagination
         $offset = ($page - 1) * $perPage;
 
