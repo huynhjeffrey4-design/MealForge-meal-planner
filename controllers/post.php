@@ -154,7 +154,6 @@ class MockPostDataProvider implements PostDataProvider {
 }
 
 class RedbeanPostDataProvider implements PostDataProvider {
-
     public function __construct(array $config = [])
     {
         $dbConnection = DatabaseConnection::getInstance();
@@ -178,7 +177,6 @@ class RedbeanPostDataProvider implements PostDataProvider {
                 'user' => $commentUser
             ];
         }
-
         return $commentsWithUserData;
     }
 
