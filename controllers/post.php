@@ -13,7 +13,6 @@ class PostController {
         if ($postProvider !== null) {
             $this->postProvider = $postProvider;
         } else {
-            // Not sure what this next line does
             $env = env('PROVIDER_POST', '');
             $this->postProvider = $env == 'mock' ? new MockPostDataProvider() : new RedbeanPostDataProvider();
         }
@@ -28,6 +27,12 @@ class PostController {
         $posts =  $this->postProvider->getAllPosts();
 
         return $posts;
+    }
+
+    public function getCommentsForPost($postId): array {
+        $comments = $this->postProvider->getCommentsForPost($postId);
+
+        return $comments;
     }
 
     /**
@@ -46,6 +51,21 @@ class PostController {
         }
 
         return null;
+    }
+
+    // Add a new post
+    public function addPost($userId, $firstName, $lastName, $description, $base64Image, $profile_pic): void {
+        $this->postProvider->addPost($userId, $firstName, $lastName, $description, $base64Image, $profile_pic);
+    }
+
+    // Add a comment to a post
+    public function addComment($postId, $userId, $commentBody): void {
+        $this->postProvider->addComment($postId, $userId, $commentBody);
+    }
+
+    // Toggle like status on a post
+    public function toggleLike($postId, $userEmail): void {
+        $this->postProvider->toggleLike($postId, $userEmail);
     }
 }
 
@@ -142,8 +162,82 @@ class RedbeanPostDataProvider implements PostDataProvider {
     }
 
     public function getAllPosts(): array {
-        // Modify the query to order by post_time in descending order
         $posts = \R::findAll('post', 'ORDER BY post_time DESC');
         return \R::exportAll($posts);
+    }
+
+    public function getCommentsForPost($postId): array {
+        $comments = \R::findAll('comment', 'WHERE post_id = ? ORDER BY comment_time ASC', [$postId]);
+
+        $commentsWithUserData = [];
+        foreach ($comments as $comment) {
+            // Load the user associated with the comment (avoid \R::load in view)
+            $commentUser = \R::load('user', $comment['user_id']);
+            $commentsWithUserData[] = [
+                'comment' => $comment,
+                'user' => $commentUser
+            ];
+        }
+
+        return $commentsWithUserData;
+    }
+
+    // Add a new post to the database
+    public function addPost($userId, $firstName, $lastName, $description, $base64Image, $profile_pic): void {
+        $post = \R::dispense('post');
+        $post->user_id = $userId;
+        $post->first_name = $firstName;
+        $post->last_name = $lastName;
+        $post->post_time = date('Y-m-d H:i:s');
+        $post->description = $description;
+        $post->image_url = $base64Image;
+        $post->likes = 0;
+        $post->liked_by = "";
+        $post->profile_picture = $profile_pic;
+
+        \R::store($post);
+    }
+
+    // Store a comment for a specific post
+    public function addComment($postId, $userId, $commentBody): void {
+        $comment = \R::dispense('comment');
+        $comment->post_id = $postId;
+        $comment->user_id = $userId;
+        $comment->comment_body = $commentBody;
+        $comment->comment_time = date('Y-m-d H:i:s');
+
+        \R::store($comment);
+    }
+
+    // Toggle like status for a post
+    public function toggleLike($postId, $userEmail): void {
+        $post = \R::load('post', $postId);
+        if ($post->id) {
+            // Get the list of users who liked the post
+            $likedBy = explode(',', $post->liked_by);
+
+            // Toggle like status
+            if (in_array($userEmail, $likedBy)) {
+                // If the user has already liked, remove the like
+                $likedBy = array_diff($likedBy, [$userEmail]);
+                $post->likes--;
+            } else {
+                // If the user hasn't liked, add the like
+                $likedBy[] = $userEmail;
+                $post->likes++;
+            }
+
+            // Update the 'liked_by' field with the new list of users
+            $post->liked_by = implode(',', $likedBy);
+
+            // Store the updated post object back to the database
+            \R::store($post);
+
+            // Return the updated likes count and whether the user has liked the post
+            echo json_encode([
+                'likes' => $post->likes,
+                'liked' => in_array($userEmail, $likedBy)
+            ]);
+        }
     }
 }
