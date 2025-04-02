@@ -172,7 +172,7 @@ if (isset($_SESSION['user']) && isset($_SESSION['user']['id']) && $recipe_id) {
                         </svg>
                     </button>
 <!-- Bookmark Form -->
-<form action="bookmark.php" method="POST" id="bookmark_form">
+<form action="actions/bookmark.php" method="POST" id="bookmark_form">
     <input type="hidden" name="recipe_id" value="<?= $recipe_id ?>">
     <button type="submit" class="<?= $isBookmarked ? 'text-green-600' : 'text-gray-500' ?> hover:text-gray-700" id="bookmark_button">
         <?php if ($isBookmarked): ?>

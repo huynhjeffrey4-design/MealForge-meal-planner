@@ -1,6 +1,6 @@
 <?php
-require_once __DIR__ . '/controllers/bookmark.php';
-require_once __DIR__ . '/controllers/recipe.php';
+require_once __DIR__ . '/../controllers/bookmark.php';
+require_once __DIR__ . '/../controllers/recipe.php';
 
 session_start();
 
