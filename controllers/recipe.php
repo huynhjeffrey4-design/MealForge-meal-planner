@@ -29,6 +29,7 @@ class RecipeController {
         foreach ($recipes as $key => $recipe) {
             $recipes[$key]['tags'] = json_decode($recipe['tags']);
         }
+
         return $recipes;
     }
 
@@ -44,9 +45,19 @@ class RecipeController {
         return $randomRecipe;
     }
 
+    /**
+     * Search for recipes with specified filters
+     *
+     * @param string|null $search Search term for recipe title/description
+     * @param array|null $dietary Array of dietary preferences
+     * @param int|null $maxPrepTime Maximum preparation time in minutes
+     * @param string|null $mealType Type of meal (e.g., Breakfast, Lunch)
+     * @param string|null $priceRange Price range category (budget, moderate, premium)
+     * @return array Filtered recipes
+     */
     public function searchAction(
         ?string $search = null,
-        ?array $dietary = null,
+        ?string $dietary = null,
         ?int $maxPrepTime = null,
         ?string $mealType = null,
         ?string $priceRange = null
@@ -78,22 +89,6 @@ class RecipeController {
         if (!empty($mealType)) {
             $filteredRecipes = array_filter($filteredRecipes, function($recipe) use ($mealType) {
                 return in_array($mealType, $recipe['tags']);
-            });
-        }
-
-        // Filter by price range
-        if (!empty($priceRange)) {
-            $filteredRecipes = array_filter($filteredRecipes, function($recipe) use ($priceRange) {
-                switch($priceRange) {
-                    case 'budget':
-                        return $recipe['price'] < 5;
-                    case 'moderate':
-                        return $recipe['price'] >= 5 && $recipe['price'] <= 10;
-                    case 'premium':
-                        return $recipe['price'] > 10;
-                    default:
-                        return true;
-                }
             });
         }
 

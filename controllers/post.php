@@ -153,22 +153,19 @@ class MockPostDataProvider implements PostDataProvider {
     }
 }
 
-class RedbeanPostDataProvider implements PostDataProvider
-{
+class RedbeanPostDataProvider implements PostDataProvider {
     public function __construct(array $config = [])
     {
         $dbConnection = DatabaseConnection::getInstance();
         $dbConnection->setup($config);
     }
 
-    public function getAllPosts(): array
-    {
+    public function getAllPosts(): array {
         $posts = \R::findAll('post', 'ORDER BY post_time DESC');
         return \R::exportAll($posts);
     }
 
-    public function getCommentsForPost($postId): array
-    {
+    public function getCommentsForPost($postId): array {
         $comments = \R::findAll('comment', 'WHERE post_id = ? ORDER BY comment_time ASC', [$postId]);
 
         $commentsWithUserData = [];
@@ -184,8 +181,7 @@ class RedbeanPostDataProvider implements PostDataProvider
     }
 
     // Add a new post to the database
-    public function addPost($userId, $firstName, $lastName, $description, $base64Image, $profile_pic): void
-    {
+    public function addPost($userId, $firstName, $lastName, $description, $base64Image, $profile_pic): void {
         $post = \R::dispense('post');
         $post->user_id = $userId;
         $post->first_name = $firstName;
@@ -201,8 +197,7 @@ class RedbeanPostDataProvider implements PostDataProvider
     }
 
     // Store a comment for a specific post
-    public function addComment($postId, $userId, $commentBody): void
-    {
+    public function addComment($postId, $userId, $commentBody): void {
         $comment = \R::dispense('comment');
         $comment->post_id = $postId;
         $comment->user_id = $userId;
