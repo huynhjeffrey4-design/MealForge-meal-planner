@@ -26,6 +26,7 @@ if (!isset($_SESSION['user'])) {
       width: 90%;
       max-width: 1300px;
       margin: 20px auto;
+      box-shadow: 0 2px 10px rgba(0,0,0,0.1);
     }
 
     .header {
@@ -34,6 +35,7 @@ if (!isset($_SESSION['user'])) {
       padding: 20px;
       font-size: 24px;
       font-weight: bold;
+      text-align: center;
     }
     
     .image-container {
@@ -61,6 +63,7 @@ if (!isset($_SESSION['user'])) {
       width: 100%;
       text-align: center;
       box-sizing: border-box;
+      padding: 0 15px;
     }
 
     .highlight {
@@ -69,10 +72,11 @@ if (!isset($_SESSION['user'])) {
       font-size: 16px;
       color: #FFFFFF;
       background-color: #D3D3D3;
-      padding: 25px 45px;
+      padding: 25px 15px;
       width: 100%;
       box-sizing: border-box;
       margin: 0;
+      text-align: center;
     }
 
     .content {
@@ -96,27 +100,46 @@ if (!isset($_SESSION['user'])) {
 
     ul li {
       margin-bottom: 10px;
+      padding-left: 10px;
+      border-left: 3px solid #00A63E;
     }
 
     .button-container {
-      text-align: left;
+      text-align: center;
       margin-top: 20px;
     }
     
     .button {
       font-family: 'Josefin Sans', sans-serif;
-      color: blue;
-      padding: 10px 10px;
+      color: white;
+      background-color: #00A63E;
+      padding: 12px 20px;
       border: none;
       border-radius: 6px;
       text-decoration: none;
       font-weight: bold;
-      font-size: 15px;
+      font-size: 16px;
       cursor: pointer;
+      display: inline-block;
     }
 
     .button:hover {
-      background-color: #D9D9D9;
+      background-color: #008c34;
+    }
+    
+    @media (max-width: 768px) {
+      .image-title {
+        font-size: 22px;
+      }
+      
+      .highlight {
+        padding: 15px 10px;
+        font-size: 14px;
+      }
+      
+      .content {
+        padding: 15px;
+      }
     }
   </style>
 </head>
