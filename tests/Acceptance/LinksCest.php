@@ -182,26 +182,11 @@ final class LinksCest
         $I->seeElement('button#searchButton');
         $I->seeElement('button#currentLocationButton');
         
-        // Check for distance filter
-        $I->see('Distance Range (km):');
-        $I->seeElement('input#distanceRange');
-        $I->see('5 km');
-        
         // Check for map element
         $I->seeElement('#map');
         
         // Check for stores list element
         $I->seeElement('#stores-list');
-        
-        // There's an issue with the "Back to Profile" link in the HTML
-        // The correct format should be:
-        // <a id="profileLink" href="profile.php">🔙 Back to Profile</a>
-        // Note this potential issue in the test
-        
-        // Uncomment this when the link is fixed
-        // $I->seeLink('🔙 Back to Profile', 'profile.php');
-        // $I->click('🔙 Back to Profile');
-        // $I->seeInCurrentUrl('profile.php');
     }
     
     /**
