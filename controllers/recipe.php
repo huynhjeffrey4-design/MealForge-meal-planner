@@ -137,7 +137,7 @@ class RecipeController {
      * @param string|null $priceRange Price range category (budget, moderate, premium)
      * @return array Filtered recipes
      */
-    public function searchActionRedbean($search = null, $dietary = null, $maxPrepTime = 60, $mealType = null, $priceRange = null, $page = 1, $perPage = 15) {
+    public function searchActionRedbean(?string $search = null, ?string $dietary = null, ?int $maxPrepTime = 60, ?string $mealType = null, ?string $priceRange = null, int $page = 1, int $perPage = 15) {
         // Calculate the offset for pagination
         $offset = ($page - 1) * $perPage;
 
