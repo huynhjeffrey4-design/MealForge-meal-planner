@@ -167,7 +167,7 @@ $recipesCount = count($recipes);
                                oninput="updatePrepTimeValue(this.value)">
                         <div class="flex justify-between text-sm text-gray-600 mt-1">
                             <span>5 minutes</span>
-                            <span id="prep-time-value"><?= $maxPrepTime ?> minutes</span>
+                            <span id="prep-time-value"><?= htmlspecialchars($maxPrepTime) ?> minutes</span>
                             <span>120 minutes</span>
                         </div>
                     </div>
@@ -233,8 +233,8 @@ $recipesCount = count($recipes);
                                     <div class="flex items-center gap-4">
                                         <div class="flex items-center">
                                             <i data-lucide="clock" class="h-5 w-5 text-gray-500 mr-1"></i>
-                                            <span class="text-sm text-gray-600"><?= $recipe['prep_time'] ?> mins</span>
-                                        </div>
+                                            <span class="text-sm text-gray-600"><?= htmlspecialchars($recipe['prep_time']) ?> mins</span>
+                                            </div>
                                         <div class="flex items-center">
                                             <i data-lucide="gauge" class="h-5 w-5 text-gray-500 mr-1"></i>
                                             <span class="text-sm text-gray-600"><?= htmlspecialchars($recipe['difficulty']) ?></span>

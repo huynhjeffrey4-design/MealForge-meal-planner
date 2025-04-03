@@ -195,8 +195,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                         <?php if(isset($_SESSION['meal_plan'][$day]) && !empty($_SESSION['meal_plan'][$day])): ?>
                             <?php foreach($_SESSION['meal_plan'][$day] as $index => $meal): ?>
                                 <div class="mb-3 relative meal-card">
-                                    <a href="#" class="meal-details" data-meal='<?php echo json_encode($meal); ?>'>
-                                        <img src="<?php echo $meal['image']; ?>" alt="<?php echo htmlspecialchars($meal['name']); ?>" class="w-full h-40 object-cover rounded-lg">
+                                <a href="#" class="meal-details" data-meal='<?php echo htmlspecialchars(json_encode($meal), ENT_QUOTES, 'UTF-8'); ?>'>                                        <img src="<?php echo $meal['image']; ?>" alt="<?php echo htmlspecialchars($meal['name']); ?>" class="w-full h-40 object-cover rounded-lg">
                                         <div class="bg-black bg-opacity-60 text-white text-sm p-2 absolute bottom-0 left-0 right-0 rounded-b-lg">
                                             <?php echo htmlspecialchars($meal['name']); ?>
                                         </div>
