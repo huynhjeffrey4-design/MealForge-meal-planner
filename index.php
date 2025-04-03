@@ -16,9 +16,11 @@
 	<nav class="bg-white shadow-sm">
 		<div class="max-w-6xl mx-auto px-4 py-4 flex justify-between items-center">
 			<div class="text-2xl font-bold text-green-700">MealForge</div>
+
+			
 			<div class="space-x-6">
-				<button class="text-gray-600 hover:text-green-700">How it Works</button>
 				<a href="About.php">
+
 					<button class="text-gray-600 hover:text-green-700">About</button>
 				</a>
 				<a href="login.php">
