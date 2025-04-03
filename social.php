@@ -179,11 +179,6 @@ $posts = $postController->getAllPosts();
                                 <div class="text-base sm:text-lg text-gray-700 mb-6">
                                     <p class="font-bold"><?= htmlspecialchars($post['description']) ?></p>
                                 </div>
-
-                            <!-- Post Description -->
-                            <div class="text-lg text-gray-700 mb-6">
-                                <p class="font-bold"><?= htmlspecialchars($post['description']) ?></p>
-                            </div>
                                 <!-- Like Button -->
                                 <div class="flex items-center space-x-2">
                                     <!-- Like button with dynamic class based on whether user has liked or not -->
