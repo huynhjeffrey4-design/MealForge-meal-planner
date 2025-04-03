@@ -289,91 +289,87 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         let scrollLeft;
 
         scrollContainer.addEventListener('mousedown', (e) => {
-        isDown = true;
-        scrollContainer.classList.add('cursor-grabbing');
-        startX = e.pageX - scrollContainer.offsetLeft;
-        scrollLeft = scrollContainer.scrollLeft;
+            isDown = true;
+            scrollContainer.classList.add('cursor-grabbing');
+            startX = e.pageX - scrollContainer.offsetLeft;
+            scrollLeft = scrollContainer.scrollLeft;
         });
 
         scrollContainer.addEventListener('mouseleave', () => {
-        isDown = false;
-        scrollContainer.classList.remove('cursor-grabbing');
+            isDown = false;
+            scrollContainer.classList.remove('cursor-grabbing');
         });
 
         scrollContainer.addEventListener('mouseup', () => {
-        isDown = false;
-        scrollContainer.classList.remove('cursor-grabbing');
+            isDown = false;
+            scrollContainer.classList.remove('cursor-grabbing');
         });
 
         scrollContainer.addEventListener('mousemove', (e) => {
-        if (!isDown) return;
-        e.preventDefault();
-        const x = e.pageX - scrollContainer.offsetLeft;
-        const walk = (x - startX) * 1.5;
-        scrollContainer.scrollLeft = scrollLeft - walk;
+            if (!isDown) return;
+            e.preventDefault();
+            const x = e.pageX - scrollContainer.offsetLeft;
+            const walk = (x - startX) * 1.5;
+            scrollContainer.scrollLeft = scrollLeft - walk;
         });
 
-        function loadRecipes() {
-        fetch('api/get_random_recipes.php')
-            .then(response => response.json())
-            .then(data => {
-                const container = document.getElementById('slider-content');
-                container.innerHTML = '';
-                data.forEach(recipe => {
-                    const card = document.createElement('div');
-                    card.className = "w-full flex-shrink-0 cursor-pointer";
+        function renderRecipes(data) {
+            const container = document.getElementById('slider-content');
+            container.innerHTML = '';
+            data.forEach(recipe => {
+                const card = document.createElement('div');
+                card.className = "w-full flex-shrink-0 cursor-pointer";
 
-                    card.innerHTML = `
-                        <div class="w-full h-full bg-white shadow rounded-lg flex items-center p-2 hover:shadow-lg transition">
-                            <img src="${recipe.imageURL}" alt="${recipe.meal_name}" draggable="false" class="h-auto w-[calc(50%)] rounded object-cover select-none">
-                            <div class="ml-4 flex flex-col justify-center">
-                                <h4 class="font-bold text-base mb-1">${recipe.meal_name}</h4>
-                                <p class="text-gray-500 text-sm">${recipe.meal_type}</p>
-                            </div>
+                card.innerHTML = `
+                    <div class="w-full h-full bg-white shadow rounded-lg flex items-center p-2 hover:shadow-lg transition">
+                        <img src="${recipe.imageURL}" alt="${recipe.meal_name}" draggable="false" class="h-auto w-[calc(50%)] rounded object-cover select-none">
+                        <div class="ml-4 flex flex-col justify-center">
+                            <h4 class="font-bold text-base mb-1">${recipe.meal_name}</h4>
+                            <p class="text-gray-500 text-sm">${recipe.meal_type}</p>
                         </div>
-                    `;
+                    </div>
+                `;
 
-                    // Click and slide detection
-                    let startX, startY, startTime;
-                    card.addEventListener('mousedown', (e) => {
-                        startX = e.pageX;
-                        startY = e.pageY;
-                        startTime = new Date().getTime();
-                    });
-                    card.addEventListener('mouseup', (e) => {
-                        const diffX = Math.abs(e.pageX - startX);
-                        const diffY = Math.abs(e.pageY - startY);
-                        const timeDiff = new Date().getTime() - startTime;
-
-                        if (diffX < 5 && diffY < 5 && timeDiff < 500) {
-                            window.location.href = `./recipe.php?id=${recipe.id}`;
-                        }
-                    });
-
-                    // Add touch event support (mobile)
-                    card.addEventListener('touchstart', (e) => {
-                        startX = e.touches[0].pageX;
-                        startY = e.touches[0].pageY;
-                        startTime = new Date().getTime();
-                    });
-                    card.addEventListener('touchend', (e) => {
-                        const touch = e.changedTouches[0];
-                        const diffX = Math.abs(touch.pageX - startX);
-                        const diffY = Math.abs(touch.pageY - startY);
-                        const timeDiff = new Date().getTime() - startTime;
-
-                        if (diffX < 5 && diffY < 5 && timeDiff < 500) {
-                            window.location.href = `./recipe.php?id=${recipe.id}`;
-                        }
-                    });
-
-                    container.appendChild(card);
+                // Desktop click
+                card.addEventListener('click', () => {
+                    window.location.href = `./recipe.php?id=${recipe.id}`;
                 });
+
+                // Mobile touch
+                let startX, startY, startTime;
+                card.addEventListener('touchstart', (e) => {
+                    startX = e.touches[0].pageX;
+                    startY = e.touches[0].pageY;
+                    startTime = new Date().getTime();
+                });
+                card.addEventListener('touchend', (e) => {
+                    const touch = e.changedTouches[0];
+                    const diffX = Math.abs(touch.pageX - startX);
+                    const diffY = Math.abs(touch.pageY - startY);
+                    const timeDiff = new Date().getTime() - startTime;
+                    if (diffX < 5 && diffY < 5 && timeDiff < 500) {
+                        window.location.href = `./recipe.php?id=${recipe.id}`;
+                    }
+                });
+
+                container.appendChild(card);
             });
         }
 
-        // When the page loads, random first
-        document.addEventListener('DOMContentLoaded', loadRecipes);
+        function loadRecipes() {
+            fetch('api/get_random_recipes.php')
+                .then(response => response.json())
+                .then(data => {
+                    renderRecipes(data);
+                })
+                .catch(error => {
+                    console.error('Failed to load recipes:', error);
+                });
+        }
+
+        document.addEventListener('DOMContentLoaded', () => {
+            loadRecipes();
+        });
     </script>
     
     
