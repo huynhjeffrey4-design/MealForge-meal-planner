@@ -1,11 +1,11 @@
 -- phpMyAdmin SQL Dump
--- version 5.1.1deb5ubuntu1
+-- version 5.2.2
 -- https://www.phpmyadmin.net/
 --
--- Host: localhost:3306
--- Generation Time: Mar 27, 2025 at 05:47 AM
--- Server version: 8.0.39-0ubuntu0.22.04.1
--- PHP Version: 8.1.2-1ubuntu2.18
+-- Host: db:3306
+-- Generation Time: Apr 03, 2025 at 10:28 PM
+-- Server version: 9.2.0
+-- PHP Version: 8.2.27
 
 SET SQL_MODE = "NO_AUTO_VALUE_ON_ZERO";
 START TRANSACTION;
@@ -29,28 +29,28 @@ SET time_zone = "+00:00";
 
 CREATE TABLE `rand_recipes` (
   `id` int NOT NULL,
-  `meal_type` varchar(12) COLLATE utf8mb4_general_ci DEFAULT NULL,
-  `subcategory` varchar(17) COLLATE utf8mb4_general_ci DEFAULT NULL,
-  `recipe` varchar(86) COLLATE utf8mb4_general_ci DEFAULT NULL,
-  `description` varchar(258) COLLATE utf8mb4_general_ci DEFAULT NULL,
-  `dish_type` varchar(24) COLLATE utf8mb4_general_ci DEFAULT NULL,
+  `meal_type` varchar(12) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci DEFAULT NULL,
+  `subcategory` varchar(17) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci DEFAULT NULL,
+  `recipe` varchar(86) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci DEFAULT NULL,
+  `description` varchar(258) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci DEFAULT NULL,
+  `dish_type` varchar(24) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci DEFAULT NULL,
   `prep_time` int DEFAULT NULL,
   `cook_time` int DEFAULT NULL,
-  `difficulty` varchar(11) COLLATE utf8mb4_general_ci DEFAULT NULL,
-  `ingredients` varchar(931) COLLATE utf8mb4_general_ci DEFAULT NULL,
-  `instructions` varchar(3300) COLLATE utf8mb4_general_ci DEFAULT NULL,
+  `difficulty` varchar(11) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci DEFAULT NULL,
+  `ingredients` varchar(931) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci DEFAULT NULL,
+  `instructions` varchar(3300) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci DEFAULT NULL,
   `serves` int DEFAULT NULL,
-  `nutrients_sugars` varchar(16) COLLATE utf8mb4_general_ci DEFAULT NULL,
-  `nutrients_carbs` varchar(15) COLLATE utf8mb4_general_ci DEFAULT NULL,
-  `nutrients_fat` varchar(13) COLLATE utf8mb4_general_ci DEFAULT NULL,
-  `nutrients_saturates` varchar(19) COLLATE utf8mb4_general_ci DEFAULT NULL,
-  `nutrients_protein` varchar(17) COLLATE utf8mb4_general_ci DEFAULT NULL,
-  `nutrients_fibre` varchar(15) COLLATE utf8mb4_general_ci DEFAULT NULL,
-  `nutrients_kcal` varchar(14) COLLATE utf8mb4_general_ci DEFAULT NULL,
-  `nutrients_salt` varchar(14) COLLATE utf8mb4_general_ci DEFAULT NULL,
+  `nutrients_sugars` varchar(16) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci DEFAULT NULL,
+  `nutrients_carbs` varchar(15) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci DEFAULT NULL,
+  `nutrients_fat` varchar(13) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci DEFAULT NULL,
+  `nutrients_saturates` varchar(19) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci DEFAULT NULL,
+  `nutrients_protein` varchar(17) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci DEFAULT NULL,
+  `nutrients_fibre` varchar(15) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci DEFAULT NULL,
+  `nutrients_kcal` varchar(14) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci DEFAULT NULL,
+  `nutrients_salt` varchar(14) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci DEFAULT NULL,
   `total_time` int DEFAULT NULL,
-  `tags` text COLLATE utf8mb4_general_ci,
-  `imageURL` varchar(400) COLLATE utf8mb4_general_ci DEFAULT NULL
+  `tags` text CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci,
+  `imageURL` varchar(400) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci DEFAULT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
 --
@@ -3322,14 +3322,14 @@ INSERT INTO `test_recipes` (`recipe`, `difficulty`, `serves`, `prep_time`, `cook
 
 CREATE TABLE `user` (
   `id` int UNSIGNED NOT NULL,
-  `email` varchar(191) COLLATE utf8mb4_unicode_520_ci DEFAULT NULL,
-  `password_hash` varchar(191) COLLATE utf8mb4_unicode_520_ci DEFAULT NULL,
-  `first_name` varchar(191) COLLATE utf8mb4_unicode_520_ci DEFAULT NULL,
-  `last_name` varchar(191) COLLATE utf8mb4_unicode_520_ci DEFAULT NULL,
+  `email` varchar(191) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_520_ci DEFAULT NULL,
+  `password_hash` varchar(191) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_520_ci DEFAULT NULL,
+  `first_name` varchar(191) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_520_ci DEFAULT NULL,
+  `last_name` varchar(191) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_520_ci DEFAULT NULL,
   `date_of_birth` tinyint UNSIGNED DEFAULT NULL,
   `gender` tinyint UNSIGNED DEFAULT NULL,
   `phone_number` tinyint UNSIGNED DEFAULT NULL,
-  `profile_picture` varchar(191) COLLATE utf8mb4_unicode_520_ci DEFAULT NULL,
+  `profile_picture` varchar(191) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_520_ci DEFAULT NULL,
   `dietary_restrictions` tinyint UNSIGNED DEFAULT NULL,
   `dietary_preferences` tinyint UNSIGNED DEFAULT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_520_ci;
