@@ -62,6 +62,26 @@ class RecipeController {
     }
 
     /**
+     * Get 5 random recipes with imageURL from the recipes table
+     *
+     * @return array List of formatted recipes
+     */
+    public function getFiveRandomRecipes(): array {
+        $db = DatabaseConnection::getInstance();
+        $db->setup();
+
+        $recipes = \R::getAll("
+            SELECT id, recipe AS meal_name, meal_type, imageURL 
+            FROM recipes 
+            WHERE imageURL IS NOT NULL AND imageURL != '' 
+            ORDER BY RAND() 
+            LIMIT 5
+        ");
+
+        return $recipes;
+    }
+
+    /**
      * Search for recipes with specified filters
      *
      * @param string|null $search Search term for recipe title/description

@@ -7,6 +7,19 @@ if (!isset($_SESSION['user'])) {
 
 require_once __DIR__ . '/controllers/user.php';
 
+require_once __DIR__ . '/controllers/recipe.php';
+
+if ($_SERVER['REQUEST_METHOD'] === 'GET' && isset($_GET['action']) && $_GET['action'] === 'random_recipes') {
+    $controller = new RecipeController(null);
+    $recipes = $controller->getFiveRandomRecipes();
+    header('Content-Type: application/json');
+    echo json_encode($recipes);
+    exit;
+}
+
+$recipeController = new RecipeController(null);
+$randomRecipes = $recipeController->getFiveRandomRecipes();
+
 // Initialize meal plan in session if not exists
 if (!isset($_SESSION['meal_plan'])) {
     $_SESSION['meal_plan'] = [
@@ -313,6 +326,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             scrollContainer.scrollLeft = scrollLeft - walk;
         });
 
+        // Render recipe cards
         function renderRecipes(data) {
             const container = document.getElementById('slider-content');
             container.innerHTML = '';
@@ -330,12 +344,11 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                     </div>
                 `;
 
-                // Desktop click
                 card.addEventListener('click', () => {
                     window.location.href = `./recipe.php?id=${recipe.id}`;
                 });
 
-                // Mobile touch
+                // Touch for mobile
                 let startX, startY, startTime;
                 card.addEventListener('touchstart', (e) => {
                     startX = e.touches[0].pageX;
@@ -356,8 +369,9 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             });
         }
 
+        // Load new recipes via AJAX
         function loadRecipes() {
-            fetch('api/get_random_recipes.php')
+            fetch('dashboard.php?action=random_recipes')
                 .then(response => response.json())
                 .then(data => {
                     renderRecipes(data);
@@ -367,8 +381,10 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 });
         }
 
+        // On page load: use server-side rendered $randomRecipes
         document.addEventListener('DOMContentLoaded', () => {
-            loadRecipes();
+            const initialRecipes = <?php echo json_encode($randomRecipes); ?>;
+            renderRecipes(initialRecipes);
         });
     </script>
     
