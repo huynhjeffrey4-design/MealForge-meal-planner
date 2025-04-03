@@ -12,4 +12,7 @@
 * [Aptitude (Dev)](https://se-dev.cse.buffalo.edu/CSE442/2025-Spring/cse-442v/)
 * [Cattle (Prod)](https://se-prod.cse.buffalo.edu/CSE442/2025-Spring/cse-442v/)
 
+# PHPMyAdmin
 
+* [Aptitude (Dev)](https://se-dev.cse.buffalo.edu/phpmyadmin/)
+* [Cattle (Prod)](https://se-prod.cse.buffalo.edu/phpmyadmin/)

@@ -22,7 +22,7 @@ final class LinksCest
             'url' => '/index.php',
             'pageIdentifier' => 'MealForge',
             'links' => [
-                ['text' => 'About', 'href' => 'About.html'],
+                ['text' => 'About', 'href' => 'About.php'],
                 ['text' => 'Get Started', 'href' => 'login.php'],
                 ['text' => 'Start Your Journey', 'href' => 'login.php'],
                 ['text' => 'Get Started Now', 'href' => 'login.php']
@@ -53,7 +53,7 @@ final class LinksCest
             ]
         ],
         'About Page' => [
-            'url' => '/About.html',
+            'url' => '/About.php',
             'pageIdentifier' => 'About MealForge',
             'verifyContent' => [
                 'MealForge',
@@ -171,7 +171,7 @@ final class LinksCest
         $this->loginTestUser($I);
         
         // Navigate to the map page
-        $I->amOnPage('/map.html');
+        $I->amOnPage('/map.php');
         
         // Check for main content elements
         $I->see('MealForge');
