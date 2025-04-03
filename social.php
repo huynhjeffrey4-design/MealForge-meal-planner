@@ -136,8 +136,8 @@ $posts = $postController->getAllPosts();
     <?php else: ?>
         <div class="mb-8 bg-green-50 p-6 rounded-lg border border-green-200">
             <p class="text-gray-700">
-                <a href="login.php" class="text-green-600 font-semibold">Log in</a> or
-                <a href="signup.php" class="text-green-600 font-semibold">sign up</a>
+                <a href="login.php" class="text-green-600 font-semibold">Log in</a> or 
+                <a href="signup.php" class="text-green-600 font-semibold">sign up</a> 
                 to share your own recipes and like posts!
             </p>
         </div>
@@ -146,51 +146,66 @@ $posts = $postController->getAllPosts();
     <!-- Social Feed Section -->
     <div id="social-feed" class="w-full">
         <div class="space-y-8">
-            <!-- Loop through the posts and display each one -->
-            <?php foreach ($posts as $post): ?>
-                <div class="bg-green-50 rounded-lg shadow p-8 mb-8 border border-green-200 max-w-4xl mx-auto">
-                    <div class="flex">
-                        <!-- Left section: Profile Info, Description, and Likes -->
-                        <div class="w-1/3 pr-8">
-                            <div class="flex items-center mb-6">
-                                <img src="<?= htmlspecialchars($post['profile_picture'] ?: 'prof_pics/default_avatar.png') ?>" alt="Profile Picture"
-                                     class="w-20 h-20 rounded-full object-cover mr-6">
-                                <div>
-                                    <h3 class="font-semibold text-lg text-green-700"><?= htmlspecialchars($post['first_name']) . ' ' . htmlspecialchars($post['last_name']) ?></h3>
-                                    <p class="text-sm text-gray-600"><?= date('F j, Y', strtotime($post['post_time'])) ?></p>
+            <?php if (empty($posts)): ?>
+                <div class="bg-white rounded-lg shadow p-8 text-center">
+                    <i data-lucide="utensils" class="h-16 w-16 mx-auto text-gray-400 mb-4"></i>
+                    <h3 class="text-xl font-semibold mb-2">No recipes shared yet</h3>
+                    <p class="text-gray-600 mb-4">Be the first to share a delicious recipe with the community!</p>
+                    <?php if ($isLoggedIn): ?>
+                        <p class="text-gray-600">Use the form above to share your favorite recipe.</p>
+                    <?php else: ?>
+                        <a href="login.php" class="inline-block px-4 py-2 bg-green-500 text-white rounded-md hover:bg-green-600">
+                            Log in to share recipes
+                        </a>
+                    <?php endif; ?>
+                </div>
+            <?php else: ?>
+                <!-- Loop through the posts and display each one -->
+                <?php foreach ($posts as $post): ?>
+                    <div class="bg-green-50 rounded-lg shadow p-4 sm:p-6 md:p-8 mb-8 border border-green-200 max-w-4xl mx-auto">
+                        <div class="flex flex-col md:flex-row">
+                            <!-- Left section: Profile Info, Description, and Likes (1/3 of the width) -->
+                            <div class="w-full md:w-1/3 md:pr-8 mb-6 md:mb-0">
+                                <div class="flex items-center mb-6">
+                                    <img src="<?= htmlspecialchars($post['profile_picture']) ?>" alt="Profile Picture"
+                                         class="w-16 h-16 sm:w-20 sm:h-20 rounded-full object-cover mr-4 sm:mr-6">
+                                    <div>
+                                        <h3 class="font-semibold text-base sm:text-lg text-green-700"><?= htmlspecialchars($post['first_name']) . ' ' . htmlspecialchars($post['last_name']) ?></h3>
+                                        <p class="text-xs sm:text-sm text-gray-600"><?= date('F j, Y', strtotime($post['post_time'])) ?></p>
+                                    </div>
+                                </div>
+
+                                <!-- Post Description (Bigger Text) -->
+                                <div class="text-base sm:text-lg text-gray-700 mb-6">
+                                    <p class="font-bold"><?= htmlspecialchars($post['description']) ?></p>
+                                </div>
+                                <!-- Like Button -->
+                                <div class="flex items-center space-x-2">
+                                    <!-- Like button with dynamic class based on whether user has liked or not -->
+                                    <?php if ($isLoggedIn): ?>
+                                        <form action="social.php" method="POST" class="like-form" data-post-id="<?= $post['id'] ?>">
+                                            <?php
+                                            // Get the logged-in user's email
+                                            $userEmail = $_SESSION['user']['email'];
+
+                                            // Get the liked_by field and convert it to an array
+                                            $likedByArray = explode(',', $post['liked_by']);
+
+                                            // Check if the user's email is in the liked_by array
+                                            $isLiked = in_array($userEmail, $likedByArray);
+                                            ?>
+                                            <button type="submit" class="like-button <?= $isLiked ? 'liked' : '' ?>">
+                                                <i data-lucide="thumbs-up" class="h-5 w-5 <?= $isLiked ? 'text-red-500' : 'text-black' ?>"></i>
+                                            </button>
+                                        </form>
+                                    <?php else: ?>
+                                        <a href="login.php" class="text-primary font-bold no-underline">
+                                            <i data-lucide="thumbs-up" class="h-5 w-5 text-black"></i>
+                                        </a>
+                                    <?php endif; ?>
+                                    <span class="like-count text-black font-bold <?= isset($isLiked) && $isLiked ? 'liked' : '' ?>"><?= $post['likes'] ?></span>
                                 </div>
                             </div>
-                            <!-- Post Description -->
-                            <div class="text-lg text-gray-700 mb-6">
-                                <p class="font-bold"><?= htmlspecialchars($post['description']) ?></p>
-                            </div>
-                            <!-- Like Button -->
-                            <div class="flex items-center space-x-2">
-                                <!-- Like button with dynamic class based on whether user has liked or not -->
-                                <?php if ($isLoggedIn): ?>
-                                    <form action="social.php" method="POST" class="like-form" data-post-id="<?= $post['id'] ?>">
-                                        <?php
-                                        // Get the logged-in user's email
-                                        $userEmail = $_SESSION['user']['email'];
-
-                                        // Get the liked_by field and convert it to an array
-                                        $likedByArray = explode(',', $post['liked_by']);
-
-                                        // Check if the user's email is in the liked_by array
-                                        $isLiked = in_array($userEmail, $likedByArray);
-                                        ?>
-                                        <button type="submit" class="like-button <?= $isLiked ? 'liked' : '' ?>">
-                                            <i data-lucide="thumbs-up" class="h-5 w-5 <?= $isLiked ? 'text-red-500' : 'text-black' ?>"></i>
-                                        </button>
-                                    </form>
-                                <?php else: ?>
-                                    <a href="login.php" class="text-primary font-bold no-underline">
-                                        <i data-lucide="thumbs-up" class="h-5 w-5 text-black"></i>
-                                    </a>
-                                <?php endif; ?>
-                                <span class="like-count text-black font-bold <?= $isLiked ? 'liked' : '' ?>"><?= $post['likes'] ?></span>
-                            </div>
-                        </div>
 
                         <!-- Right section: Recipe Image -->
                         <div class="w-2/3">
@@ -229,6 +244,7 @@ $posts = $postController->getAllPosts();
                         <?php endif; ?>
                     </div>
 
+
                     <!-- Comment Form (Only for logged-in users) -->
                     <?php if ($isLoggedIn): ?>
                         <div class="comment-form mt-4">
@@ -243,6 +259,7 @@ $posts = $postController->getAllPosts();
                     <?php endif; ?>
                 </div>
             <?php endforeach; ?>
+		  <?php endif; ?>
         </div>
     </div>
 </div>
