@@ -189,14 +189,14 @@ if (isset($_SESSION['user']) && isset($_SESSION['user']['id']) && $recipe_id) {
             <!-- Recipe Description -->
             <p class="text-gray-600 mb-4"><?= htmlspecialchars($recipe['description']) ?></p>
 
-            <!-- Rating (demo) -->
+            <!-- Rating (demo)
             <div class="flex items-center mb-6">
                 <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 text-green-500 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M14 10h4.764a2 2 0 011.789 2.894l-3.5 7A2 2 0 0115.263 21h-4.017c-.163 0-.326-.02-.485-.06L7 20m7-10V5a2 2 0 00-2-2h-.095c-.5 0-.905.405-.905.905 0 .714-.211 1.412-.608 2.006L7 11v9m7-10h-2M7 20H5a2 2 0 01-2-2v-6a2 2 0 012-2h2.5" />
                 </svg>
                 <span class="text-green-600 font-medium"><?= $ratingInfo['rating'] ?></span>
                 <span class="text-gray-500 ml-1">(<?= $ratingInfo['reviews'] ?> reviews)</span>
-            </div>
+            </div> -->
 
             <!-- Recipe Meta Info - 2 rows x 2 columns grid -->
             <div class="grid grid-cols-2 gap-6 mb-6">
@@ -282,50 +282,10 @@ if (isset($_SESSION['user']) && isset($_SESSION['user']['id']) && $recipe_id) {
                 
 <div class="border-t border-gray-200">
     <?php foreach ($ingredientsList as $ingredient): ?>
-        <?php
-        $ingredient = trim($ingredient);
-        
-        // Try to match patterns like "160g fine beans", "2 large eggs", "1 tbsp white miso paste"
-        if (preg_match('/^((?:\d+(?:\/\d+)?|\d*\.\d+)?\s*(?:g|kg|oz|lb|cups?|tbsps?|tsps?|ounces?|pounds?|ml|l)?(?:\s+[^\s]+)?)\s+([^\s,]+(?:\s+[^\s,]+)*)(?:,\s*(.+))?$/i', $ingredient, $matches)) {
-            // Group 1: Quantity + unit + adjective (e.g., "2 large", "75g wholewheat")
-            // Group 2: Main ingredient (e.g., "eggs", "penne")
-            // Group 3 (optional): Extra description (e.g., "trimmed and halved")
-            
-            $quantity = trim($matches[1]);
-            $name = trim($matches[2]);
-            
-            // Handle special cases where descriptions should be separate items
-            if (!empty($matches[3]) && $matches[3] == "trimmed and halved") {
-                // Create a new row for "trimmed and halved"
-                $extraDesc = trim($matches[3]);
-            } else {
-                $extraDesc = "";
-            }
-        } else {
-            // Fallback
-            $parts = explode(' ', $ingredient, 2);
-            if (count($parts) > 1) {
-                $quantity = $parts[0];
-                $name = $parts[1];
-            } else {
-                $name = $ingredient;
-                $quantity = "";
-            }
-            $extraDesc = "";
-        }
-        ?>
-        
-        <div class="py-3 flex justify-between items-start border-b border-gray-200">
-            <span class="flex-grow"><?= htmlspecialchars($name) ?></span>
-            <span class="text-gray-600 ml-2 text-right"><?= htmlspecialchars($quantity) ?></span>
+        <?php $ingredient = trim($ingredient); ?>
+        <div class="py-3 flex items-start border-b border-gray-200">
+            <span class="flex-grow"><?= htmlspecialchars($ingredient) ?></span>
         </div>
-        
-        <?php if (!empty($extraDesc)): ?>
-        <div class="py-3 flex justify-between items-start border-b border-gray-200">
-            <span class="flex-grow"><?= htmlspecialchars($extraDesc) ?></span>
-            <span class="text-gray-600 ml-2 text-right"></span>
-        </div>
-        <?php endif; ?>
     <?php endforeach; ?>
 </div>
 

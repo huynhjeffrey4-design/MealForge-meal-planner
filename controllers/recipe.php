@@ -113,33 +113,23 @@ public function getAllRecipes(): array {
 }
 
     /**
-     * Get a random recipe containing an imageURL from the recipes table
+     * Get five random recipes with images from the recipes table
      *
-     * @return array A single random recipe
+     * @return array An array of five random recipes
      */
-    public function getRandomRecipeWithImage(): array
+    public function getFiveRandomRecipes(): array
     {
-        $randomRecipe = $this->recipeProvider->getRandomRecipeWithImage();
-        
-        if (empty($randomRecipe)) {
-            return [];
-        }
-        
-        // Decode JSON tags
-        $randomRecipe['tags'] = json_decode($randomRecipe['tags']);
-        
-        // Sanitize string fields to prevent XSS
-        if (isset($randomRecipe['recipe'])) $randomRecipe['recipe'] = sanitizeOutput($randomRecipe['recipe']);
-        if (isset($randomRecipe['description'])) $randomRecipe['description'] = sanitizeOutput($randomRecipe['description']);
-        if (isset($randomRecipe['dish_type'])) $randomRecipe['dish_type'] = sanitizeOutput($randomRecipe['dish_type']);
-        if (isset($randomRecipe['ingredients'])) $randomRecipe['ingredients'] = sanitizeOutput($randomRecipe['ingredients']);
-        if (isset($randomRecipe['instructions'])) $randomRecipe['instructions'] = sanitizeOutput($randomRecipe['instructions']);
-        if (isset($randomRecipe['difficulty'])) $randomRecipe['difficulty'] = sanitizeOutput($randomRecipe['difficulty']);
-        if (isset($randomRecipe['subcategory'])) $randomRecipe['subcategory'] = sanitizeOutput($randomRecipe['subcategory']);
-        if (isset($randomRecipe['meal_type'])) $randomRecipe['meal_type'] = sanitizeOutput($randomRecipe['meal_type']);
-        
-        return $randomRecipe;
+        $recipes = \R::getAll("
+            SELECT id, recipe AS meal_name, meal_type, imageURL 
+            FROM recipes 
+            WHERE imageURL IS NOT NULL AND imageURL != '' 
+            ORDER BY RAND() 
+            LIMIT 5
+        ");
+        return $recipes;
     }
+
+
 
     /**
      * Search for recipes with specified filters
@@ -374,6 +364,10 @@ public function getAllRecipes(): array {
 
         return $recipe;
     }
+
+	public function getRandomRecipeWithImage(){
+			return $this->recipeProvider->getRandomRecipeWithImage();
+	}
 }
 
 /**
@@ -401,6 +395,8 @@ interface RecipeDataProvider
      */
     public function getAllRecipes(): array;
     public function getRecipeById($recipeId): array|null;
+    public function getRandomRecipeWithImage(): array;
+    public function getFiveRandomRecipesWithImages(): array;
 }
 
 /**
@@ -427,6 +423,41 @@ class MockRecipeDataProvider implements RecipeDataProvider {
         };
         $result = array_filter($this->recipes, $filterf);
         return $result ? reset($result) : null;
+    }
+    
+    public function getRandomRecipeWithImage(): array
+    {
+        // Filter recipes that have an image (in mock data, we'll assume all have images)
+        $recipesWithImages = $this->recipes;
+        
+        if (empty($recipesWithImages)) {
+            return [];
+        }
+        
+        // Get a random recipe
+        $randomIndex = array_rand($recipesWithImages);
+        return $recipesWithImages[$randomIndex];
+    }
+    
+    public function getFiveRandomRecipesWithImages(): array
+    {
+        // Filter recipes that have an image (in mock data, we'll assume all have images)
+        $recipesWithImages = $this->recipes;
+        
+        if (empty($recipesWithImages)) {
+            return [];
+        }
+        
+        // If we have fewer than 5 recipes, return all of them
+        if (count($recipesWithImages) <= 5) {
+            return $recipesWithImages;
+        }
+        
+        // Shuffle the array to randomize
+        shuffle($recipesWithImages);
+        
+        // Return the first 5 recipes
+        return array_slice($recipesWithImages, 0, 5);
     }
 
     /**
@@ -622,6 +653,29 @@ class RedbeanRecipeDataProvider implements RecipeDataProvider {
         $randomIndex = array_rand($rand_recipes);
         $randomRecipe = $rand_recipes[$randomIndex];
 
+		$randomRecipe['tags'] = json_decode($randomRecipe['tags'], true);
+
         return $randomRecipe;
+    }
+    
+    public function getFiveRandomRecipesWithImages(): array {
+        // Using parameterized query to prevent SQL injection
+        $recipes = \R::findAll('recipes', 'WHERE imageURL IS NOT NULL');
+        $recipesWithImages = \R::exportAll($recipes);
+        
+        if (empty($recipesWithImages)) {
+            return [];
+        }
+        
+        // If we have fewer than 5 recipes, return all of them
+        if (count($recipesWithImages) <= 5) {
+            return $recipesWithImages;
+        }
+        
+        // Shuffle the array to randomize
+        shuffle($recipesWithImages);
+        
+        // Return the first 5 recipes
+        return array_slice($recipesWithImages, 0, 5);
     }
 }
