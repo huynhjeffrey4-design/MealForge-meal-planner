@@ -143,7 +143,7 @@ if (isset($_SESSION['user']) && isset($_SESSION['user']['id']) && $recipe_id) {
 				<?php if (isset($_SESSION['error'])): ?>
 					<div id="login-error" class="bg-red-50 border border-red-400 text-red-700 p-4 rounded-md mb-6">
 <p>
-					<?php echo htmlspecialchars($_SESSION['error']); ?>
+					<?php echo $_SESSION['error']; ?>
 </p>
 					</div>
 					<?php unset($_SESSION['error']); ?>
