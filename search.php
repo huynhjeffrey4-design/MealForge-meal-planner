@@ -229,7 +229,6 @@ $recipesCount = count($recipes);
                                             <span class="inline-block px-2 py-1 text-xs rounded-xl bg-green-100 text-green-800"><?= htmlspecialchars($tag) ?></span>
                                         <?php endforeach; ?>
                                     </div>
-
                                     <div class="flex items-center gap-4">
                                         <div class="flex items-center">
                                             <i data-lucide="clock" class="h-5 w-5 text-gray-500 mr-1"></i>
