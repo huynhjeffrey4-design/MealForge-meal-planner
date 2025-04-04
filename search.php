@@ -287,8 +287,12 @@ $recipesCount = count($recipes);
                         <p class="text-gray-600">Try adjusting your filters or search criteria.</p>
                    </div>
                     <?php else: ?>
-                        <?php foreach ($recipes as $recipe): ?>
-                        <a href="recipe.php?id=<?= htmlspecialchars($recipe['id']) ?>" class="block bg-white rounded-lg shadow overflow-hidden hover:shadow-md transition-shadow duration-200">
+                        <?php foreach ($recipes as $recipe): ?>   
+                        <a href="<?= $isModal ? '#' : 'recipe.php?id=' . htmlspecialchars($recipe['id']) ?>" 
+                           class="block bg-white rounded-lg shadow overflow-hidden hover:shadow-md transition-shadow duration-200"
+                           <?php if ($isModal): ?>
+                           onclick="addRecipeToMealPlan(<?= htmlspecialchars(json_encode($recipe)) ?>)"
+                           <?php endif; ?>>
                                 <?php if (!empty($recipe['image'])): ?>
                                 <div class="w-full">
                                     <img src="<?= htmlspecialchars($recipe['image']) ?>" alt="<?= htmlspecialchars($recipe['recipe']) ?>" class="w-full h-48 object-cover">
@@ -352,6 +356,24 @@ $recipesCount = count($recipes);
             </div>
         </div>
     </div>
+
+    <?php if ($isModal): ?>
+    <script>
+        // Function to add recipe to meal plan
+        function addRecipeToMealPlan(recipe) {
+            // Get the day from URL parameters
+            const urlParams = new URLSearchParams(window.location.search);
+            const day = urlParams.get('day');
+            
+            // Send message to parent window
+            window.parent.postMessage({
+                action: 'addRecipe',
+                day: day,
+                recipe: recipe
+            }, '*');
+        }
+    </script>
+    <?php endif; ?>
 
     <script>
         lucide.createIcons();
