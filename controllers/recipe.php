@@ -45,18 +45,24 @@ class RecipeController {
         return $randomRecipe;
     }
 
-    private function filterByBudget(array $recipes, string $priceRange): array {
-        list($minBudgetFilter, $maxBudgetFilter) = explode('-', $priceRange);
-        $minBudgetFilter = (int)$minBudgetFilter;
-        $maxBudgetFilter = (int)$maxBudgetFilter;
+    /**
+     * Get 5 random recipes with imageURL from the recipes table
+     *
+     * @return array List of formatted recipes
+     */
+    public function getFiveRandomRecipes(): array
+    {
+        $db = DatabaseConnection::getInstance();
+        $db->setup();
 
-        $filtered = array_filter($recipes, function($recipe) use ($minBudgetFilter, $maxBudgetFilter) {
-            if (!isset($recipe['budget']) || !is_numeric($recipe['budget'])) {
-                return false;
-            }
-            return ($recipe['budget'] >= $minBudgetFilter && $recipe['budget'] <= $maxBudgetFilter);
-        });
-        return array_values($filtered);
+        $recipes = \R::getAll("
+            SELECT id, recipe AS meal_name, meal_type, imageURL 
+            FROM recipes 
+            WHERE imageURL IS NOT NULL AND imageURL != '' 
+            ORDER BY RAND() 
+            LIMIT 5
+        ");
+        return $recipes;
     }
 
     /**
@@ -295,44 +301,34 @@ interface RecipeDataProvider
 /**
  * Mock implementation of recipe data provider
  */
-class MockRecipeDataProvider implements RecipeDataProvider {
+class MockRecipeDataProvider implements RecipeDataProvider
+{
     private $recipes = [];
 
-    public function __construct() {
+    public function __construct()
+    {
         $this->initializeRecipes();
     }
 
-    public function getAllRecipes(): array {
+    public function getAllRecipes(): array
+    {
         return $this->recipes;
     }
 
     public function getRecipeById($recipeId): ?array
     {
-        $filterf = function($recipe) use ($recipeId) {
+        $filterf = function ($recipe) use ($recipeId) {
             return $recipe['id'] == $recipeId;
         };
         $result = array_filter($this->recipes, $filterf);
         return $result[0] ?? null;
     }
 
-    private function filterByBudget(array $recipes, string $priceRange): array {
-        list($minBudgetFilter, $maxBudgetFilter) = explode('-', $priceRange);
-        $minBudgetFilter = (int)$minBudgetFilter;
-        $maxBudgetFilter = (int)$maxBudgetFilter;
-
-        $filtered = array_filter($recipes, function($recipe) use ($minBudgetFilter, $maxBudgetFilter) {
-            if (!isset($recipe['budget']) || !is_numeric($recipe['budget'])) {
-                return false;
-            }
-            return ($recipe['budget'] >= $minBudgetFilter && $recipe['budget'] <= $maxBudgetFilter);
-        });
-        return array_values($filtered);
-    }
-
     /**
      * Initialize mock recipe data
      */
-    private function initializeRecipes(): void {
+    private function initializeRecipes(): void
+    {
         $this->recipes = [
             [
                 'id' => 1,
