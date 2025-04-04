@@ -19,8 +19,7 @@ $mealType = $_GET['meal_type'] ?? null;
 $priceRange = $_GET['price_range'] ?? null;
 $isModal = isset($_GET['modal']) && $_GET['modal'] === 'true';
 $minBudget = isset($_GET['min_budget']) ? (int)$_GET['min_budget'] : 0;
-$maxBudget = isset($_GET['max_budget']) ? (int)$_GET['max_budget'] : 50;
-
+$maxBudget = isset($_GET['max_budget']) ? (int)$_GET['max_budget'] : 75;
 
 $budgetErrors = validateBudget($minBudget, $maxBudget);
 
@@ -41,27 +40,20 @@ function validateBudget($minBudget, $maxBudget) {
 
     if (!empty($errors)) {
         return $errors;
-        
+
     }
     return [];
 }
 
-
-//  If there is no priceRange but min/max are provided, generate it automatically
-if (isset($_GET['min_budget']) && isset($_GET['max_budget']) && !$priceRange) {
-    $priceRange = "{$_GET['min_budget']}-{$_GET['max_budget']}";
-}
-
-
-
 // Use the controller to get filtered recipes
 if (empty($budgetErrors)) {
-    $result = $recipeController->searchAction(
+    $result = $recipeController->searchActionRedbean(
         $search,
         $dietary,
         $maxPrepTime,
         $mealType,
-        $priceRange,
+        $minBudget,
+        $maxBudget,
         $page,
         $perPage
     );
@@ -117,8 +109,6 @@ $recipesCount = count($recipes);
         <?php include 'header.php'; ?>
     <?php endif; ?>
 
-
-    
     <div class="container mx-auto p-4">
         <?php if (!$isModal): ?>
         <a href="profile.php" class="flex items-center text-gray-600 mb-6">
@@ -136,43 +126,42 @@ $recipesCount = count($recipes);
                 <?php if ($isModal): ?>
                 <input type="hidden" name="modal" value="true">
                 <?php endif; ?>
-                  
-                
-                <input type="text" name="search" value="<?= htmlspecialchars($search ?? '') ?>" 
-                    class="bg-white text-gray-700 border-2 border rounded-lg pl-10 p-2.5 w-full" 
+
+                <input type="text" name="search" value="<?= htmlspecialchars($search ?? '') ?>"
+                    class="bg-white text-gray-700 border-2 border rounded-lg pl-10 p-2.5 w-full"
                     placeholder="Search recipes...">
 
                 <?php if ($dietary): ?>
                 <input type="hidden" name="dietary" value="<?= htmlspecialchars($dietary) ?>">
                 <?php endif; ?>
-                
+
                 <?php if ($maxPrepTime): ?>
                 <input type="hidden" name="max_prep_time" value="<?= htmlspecialchars($maxPrepTime) ?>">
                 <?php endif; ?>
-                
+
                 <?php if ($mealType): ?>
                 <input type="hidden" name="meal_type" value="<?= htmlspecialchars($mealType) ?>">
                 <?php endif; ?>
             </form>
         </div>
 
-        <div class="flex flex-col md:flex-row gap-6">
-            <!-- Left Column: Filters -->
-            <div class="w-full md:w-1/3 h-fit bg-white rounded-lg shadow p-6">
-            <?php if (!empty($budgetErrors)): ?>
-            <div id="budget-error-box" class="relative mb-4 p-4 bg-red-100 text-red-800 border border-red-300 rounded-lg">
-            <button onclick="document.getElementById('budget-error-box').style.display='none';"
-                    class="absolute top-2 right-2 text-red-700 hover:text-red-900 text-lg font-bold focus:outline-none"
-                    aria-label="Close">
-                &times;
-            </button>
-            <ul class="list-disc list-inside text-sm">
-                <?php foreach ($budgetErrors as $error): ?>
-                    <li><?= htmlspecialchars($error) ?></li>
-                <?php endforeach; ?>
-            </ul>
-         </div>
-      <?php endif; ?>
+            <div class="flex flex-col md:flex-row gap-6">
+                <!-- Left Column: Filters -->
+                <div class="w-full md:w-1/3 h-fit bg-white rounded-lg shadow p-6">
+                <?php if (!empty($budgetErrors)): ?>
+                <div id="budget-error-box" class="relative mb-4 p-4 bg-red-100 text-red-800 border border-red-300 rounded-lg">
+                <button onclick="document.getElementById('budget-error-box').style.display='none';"
+                        class="absolute top-2 right-2 text-red-700 hover:text-red-900 text-lg font-bold focus:outline-none"
+                        aria-label="Close">
+                    &times;
+                </button>
+                <ul class="list-disc list-inside text-sm">
+                    <?php foreach ($budgetErrors as $error): ?>
+                        <li><?= htmlspecialchars($error) ?></li>
+                    <?php endforeach; ?>
+                </ul>
+             </div>
+          <?php endif; ?>
 
                 <!-- Filters Section -->
                 <div class="mb-4 flex justify-between items-center">
@@ -187,12 +176,10 @@ $recipesCount = count($recipes);
                     <?php if ($isModal): ?>
                     <input type="hidden" name="modal" value="true">
                     <?php endif; ?>
-                    
+
                     <?php if ($search): ?>
                     <input type="hidden" name="search" value="<?= htmlspecialchars($search) ?>">
                     <?php endif; ?>
-                    
-                    
 
                     <!-- Dietary Preferences -->
                     <div class="border-b pb-4">
@@ -208,10 +195,10 @@ $recipesCount = count($recipes);
                             </div>
                             <?php foreach ($dietaryOptions as $option): ?>
                             <div class="flex items-center">
-                                <input type="radio" name="dietary" value="<?= htmlspecialchars($option) ?>" 
-                                    id="<?= htmlspecialchars(strtolower(str_replace(' ', '-', $option))) ?>" 
+                                <input type="radio" name="dietary" value="<?= htmlspecialchars($option) ?>"
+                                    id="<?= htmlspecialchars(strtolower(str_replace(' ', '-', $option))) ?>"
                                     class="h-4 w-4 text-red-500 rounded" <?= $dietary === $option ? 'checked' : '' ?>>
-                                <label for="<?= htmlspecialchars(strtolower(str_replace(' ', '-', $option))) ?>" 
+                                <label for="<?= htmlspecialchars(strtolower(str_replace(' ', '-', $option))) ?>"
                                     class="ml-2 text-sm text-gray-700"><?= htmlspecialchars($option) ?></label>
                             </div>
                             <?php endforeach; ?>
@@ -225,9 +212,9 @@ $recipesCount = count($recipes);
                             <i data-lucide="chevron-down" id="prep-time-icon" class="h-5 w-5 transform transition-transform"></i>
                         </div>
                         <div id="prep-time-options" class="mt-2">
-                            <input type="range" name="max_prep_time" min="5" max="120" step="5" 
-                                value="<?= $maxPrepTime ?>" 
-                                class="w-full h-2 bg-gray-200 rounded-lg appearance-none cursor-pointer" 
+                            <input type="range" name="max_prep_time" min="5" max="120" step="5"
+                                value="<?= $maxPrepTime ?>"
+                                class="w-full h-2 bg-gray-200 rounded-lg appearance-none cursor-pointer"
                                 oninput="updatePrepTimeValue(this.value)">
                             <div class="flex justify-between text-sm text-gray-600 mt-1">
                                 <span>5 minutes</span>
@@ -254,19 +241,33 @@ $recipesCount = count($recipes);
                             </select>
                         </div>
                     </div>
+
                     <!-- Budget Filter -->
-            <div class="border-b pb-4">
-                <div class="flex justify-between items-center mb-2 cursor-pointer" onclick="toggleSection('budget')">
-                   <h3 class="font-medium">Budget ($)</h3>
-                    <i data-lucide="chevron-down" id="budget-icon" class="h-5 w-5 transform transition-transform"></i>
-            </div>
-           <div id="budget-options" class="mt-2 space-y-2">
-              <input type="number" name="min_budget" placeholder="Min $" value="<?= htmlspecialchars($minBudget ?? 0) ?>"
-                class="w-full p-2 border rounded-lg text-gray-700 bg-gray-100">
-              <input type="number" name="max_budget" placeholder="Max $" value="<?= htmlspecialchars($maxBudget ?? 75) ?>"
-                class="w-full p-2 border rounded-lg text-gray-700 bg-gray-100">
-          </div>
-           </div>
+                    <div class="border-b pb-4">
+                        <div class="flex justify-between items-center mb-2 cursor-pointer" onclick="toggleSection('budget')">
+                            <h3 class="font-medium">Budget ($)</h3>
+                            <i data-lucide="chevron-down" id="budget-icon" class="h-5 w-5 transform transition-transform"></i>
+                        </div>
+                        <div id="budget-options" class="mt-2 flex space-x-4">
+                            <!-- Min Budget Input -->
+                            <div class="flex items-center w-1/2">
+                                <label for="min_budget" class="mr-2 text-sm text-gray-700">Min: </label>
+                                <input type="number" name="min_budget" id="min_budget" placeholder="Min $"
+                                       value="<?= htmlspecialchars($minBudget ?? 0) ?>"
+                                       class="w-full p-2 border rounded-lg text-gray-700 bg-gray-100">
+                            </div>
+
+                            <!-- Max Budget Input -->
+                            <div class="flex items-center w-1/2">
+                                <label for="max_budget" class="mr-2 text-sm text-gray-700">Max: </label>
+                                <input type="number" name="max_budget" id="max_budget" placeholder="Max $"
+                                       value="<?= htmlspecialchars($maxBudget ?? 75) ?>"
+                                       class="w-full p-2 border rounded-lg text-gray-700 bg-gray-100">
+                            </div>
+                        </div>
+                    </div>
+
+
 
                     <button type="submit" class="w-full py-2 px-4 bg-red-600 hover:bg-red-700 text-white font-medium rounded-lg transition duration-150 ease-in-out">
                         Apply Filters
@@ -277,7 +278,7 @@ $recipesCount = count($recipes);
             <!-- Right Column: Recipe Results -->
             <div id="results" class="w-full md:w-2/3">
                 <p class="text-sm text-gray-600 mb-4">Showing <?= $recipesCount ?> recipes that match your preferences</p>
-                
+
                 <div class="grid grid-cols-1 gap-6">
                     <?php if (empty($recipes)): ?>
                     <div class="bg-white rounded-lg shadow p-6 text-center">
@@ -300,22 +301,21 @@ $recipesCount = count($recipes);
                             <div class="flex flex-col md:flex-row">
                                 <div class="p-4">
                                     <h3 class="font-bold text-lg mb-2"><?= htmlspecialchars($recipe['recipe']) ?></h3>
-                                    
+
                                     <?php if (!empty($recipe['description'])): ?>
                                     <p class="text-gray-600 text-sm mb-3"><?= htmlspecialchars($recipe['description']) ?></p>
                                     <?php endif; ?>
-                                    
+
                                     <div class="flex flex-wrap gap-2 mb-4">
                                         <?php foreach ($recipe['tags'] as $tag): ?>
                                         <span class="inline-block px-2 py-1 text-xs rounded-xl bg-green-100 text-green-800"><?= htmlspecialchars($tag) ?></span>
                                         <?php endforeach; ?>
                                     </div>
-                                    <?php if (isset($recipe['budget']) && is_numeric($recipe['budget'])): ?>
-                                       <p class="text-sm text-gray-600 font-semibold mb-2">💵 Budget: $<?= number_format((float)$recipe['budget'], 2) ?></p>
-                                    <?php else: ?>
-                                       <p class="text-sm text-gray-600 font-semibold mb-2">💵 Budget: $</p>
+                                    <?php if (isset($recipe['budget']) && $recipe['budget'] !== null && is_numeric($recipe['budget'])): ?>
+                                        <p class="text-sm text-gray-600 font-semibold mb-2">💵 Budget: $<?= number_format((float)$recipe['budget'], 2) ?></p>
                                     <?php endif; ?>
-                                    
+
+
                                     <div class="flex items-center gap-4">
                                         <div class="flex items-center">
                                             <i data-lucide="clock" class="h-5 w-5 text-gray-500 mr-1"></i>
@@ -333,7 +333,7 @@ $recipesCount = count($recipes);
                         <div class="mt-6 flex justify-between items-center">
                             <!-- Previous Page Link -->
                             <?php if ($page > 1): ?>
-                                <a href="?page=<?= $page - 1 ?>&perPage=<?= $perPage ?>&search=<?= htmlspecialchars($search ?? '') ?>&dietary=<?= htmlspecialchars($dietary ?? '') ?>&max_prep_time=<?= htmlspecialchars($maxPrepTime ?? '') ?>&meal_type=<?= htmlspecialchars($mealType ?? '') ?>"
+                                <a href="?page=<?= $page - 1 ?>&perPage=<?= $perPage ?>&search=<?= htmlspecialchars($search ?? '') ?>&dietary=<?= htmlspecialchars($dietary ?? '') ?>&max_prep_time=<?= htmlspecialchars($maxPrepTime ?? '') ?>&meal_type=<?= htmlspecialchars($mealType ?? '') ?>&min_budget=<?= htmlspecialchars($minBudget ?? 0) ?>&max_budget=<?= htmlspecialchars($maxBudget ?? 75) ?>"
                                    class="px-4 py-2 bg-gray-300 text-gray-700 rounded-md hover:bg-gray-400">
                                     Previous
                                 </a>
@@ -343,7 +343,7 @@ $recipesCount = count($recipes);
 
                             <!-- Next Page Link -->
                             <?php if ($page < $totalPages): ?>
-                                <a href="?page=<?= $page + 1 ?>&perPage=<?= $perPage ?>&search=<?= htmlspecialchars($search ?? '') ?>&dietary=<?= htmlspecialchars($dietary ?? '') ?>&max_prep_time=<?= htmlspecialchars($maxPrepTime ?? '') ?>&meal_type=<?= htmlspecialchars($mealType ?? '') ?>"
+                                <a href="?page=<?= $page + 1 ?>&perPage=<?= $perPage ?>&search=<?= htmlspecialchars($search ?? '') ?>&dietary=<?= htmlspecialchars($dietary ?? '') ?>&max_prep_time=<?= htmlspecialchars($maxPrepTime ?? '') ?>&meal_type=<?= htmlspecialchars($mealType ?? '') ?>&min_budget=<?= htmlspecialchars($minBudget ?? 0) ?>&max_budget=<?= htmlspecialchars($maxBudget ?? 75) ?>"
                                    class="px-4 py-2 bg-gray-300 text-gray-700 rounded-md hover:bg-gray-400">
                                     Next
                                 </a>
@@ -377,7 +377,7 @@ $recipesCount = count($recipes);
 
     <script>
         lucide.createIcons();
-        
+
         function toggleSection(id) {
             const element = document.getElementById(`${id}-options`);
             const icon = document.getElementById(`${id}-icon`);
@@ -390,7 +390,7 @@ $recipesCount = count($recipes);
             document.getElementById('prep-time-value').textContent = `${value} minutes`;
 
         }
-       
+
 
         document.querySelectorAll('input[type=radio], input[type=range], select').forEach(element => {
             element.addEventListener('change', function() {
