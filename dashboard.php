@@ -7,6 +7,19 @@ if (!isset($_SESSION['user'])) {
 
 require_once __DIR__ . '/controllers/user.php';
 
+require_once __DIR__ . '/controllers/recipe.php';
+
+if ($_SERVER['REQUEST_METHOD'] === 'GET' && isset($_GET['action']) && $_GET['action'] === 'random_recipes') {
+    $controller = new RecipeController(null);
+    $recipes = $controller->getFiveRandomRecipes();
+    header('Content-Type: application/json');
+    echo json_encode($recipes);
+    exit;
+}
+
+$recipeController = new RecipeController(null);
+$randomRecipes = $recipeController->getFiveRandomRecipes();
+
 // Initialize meal plan in session if not exists
 if (!isset($_SESSION['meal_plan'])) {
     $_SESSION['meal_plan'] = [
@@ -87,6 +100,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>MealForge - Meal Plan</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+    <link type="text/css" href="static/css/dashboard.css" rel="stylesheet">
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://unpkg.com/lucide@latest"></script>
     <script>
@@ -257,31 +271,138 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                                         </div>
                                     </div>
                                 </div>
-                            <?php endforeach; ?>
-                        <?php endif; ?>
-                        
-                        <button class="add-meal mt-2 w-10 h-10 rounded-full bg-primary text-white flex items-center justify-center mx-auto hover:bg-primary-dark" data-day="Sunday">
-                            <i class="fa fa-plus"></i>
-                        </button>
-                    </div>
+                            </div>
+                        <?php endforeach; ?>
+                    <?php endif; ?>
+                    
+                    <button class="add-meal mt-2 w-10 h-10 rounded-full bg-primary text-white flex items-center justify-center mx-auto hover:bg-primary-dark" data-day="Sunday">
+                        <i class="fa fa-plus"></i>
+                    </button>
                 </div>
             </div>
         </div>
-    </div>
 
-    <!-- Meal Selection Modal -->
-    <div id="meal-modal" class="fixed inset-0 bg-black bg-opacity-50 hidden z-50 flex items-center justify-center p-2 sm:p-4">
-        <div class="bg-white rounded-lg w-full max-w-6xl h-[90vh] flex flex-col">
-            <div class="p-4 border-b flex justify-between items-center">
-                <h2 class="text-xl font-bold">Add Meal</h2>
-                <button id="close-modal" class="text-gray-500 hover:text-gray-700">
-                    <i class="fa fa-times"></i>
-                </button>
+        <div class="relative w-full mt-8 flex justify-center">
+            <div class="w-full max-w-[420px] overflow-x-auto scroll-container px-4">
+                <div class="flex gap-4 snap-x snap-mandatory" id="slider-content">
+                    <!-- Dynamic Insert -->
+                </div>
             </div>
-            <iframe id="search-iframe" class="w-full h-full border-0"></iframe>
+        </div>
+
+        <div class="text-center mt-4">
+            <button onclick="loadRecipes()" class="px-4 py-2 bg-primary text-white rounded hover:bg-primary-dark">Refresh</button>
         </div>
     </div>
+    
+    <script>
+        const scrollContainer = document.querySelector('.scroll-container');
+        let isDown = false;
+        let startX;
+        let scrollLeft;
 
+        scrollContainer.addEventListener('mousedown', (e) => {
+            isDown = true;
+            scrollContainer.classList.add('cursor-grabbing');
+            startX = e.pageX - scrollContainer.offsetLeft;
+            scrollLeft = scrollContainer.scrollLeft;
+        });
+
+        scrollContainer.addEventListener('mouseleave', () => {
+            isDown = false;
+            scrollContainer.classList.remove('cursor-grabbing');
+        });
+
+        scrollContainer.addEventListener('mouseup', () => {
+            isDown = false;
+            scrollContainer.classList.remove('cursor-grabbing');
+        });
+
+        scrollContainer.addEventListener('mousemove', (e) => {
+            if (!isDown) return;
+            e.preventDefault();
+            const x = e.pageX - scrollContainer.offsetLeft;
+            const walk = (x - startX) * 1.5;
+            scrollContainer.scrollLeft = scrollLeft - walk;
+        });
+
+        // Render recipe cards
+        function renderRecipes(data) {
+            const container = document.getElementById('slider-content');
+            container.innerHTML = '';
+            data.forEach(recipe => {
+                const card = document.createElement('div');
+                card.className = "w-full flex-shrink-0 cursor-pointer";
+
+                card.innerHTML = `
+                    <div class="w-full h-full bg-white shadow rounded-lg flex items-center p-2 hover:shadow-lg transition">
+                        <img src="${recipe.imageURL}" alt="${recipe.meal_name}" draggable="false" class="h-auto w-[calc(50%)] rounded object-cover select-none">
+                        <div class="ml-4 flex flex-col justify-center">
+                            <h4 class="font-bold text-base mb-1">${recipe.meal_name}</h4>
+                            <p class="text-gray-500 text-sm">${recipe.meal_type}</p>
+                        </div>
+                    </div>
+                `;
+
+                card.addEventListener('click', () => {
+                    window.location.href = `./recipe.php?id=${recipe.id}`;
+                });
+
+                // Touch for mobile
+                let startX, startY, startTime;
+                card.addEventListener('touchstart', (e) => {
+                    startX = e.touches[0].pageX;
+                    startY = e.touches[0].pageY;
+                    startTime = new Date().getTime();
+                });
+                card.addEventListener('touchend', (e) => {
+                    const touch = e.changedTouches[0];
+                    const diffX = Math.abs(touch.pageX - startX);
+                    const diffY = Math.abs(touch.pageY - startY);
+                    const timeDiff = new Date().getTime() - startTime;
+                    if (diffX < 5 && diffY < 5 && timeDiff < 500) {
+                        window.location.href = `./recipe.php?id=${recipe.id}`;
+                    }
+                });
+
+                container.appendChild(card);
+            });
+        }
+
+        // Load new recipes via AJAX
+        function loadRecipes() {
+            fetch('dashboard.php?action=random_recipes')
+                .then(response => response.json())
+                .then(data => {
+                    renderRecipes(data);
+                })
+                .catch(error => {
+                    console.error('Failed to load recipes:', error);
+                });
+        }
+
+        // On page load: use server-side rendered $randomRecipes
+        document.addEventListener('DOMContentLoaded', () => {
+            const initialRecipes = <?php echo json_encode($randomRecipes); ?>;
+            renderRecipes(initialRecipes);
+        });
+    </script>
+    
+    
+    <!-- Meal Selection Modal -->
+    <div id="meal-modal" class="fixed inset-0 bg-black bg-opacity-50 hidden z-50 flex items-center justify-center p-4">
+    <div class="bg-white rounded-lg w-full max-w-6xl h-[90vh] flex flex-col">
+        <div class="p-4 border-b flex justify-between items-center">
+            <h2 class="text-xl font-bold">Add Meal</h2>
+            <button id="close-modal" class="text-gray-500 hover:text-gray-700">
+                <i class="fa fa-times"></i>
+            </button>
+        </div>
+        <iframe id="search-iframe" class="w-full h-full border-0"></iframe>
+    </div>
+</div>
+</div>
+            
     <!-- Recipe Details Modal -->
     <div id="recipe-modal" class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center hidden z-50 p-2 sm:p-4">
         <div class="bg-white rounded-lg w-full max-w-3xl max-h-[90vh] overflow-y-auto">
@@ -319,7 +440,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             </div>
         </div>
     </div>
-
     <!-- Confirmation Modal -->
     <div id="confirm-modal" class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center hidden z-50 p-2 sm:p-4">
         <div class="bg-white rounded-lg w-[95%] max-w-md p-4 sm:p-6">
