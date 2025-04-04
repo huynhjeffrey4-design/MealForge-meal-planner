@@ -1,10 +1,8 @@
 <?php
 session_start();
 
-// Clear all session variables
 $_SESSION = [];
 
-// If it's desired to kill the session, also delete the session cookie
 if (ini_get("session.use_cookies")) {
     $params = session_get_cookie_params();
     setcookie(session_name(), '', time() - 42000,
@@ -15,6 +13,7 @@ if (ini_get("session.use_cookies")) {
 
 // Finally, destroy the session
 session_destroy();
+session_unset();
 
 // Redirect to login page
 header('Location: login.php');
