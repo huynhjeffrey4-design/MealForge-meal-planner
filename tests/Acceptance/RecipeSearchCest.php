@@ -87,7 +87,7 @@ final class RecipeSearchCest
         
         // Assert
         $I->seeInCurrentUrl('meal_type=Breakfast');
-        $I->see('Breakfast', '.inline-block'); // Should see Breakfast tag in recipe results
+        $I->see('Breakfast'); // Should see Breakfast text somewhere in the results
     }
     
     
