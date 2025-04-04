@@ -260,10 +260,17 @@ class RecipeController {
         return array_values($filteredRecipes);
     }
 
-    public function searchActionRedbean($search = null, $dietary = null, $maxPrepTime = 60, $mealType = null, $minBudget = 0, $maxBudget =75, $page = 1, $perPage = 15) {
-        // Calculate the offset for pagination
-        $offset = ($page - 1) * $perPage;
-
+    /**
+     * Search for recipes with specified filters
+     *
+     * @param string|null $search Search term for recipe title/description
+     * @param array|null $dietary Array of dietary preferences
+     * @param int|null $maxPrepTime Maximum preparation time in minutes
+     * @param string|null $mealType Type of meal (e.g., Breakfast, Lunch)
+     * @param string|null $priceRange Price range category (budget, moderate, premium)
+     * @return array Filtered recipes
+     */
+    public function searchActionRedbean($search = null, $dietary = null, $maxPrepTime = 60, $mealType = null, $minBudget = 0, $maxBudget = 75, $page = 1, $perPage = 10) {
         // Start building the query
         $query = 'WHERE 1=1';
         $params = [];
@@ -279,7 +286,6 @@ class RecipeController {
         // Add dietary filter if provided
         if ($dietary) {
             $query .= ' AND (subcategory LIKE ? OR LOWER(recipe) LIKE ? OR LOWER(dish_type) LIKE ? OR LOWER(description) LIKE ?)';
-            // Add conditions to check for dietary preference in multiple fields
             $params[] = '%' . $dietary . '%';  // Check subcategory
             $params[] = '%' . $dietary . '%';  // Check recipe
             $params[] = '%' . $dietary . '%';  // Check dish_type
@@ -310,16 +316,19 @@ class RecipeController {
             $params[] = $maxBudget;
         }
 
-        // Apply pagination with LIMIT and OFFSET
-        $query .= ' LIMIT ? OFFSET ?';
-        $params[] = $perPage;
-        $params[] = $offset;
-
-        // Execute the query using RedBean
+        // Retrieve all filtered recipes (without pagination)
         $recipes = \R::getAll('SELECT * FROM recipes ' . $query, $params);
 
         // Remove duplicates from the entire list
         $recipes = $this->removeDuplicateRecipes($recipes);
+
+        // Calculate pagination details
+        $totalRecipes = count($recipes);  // Total unique recipes
+        $totalPages = ceil($totalRecipes / $perPage);
+
+        // Apply pagination to the unique list (get a slice of the list)
+        $offset = ($page - 1) * $perPage;
+        $recipes = array_slice($recipes, $offset, $perPage);
 
         // Loop through each recipe and clean the tags (optional)
         foreach ($recipes as &$recipe) {
@@ -331,16 +340,13 @@ class RecipeController {
             }
         }
 
-        // Return the data (you might also want to include the total count of recipes for pagination)
-        $totalRecipes = \R::getCell('SELECT COUNT(*) FROM recipes ' . $query, $params);
-        $totalPages = ceil($totalRecipes / $perPage);
-
         return [
             'recipes' => $recipes,
             'totalPages' => $totalPages,
             'currentPage' => $page,
         ];
     }
+
 
     private function removeDuplicateRecipes($recipes)
     {
