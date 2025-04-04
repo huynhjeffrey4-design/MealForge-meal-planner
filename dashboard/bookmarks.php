@@ -87,14 +87,14 @@ define('IN_SUBDIRECTORY', true);
         
         <?php if (isset($_SESSION['message'])): ?>
             <div class="bg-green-100 border-l-4 border-green-500 text-green-700 p-4 mb-6" role="alert">
-                <p><?= $_SESSION['message']; ?></p>
+                <p><?= htmlspecialchars($_SESSION['message']); ?></p>
             </div>
             <?php unset($_SESSION['message']); ?>
         <?php endif; ?>
         
         <?php if (isset($_SESSION['error'])): ?>
             <div class="bg-red-100 border-l-4 border-red-500 text-red-700 p-4 mb-6" role="alert">
-                <p><?= $_SESSION['error']; ?></p>
+                <p><?= htmlspecialchars($_SESSION['error']); ?></p>
             </div>
             <?php unset($_SESSION['error']); ?>
         <?php endif; ?>
@@ -137,7 +137,7 @@ define('IN_SUBDIRECTORY', true);
                             <div class="flex items-center gap-4">
                                 <div class="flex items-center">
                                     <i data-lucide="clock" class="h-5 w-5 text-gray-500 mr-1"></i>
-                                    <span class="text-sm text-gray-600"><?= $recipe['prep_time'] ?? '-' ?> mins</span>
+                                    <span class="text-sm text-gray-600"><?= htmlspecialchars($recipe['prep_time'] ?? '-') ?> mins</span>
                                 </div>
                                 <div class="flex items-center">
                                     <i data-lucide="gauge" class="h-5 w-5 text-gray-500 mr-1"></i>
