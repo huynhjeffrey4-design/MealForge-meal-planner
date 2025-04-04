@@ -1,4 +1,8 @@
 <?php
+if (session_status() === PHP_SESSION_NONE) {
+    session_start();
+}
+
 // Include the necessary files
 require_once __DIR__ . '/controllers/recipe.php';
 
@@ -7,6 +11,7 @@ $recipeController = new \RecipeController(null);
 
 // Fetch a random recipe from the database
 $randomRecipe = $recipeController->getRandomRecipeWithImage();
+$isModal = isset($_GET['modal']) && $_GET['modal'] === 'true';
 
 $cleanRecipeName = $randomRecipe["recipe"];
 $cleanDescription = $randomRecipe["description"];
@@ -25,14 +30,38 @@ $totalTime = $randomRecipe["total_time"];
     <title>Recipe Suggestions</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://unpkg.com/lucide@latest"></script>
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        primary: {
+                            DEFAULT: '#00A651',
+                            dark: '#008c44'
+                        }
+                    }
+                }
+            }
+        }
+    </script>
+    <style>
+        body {
+            padding-top: 4rem; /* Space for fixed header */
+        }
+    </style>
+
 </head>
 <body class="bg-green-50">
+<?php if (!$isModal): ?>
+    <?php include 'header.php'; ?>
+<?php endif; ?>
 <div class="container mx-auto p-4">
-    <!-- Navigation Back to Profile -->
-    <a href="profile.php" class="flex items-center text-gray-600 mb-6">
-        <i data-lucide="arrow-left" class="h-5 w-5 mr-1"></i>
-        Back to Profile
-    </a>
+    <?php if (!$isModal): ?>
+        <a href="profile.php" class="flex items-center text-gray-600 mb-6">
+            <i data-lucide="arrow-left" class="h-5 w-5 mr-1"></i>
+            Back to Profile
+        </a>
+    <?php endif; ?>
 
     <!-- Display Random Recipe -->
     <div class="bg-white rounded-lg shadow p-4 sm:p-6 md:p-10 flex flex-col md:flex-row md:h-auto">
