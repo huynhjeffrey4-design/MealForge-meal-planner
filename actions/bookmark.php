@@ -24,6 +24,12 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 		$_SESSION['message'] = 'Bookmark toggled for recipe ' . $recipe['recipe'];
 	}
 
-	header('Location: /recipe.php?id=' . $recipeId);
+	$isLocalhost = $_SERVER['HTTP_HOST'] === 'localhost:8080' || 
+	               $_SERVER['HTTP_HOST'] === 'localhost' || 
+	               strpos($_SERVER['HTTP_HOST'], '127.0.0.1') !== false;
+	
+	$pathPrefix = $isLocalhost ? '/' : '/CSE442/2025-Spring/cse-442v/';
+	
+	header('Location: ' . $pathPrefix . 'recipe.php?id=' . $recipeId);
 	exit;
 }
