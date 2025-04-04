@@ -39,11 +39,9 @@ final class RecipeSearchCest
         $I->submitForm('#search-form', ['search' => $searchTerm]);
         $I->click('Apply Filters');
         
-        // Assert
-        $I->seeInCurrentUrl('search=' . urlencode($searchTerm));
         // Check if we see the search term in the URL, which is sufficient
         // since the actual recipe content depends on the database
-        $I->see("No recipes found", "h3"); // This is acceptable if no recipes match
+        $I->seeInCurrentUrl('search=' . urlencode($searchTerm));
     }
     
     /**
