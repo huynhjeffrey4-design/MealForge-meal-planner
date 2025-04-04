@@ -7,6 +7,19 @@ if (!isset($_SESSION['user'])) {
 
 require_once __DIR__ . '/controllers/user.php';
 
+require_once __DIR__ . '/controllers/recipe.php';
+
+if ($_SERVER['REQUEST_METHOD'] === 'GET' && isset($_GET['action']) && $_GET['action'] === 'random_recipes') {
+    $controller = new RecipeController(null);
+    $recipes = $controller->getFiveRandomRecipes();
+    header('Content-Type: application/json');
+    echo json_encode($recipes);
+    exit;
+}
+
+$recipeController = new RecipeController(null);
+$randomRecipes = $recipeController->getFiveRandomRecipes();
+
 // Initialize meal plan in session if not exists
 if (!isset($_SESSION['meal_plan'])) {
     $_SESSION['meal_plan'] = [
@@ -25,13 +38,6 @@ $userId = (int)$_SESSION['user']['id'];
 $userController = getUserController();
 $user = $userController->getUserById($userId);
 
-// ------------------------------
-
-// Generate an array of 7 consecutive days based on the current date
-$orderedDays = ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday'];
-
-// ------------------------------
-
 // Handle invalid user
 if (!$user) {
     session_destroy();
@@ -44,13 +50,14 @@ $meals = [
     // Your meal data array here...
 ];
 
-// Handle AJAX requests for adding/removing meals
-if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['action'])) {
+// Simplified approach for handling meal plan updates
+if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     header('Content-Type: application/json');
     
-    if ($_POST['action'] === 'add_meal' && isset($_POST['day']) && isset($_POST['meal_id'])) {
-        $day = $_POST['day'];
-        $mealId = (int)$_POST['meal_id'];
+    // Add meal to plan
+    if (isset($_POST['add_day']) && isset($_POST['add_meal_id'])) {
+        $day = $_POST['add_day'];
+        $mealId = (int)$_POST['add_meal_id'];
         
         // Find the meal by ID
         $mealToAdd = null;
@@ -70,9 +77,10 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['action'])) {
         exit;
     }
     
-    if ($_POST['action'] === 'remove_meal' && isset($_POST['day']) && isset($_POST['index'])) {
-        $day = $_POST['day'];
-        $index = (int)$_POST['index'];
+    // Remove meal from plan
+    if (isset($_POST['remove_day']) && isset($_POST['remove_index'])) {
+        $day = $_POST['remove_day'];
+        $index = (int)$_POST['remove_index'];
         
         if (isset($_SESSION['meal_plan'][$day][$index])) {
             array_splice($_SESSION['meal_plan'][$day], $index, 1);
@@ -92,6 +100,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['action'])) {
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>MealForge - Meal Plan</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+    <link type="text/css" href="static/css/dashboard.css" rel="stylesheet">
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://unpkg.com/lucide@latest"></script>
     <script>
@@ -148,79 +157,254 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['action'])) {
                 <h1 class="text-4xl font-bold text-gray-800">Weekly Meal Plan</h1>
             </div>
             
-
-         <!-- Use the $orderedDays array to dynamically generate 7-day cards -->
-         <div class="grid grid-cols-1 md:grid-cols-3 gap-5">
-         <?php foreach ($orderedDays as $i => $day): ?>
-     <?php
-          $extraClass = '';
-           if ($i === 6) { // Place the last card (the 7th one) in the center.
-             $extraClass = 'md:col-start-2';
-            }
-      ?>
-    <div class="day-card bg-white rounded-lg shadow-sm p-4 flex flex-col <?= $extraClass ?>" data-day="<?= $day ?>">
-      
-       <h2 class="text-lg font-bold text-center mb-4"><?php echo $day; ?></h2>
-        <div class="flex-1 flex flex-col" id="meals-<?php echo strtolower($day); ?>">
-
-          <?php if (isset($_SESSION['meal_plan'][$day]) && !empty($_SESSION['meal_plan'][$day])): ?>
-            <!-- If there is a meal for the day, display a green checkmark and link to recipe.php to show details -->
-            <?php $firstMeal = $_SESSION['meal_plan'][$day][0]; ?>
-            <div class="meal-status flex items-center justify-center text-2xl h-full">
-              <a href="recipe.php?id=<?= $firstMeal['id'] ?>&day=<?= $day ?>">✅</a>
-            </div>
-
-            <?php foreach ($_SESSION['meal_plan'][$day] as $index => $meal): ?>
-
-            <div class="mb-3 relative meal-card">
-              <a href="#" class="meal-details" data-meal='<?php echo json_encode($meal); ?>'>
-                  
-                        <?php if (!empty($meal['image'])): ?>
-                          <img src="<?php echo $meal['image']; ?>" alt="<?php echo htmlspecialchars($meal['name']); ?>" class="w-full h-40 object-cover rounded-lg"> 
-                        <?php endif; ?>
+            <!-- Meal Plan Grid - Top Row -->
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-5 mb-5">
+                <?php foreach(['Monday', 'Tuesday', 'Wednesday'] as $day): ?>
+                <div class="bg-white rounded-lg shadow-sm p-4 flex flex-col">
+                    <h2 class="text-lg font-bold text-center mb-4"><?php echo $day; ?></h2>
                     
-               <!-- This is the original section for displaying the meal name-->
-              <?php if (!empty($meal['name'])): ?>
-                <div class="bg-black bg-opacity-60 text-white text-sm p-2 absolute bottom-0 left-0 right-0 rounded-b-lg">
-                  <?php echo htmlspecialchars($meal['name']); ?>
+                    <div class="flex-1 flex flex-col" id="meals-<?php echo strtolower($day); ?>">
+                        <?php if(isset($_SESSION['meal_plan'][$day]) && !empty($_SESSION['meal_plan'][$day])): ?>
+                            <?php foreach($_SESSION['meal_plan'][$day] as $index => $meal): ?>
+                                <div class="mb-3 relative meal-card">
+                                    <a href="#" class="meal-details" data-meal='<?php echo json_encode($meal); ?>'>
+                                        <img src="<?php echo $meal['image']; ?>" alt="<?php echo htmlspecialchars($meal['name']); ?>" class="w-full h-40 object-cover rounded-lg">
+                                        <div class="bg-black bg-opacity-60 text-white text-sm p-2 absolute bottom-0 left-0 right-0 rounded-b-lg">
+                                            <?php echo htmlspecialchars($meal['name']); ?>
+                                        </div>
+                                    </a>
+                                    <div class="absolute top-2 right-2 meal-options">
+                                        <div class="relative inline-block">
+                                            <button class="bg-white bg-opacity-80 rounded-full w-8 h-8 flex items-center justify-center text-gray-700 hover:bg-opacity-100 meal-menu-button">
+                                                <i class="fa fa-ellipsis-h"></i>
+                                            </button>
+                                            <div class="hidden absolute right-0 mt-2 w-48 bg-white rounded-md shadow-lg z-10 meal-menu">
+                                                <div class="py-1">
+                                                    <button class="w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 remove-meal" data-day="<?php echo $day; ?>" data-index="<?php echo $index; ?>">
+                                                        <i class="fa fa-trash mr-2 text-red-500"></i> Remove
+                                                    </button>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            <?php endforeach; ?>
+                        <?php endif; ?>
+                        
+                        <button class="add-meal mt-2 w-10 h-10 rounded-full bg-primary text-white flex items-center justify-center mx-auto hover:bg-primary-dark" data-day="<?php echo $day; ?>">
+                            <i class="fa fa-plus"></i>
+                        </button>
+                    </div>
                 </div>
-              <?php endif; ?>
-              </a>
-              <button class="remove-meal absolute top-5 right-2 text-gray-700 hover:text-red-600" data-day="<?php echo $day; ?>" data-index="<?php echo $index; ?>">
-                <i class="fa fa-trash"></i>
-              </button>
+                <?php endforeach; ?>
             </div>
-            <?php endforeach; ?>
-          <?php else: ?>
-            <div class="meal-status flex items-center justify-center text-2xl h-full">❌</div>
-
-          <?php endif; ?>
-          <!-- Plus button: Click to enter search.php for recipe filtering -->
-          <button class="add-meal mt-2 w-10 h-10 rounded-full bg-primary text-white flex items-center justify-center mx-auto hover:bg-primary-dark" data-day="<?php echo $day; ?>">
-            <i class="fa fa-plus"></i>
-          </button>
+            
+            <!-- Meal Plan Grid - Middle Row -->
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-5 mb-5">
+                <?php foreach(['Thursday', 'Friday', 'Saturday'] as $day): ?>
+                <div class="bg-white rounded-lg shadow-sm p-4 flex flex-col">
+                    <h2 class="text-lg font-bold text-center mb-4"><?php echo $day; ?></h2>
+                    
+                    <div class="flex-1 flex flex-col" id="meals-<?php echo strtolower($day); ?>">
+                        <?php if(isset($_SESSION['meal_plan'][$day]) && !empty($_SESSION['meal_plan'][$day])): ?>
+                            <?php foreach($_SESSION['meal_plan'][$day] as $index => $meal): ?>
+                                <div class="mb-3 relative meal-card">
+                                    <a href="#" class="meal-details" data-meal='<?php echo json_encode($meal); ?>'>
+                                        <img src="<?php echo $meal['image']; ?>" alt="<?php echo htmlspecialchars($meal['name']); ?>" class="w-full h-40 object-cover rounded-lg">
+                                        <div class="bg-black bg-opacity-60 text-white text-sm p-2 absolute bottom-0 left-0 right-0 rounded-b-lg">
+                                            <?php echo htmlspecialchars($meal['name']); ?>
+                                        </div>
+                                    </a>
+                                    <div class="absolute top-2 right-2 meal-options">
+                                        <div class="relative inline-block">
+                                            <button class="bg-white bg-opacity-80 rounded-full w-8 h-8 flex items-center justify-center text-gray-700 hover:bg-opacity-100 meal-menu-button">
+                                                <i class="fa fa-ellipsis-h"></i>
+                                            </button>
+                                            <div class="hidden absolute right-0 mt-2 w-48 bg-white rounded-md shadow-lg z-10 meal-menu">
+                                                <div class="py-1">
+                                                    <button class="w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 remove-meal" data-day="<?php echo $day; ?>" data-index="<?php echo $index; ?>">
+                                                        <i class="fa fa-trash mr-2 text-red-500"></i> Remove
+                                                    </button>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            <?php endforeach; ?>
+                        <?php endif; ?>
+                        
+                        <button class="add-meal mt-2 w-10 h-10 rounded-full bg-primary text-white flex items-center justify-center mx-auto hover:bg-primary-dark" data-day="<?php echo $day; ?>">
+                            <i class="fa fa-plus"></i>
+                        </button>
+                    </div>
+                </div>
+                <?php endforeach; ?>
+            </div>
+            
+            <!-- Meal Plan Grid - Bottom Row (Sunday) -->
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-5">
+                <div class="md:col-start-2 bg-white rounded-lg shadow-sm p-4 flex flex-col">
+                    <h2 class="text-lg font-bold text-center mb-4">Sunday</h2>
+                    
+                    <div class="flex-1 flex flex-col" id="meals-sunday">
+                        <?php if(isset($_SESSION['meal_plan']['Sunday']) && !empty($_SESSION['meal_plan']['Sunday'])): ?>
+                            <?php foreach($_SESSION['meal_plan']['Sunday'] as $index => $meal): ?>
+                                <div class="mb-3 relative meal-card">
+                                    <a href="#" class="meal-details" data-meal='<?php echo json_encode($meal); ?>'>
+                                        <img src="<?php echo $meal['image']; ?>" alt="<?php echo htmlspecialchars($meal['name']); ?>" class="w-full h-40 object-cover rounded-lg">
+                                        <div class="bg-black bg-opacity-60 text-white text-sm p-2 absolute bottom-0 left-0 right-0 rounded-b-lg">
+                                            <?php echo htmlspecialchars($meal['name']); ?>
+                                        </div>
+                                    </a>
+                                    <div class="absolute top-2 right-2 meal-options">
+                                        <div class="relative inline-block">
+                                            <button class="bg-white bg-opacity-80 rounded-full w-8 h-8 flex items-center justify-center text-gray-700 hover:bg-opacity-100 meal-menu-button">
+                                                <i class="fa fa-ellipsis-h"></i>
+                                            </button>
+                                            <div class="hidden absolute right-0 mt-2 w-48 bg-white rounded-md shadow-lg z-10 meal-menu">
+                                                <div class="py-1">
+                                                    <button class="w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 remove-meal" data-day="Sunday" data-index="<?php echo $index; ?>">
+                                                        <i class="fa fa-trash mr-2 text-red-500"></i> Remove
+                                                    </button>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        <?php endforeach; ?>
+                    <?php endif; ?>
+                    
+                    <button class="add-meal mt-2 w-10 h-10 rounded-full bg-primary text-white flex items-center justify-center mx-auto hover:bg-primary-dark" data-day="Sunday">
+                        <i class="fa fa-plus"></i>
+                    </button>
+                </div>
+            </div>
         </div>
-      </div>
-      <?php endforeach; ?>
+
+        <div class="relative w-full mt-8 flex justify-center">
+            <div class="w-full max-w-[420px] overflow-x-auto scroll-container px-4">
+                <div class="flex gap-4 snap-x snap-mandatory" id="slider-content">
+                    <!-- Dynamic Insert -->
+                </div>
+            </div>
+        </div>
+
+        <div class="text-center mt-4">
+            <button onclick="loadRecipes()" class="px-4 py-2 bg-primary text-white rounded hover:bg-primary-dark">Refresh</button>
+        </div>
     </div>
+    
+    <script>
+        const scrollContainer = document.querySelector('.scroll-container');
+        let isDown = false;
+        let startX;
+        let scrollLeft;
+
+        scrollContainer.addEventListener('mousedown', (e) => {
+            isDown = true;
+            scrollContainer.classList.add('cursor-grabbing');
+            startX = e.pageX - scrollContainer.offsetLeft;
+            scrollLeft = scrollContainer.scrollLeft;
+        });
+
+        scrollContainer.addEventListener('mouseleave', () => {
+            isDown = false;
+            scrollContainer.classList.remove('cursor-grabbing');
+        });
+
+        scrollContainer.addEventListener('mouseup', () => {
+            isDown = false;
+            scrollContainer.classList.remove('cursor-grabbing');
+        });
+
+        scrollContainer.addEventListener('mousemove', (e) => {
+            if (!isDown) return;
+            e.preventDefault();
+            const x = e.pageX - scrollContainer.offsetLeft;
+            const walk = (x - startX) * 1.5;
+            scrollContainer.scrollLeft = scrollLeft - walk;
+        });
+
+        // Render recipe cards
+        function renderRecipes(data) {
+            const container = document.getElementById('slider-content');
+            container.innerHTML = '';
+            data.forEach(recipe => {
+                const card = document.createElement('div');
+                card.className = "w-full flex-shrink-0 cursor-pointer";
+
+                card.innerHTML = `
+                    <div class="w-full h-full bg-white shadow rounded-lg flex items-center p-2 hover:shadow-lg transition">
+                        <img src="${recipe.imageURL}" alt="${recipe.meal_name}" draggable="false" class="h-auto w-[calc(50%)] rounded object-cover select-none">
+                        <div class="ml-4 flex flex-col justify-center">
+                            <h4 class="font-bold text-base mb-1">${recipe.meal_name}</h4>
+                            <p class="text-gray-500 text-sm">${recipe.meal_type}</p>
+                        </div>
+                    </div>
+                `;
+
+                card.addEventListener('click', () => {
+                    window.location.href = `./recipe.php?id=${recipe.id}`;
+                });
+
+                // Touch for mobile
+                let startX, startY, startTime;
+                card.addEventListener('touchstart', (e) => {
+                    startX = e.touches[0].pageX;
+                    startY = e.touches[0].pageY;
+                    startTime = new Date().getTime();
+                });
+                card.addEventListener('touchend', (e) => {
+                    const touch = e.changedTouches[0];
+                    const diffX = Math.abs(touch.pageX - startX);
+                    const diffY = Math.abs(touch.pageY - startY);
+                    const timeDiff = new Date().getTime() - startTime;
+                    if (diffX < 5 && diffY < 5 && timeDiff < 500) {
+                        window.location.href = `./recipe.php?id=${recipe.id}`;
+                    }
+                });
+
+                container.appendChild(card);
+            });
+        }
+
+        // Load new recipes via AJAX
+        function loadRecipes() {
+            fetch('dashboard.php?action=random_recipes')
+                .then(response => response.json())
+                .then(data => {
+                    renderRecipes(data);
+                })
+                .catch(error => {
+                    console.error('Failed to load recipes:', error);
+                });
+        }
+
+        // On page load: use server-side rendered $randomRecipes
+        document.addEventListener('DOMContentLoaded', () => {
+            const initialRecipes = <?php echo json_encode($randomRecipes); ?>;
+            renderRecipes(initialRecipes);
+        });
+    </script>
     
     
     <!-- Meal Selection Modal -->
     <div id="meal-modal" class="fixed inset-0 bg-black bg-opacity-50 hidden z-50 flex items-center justify-center p-4">
-        <div class="bg-white rounded-lg w-full max-w-6xl h-[90vh] flex flex-col">
-            <div class="p-4 border-b flex justify-between items-center">
+    <div class="bg-white rounded-lg w-full max-w-6xl h-[90vh] flex flex-col">
+        <div class="p-4 border-b flex justify-between items-center">
             <h2 class="text-xl font-bold">Add Meal</h2>
-
-                <button id="close-modal" class="text-gray-500 hover:text-gray-700">
-                    <i class="fa fa-times"></i>
-                </button>
-            </div>
-            <iframe id="search-iframe" class="w-full h-full border-0"></iframe>
+            <button id="close-modal" class="text-gray-500 hover:text-gray-700">
+                <i class="fa fa-times"></i>
+            </button>
         </div>
+        <iframe id="search-iframe" class="w-full h-full border-0"></iframe>
     </div>
-
+</div>
+</div>
+            
     <!-- Recipe Details Modal -->
-    <div id="recipe-modal" class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center hidden z-50">
+    <div id="recipe-modal" class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center hidden z-50 p-2 sm:p-4">
         <div class="bg-white rounded-lg w-full max-w-3xl max-h-[90vh] overflow-y-auto">
             <div class="p-4 border-b border-gray-200 flex justify-between items-center">
                 <div class="flex items-center">
@@ -256,10 +440,9 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['action'])) {
             </div>
         </div>
     </div>
-
     <!-- Confirmation Modal -->
-    <div id="confirm-modal" class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center hidden z-50">
-        <div class="bg-white rounded-lg w-full max-w-md p-6">
+    <div id="confirm-modal" class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center hidden z-50 p-2 sm:p-4">
+        <div class="bg-white rounded-lg w-[95%] max-w-md p-4 sm:p-6">
             <h3 class="text-lg font-bold mb-4" id="confirm-title">Remove this meal?</h3>
             <p class="text-gray-700 mb-6" id="confirm-message">Are you sure you want to remove this meal?</p>
             
@@ -332,16 +515,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['action'])) {
                 });
             }
         });
-           // Add a new listener (sent from recipe.php
-     window.addEventListener('message', function(e) {
-      if (e.data.action === 'addMealSuccess') {
-          document.getElementById('meal-modal').classList.add('hidden');
-          document.getElementById('meal-modal').classList.remove('flex');
-          location.reload(); // Refresh the page to display
-    }
-});
-
-
         
         // Close modal handlers
         document.getElementById('close-modal').addEventListener('click', () => {
@@ -360,12 +533,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['action'])) {
         document.getElementById('cancel-confirm').addEventListener('click', () => {
             confirmModal.classList.add('hidden');
         });
-         // close Recipe Modal
-    document.getElementById('close-recipe').addEventListener('click', () => recipeModal.classList.add('hidden'));
-    document.getElementById('back-to-meal-plan').addEventListener('click', () => recipeModal.classList.add('hidden'));
-     // Cancel delete confirmation
-    document.getElementById('cancel-confirm').addEventListener('click', () => confirmModal.classList.add('hidden'));
-    
         
         // Meal details handlers
         document.querySelectorAll('.meal-details').forEach(link => {
@@ -459,9 +626,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['action'])) {
             if (removeData.day && removeData.index >= 0) {
                 // Send request to remove meal
                 const formData = new FormData();
-                formData.append('action', 'remove_meal');   // 
-                formData.append('day', removeData.day);     //
-                formData.append('index', removeData.index); // 
+                formData.append('remove_day', removeData.day);
+                formData.append('remove_index', removeData.index);
                 
                 fetch('dashboard.php', {
                     method: 'POST',
@@ -485,14 +651,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['action'])) {
                 });
             }
         });
-        document.addEventListener('DOMContentLoaded', () => {
-      const weekDays = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'];
-const now = new Date();
-const today = weekDays[now.getDay()];
-
-const todayCard = document.querySelector(`.day-card[data-day="${today}"]`);
-if (todayCard) todayCard.classList.add('ring-4', 'ring-green-500');
-});
     </script>
 </body>
 </html>

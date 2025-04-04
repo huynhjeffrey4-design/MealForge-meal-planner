@@ -3,20 +3,10 @@ require_once __DIR__ . '/controllers/recipe.php';
 require_once __DIR__ . '/controllers/bookmark.php';
 
 session_start();
+
 $recipeController = new RecipeController(null);
-// Get the current date parameter, defaulting to Monday
-$currentDay = $_GET['day'] ?? null;
+
 $recipe_id = isset($_GET['id']) ? intval($_GET['id']) : null;
-
-$recipe = null;
-if ($recipe_id) {
-    $recipe = $recipeController->getRecipeById($recipe_id);
-}
-
-
-
-
-$addMeal = isset($_GET['day']);
 
 $recipe = null;
 if ($recipe_id) {
@@ -47,31 +37,12 @@ if (!$recipeNotFound) {
 }
 
 
-
 $isBookmarked = false;
 if (isset($_SESSION['user']) && isset($_SESSION['user']['id']) && $recipe_id) {
   $user_id = $_SESSION['user']['id'];
   $bookmarkController = new BookmarkController($user_id);
   $isBookmarked = $bookmarkController->isBookmarked($recipe_id);
 }
-
-
-// Add to Meal Plan" form submission
-if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['action']) && $_POST['action'] === 'join_recipe') {
-  
-    // Add the recipe to the meal plan for the current date in the session.
-    $day = $_POST['day'] ?? null;
-    $_SESSION['meal_plan'][$day][] = $recipe;
-    // Redirect to dashboard.php after successful addition
-     // // Instead of using header redirect, use JS to notify the parent page to close the modal and refresh
-    echo "<script>
-      window.parent.postMessage({ action: 'addMealSuccess' }, '*');
-    </script>";
-    exit;
-}
-
-
-
 
 ?>
 
@@ -87,12 +58,51 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['action']) && $_POST['
         [data-lucide="bookmark"].filled {
             fill: currentColor;
         }
+
+        @media print {
+        /* Hide elements that don’t need to be printed */
+        .bookmark-button,
+        .sidebar,
+        .back-button,
+        .print-hide,
+        form,
+        button,
+        nav {
+            display: none !important;
+        }
+
+        .container {
+            max-width: 100% !important;
+            padding: 0;
+            margin: 0 auto !important;
+        }
+
+        body {
+            background: white !important;
+            color: black !important;
+            /* Force background colors and images */
+            -webkit-print-color-adjust: exact !important;
+            print-color-adjust: exact !important;
+        }
+
+        /* Only remove outer card borders and shadows */
+        .rounded-lg,
+        .shadow-md {
+            box-shadow: none !important;
+            border-radius: 0 !important;
+        }
+
+        li {
+            break-inside: avoid;
+            page-break-inside: avoid;
+        }
+    }
     </style>
 </head>
 <body class="bg-gray-100">
     <div class="container mx-auto max-w-3xl p-4">
         <!-- Back to Search Button -->
-        <div class="mb-6">
+        <div class="mb-6 print-hide">
             <a href="javascript:history.back()" class="flex items-center text-gray-600 hover:text-gray-900">
                 <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="mr-2">
                     <path d="M19 12H5"></path>
@@ -102,7 +112,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['action']) && $_POST['
             </a>
         </div>
 
-       
         <?php if ($recipeNotFound): ?>
         <!-- Recipe Not Found Message -->
         <div class="bg-white rounded-lg shadow-md p-6 text-center">
@@ -145,7 +154,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['action']) && $_POST['
                 <h1 class="text-3xl font-bold text-gray-800"><?= htmlspecialchars($recipe['recipe']) ?></h1>
                 <div class="flex space-x-4">
                     <!-- Print Icon -->
-                    <button class="text-gray-500 hover:text-gray-700">
+                    <button id="print-button" class="text-gray-500 hover:text-gray-700">
                         <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
                             <polyline points="6 9 6 2 18 2 18 9"></polyline>
                             <path d="M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2"></path>
@@ -163,7 +172,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['action']) && $_POST['
                         </svg>
                     </button>
 <!-- Bookmark Form -->
-<form action="bookmark.php" method="POST" id="bookmark_form">
+<form action="actions/bookmark.php" method="POST" id="bookmark_form">
     <input type="hidden" name="recipe_id" value="<?= $recipe_id ?>">
     <button type="submit" class="<?= $isBookmarked ? 'text-green-600' : 'text-gray-500' ?> hover:text-gray-700" id="bookmark_button">
         <?php if ($isBookmarked): ?>
@@ -349,43 +358,19 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['action']) && $_POST['
                         </li>
                     <?php endforeach; ?>
                 </ol>
-                </div>
-            
-<!-- Automatically check if the meal is already added and display buttons accordingly -->
-<!-- Disable the button if already added; otherwise, show "Add Meal" -->
-<?php
-$from = $_GET['from'] ?? '';
-
-$alreadyAdded = isset($_SESSION['meal_plan'][$currentDay]) && count($_SESSION['meal_plan'][$currentDay]) > 0;
-?>
-
-<?php if ($from !== 'profile'): ?>
-<div class="mt-8">
-    <?php if (!$alreadyAdded): ?>
-        <!-- Show Add Meal button -->
-        <form action="" method="POST">
-            <input type="hidden" name="action" value="join_recipe">
-            <input type="hidden" name="day" value="<?= htmlspecialchars($currentDay) ?>">
-            <button type="submit" class="w-full bg-green-500 hover:bg-green-600 text-white px-4 py-2 rounded">
-                Add Meal
-            </button>
-        </form>
-    <?php else: ?>
-        <?php if ($from !== 'header'): ?>
-            <!-- Show "Already Added" button -->
-            <button disabled class="w-full bg-green-400 text-white px-4 py-2 rounded cursor-not-allowed">
-                Already Added
-            </button>
+            </div>
+        </div>
         <?php endif; ?>
-    <?php endif; ?>
-</div>
-<?php endif; ?>
-
+    </div>
 
 	<script>
 		// Initialize Lucide icons
 		lucide.createIcons();
+
+        // Save as PDF
+        document.getElementById('print-button').addEventListener('click', function () {
+            window.print();
+        });
 	</script>
 </body>
 </html>
-<?php endif;
