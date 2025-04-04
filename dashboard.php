@@ -77,6 +77,20 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         exit;
     }
     
+    // Add recipe directly to meal plan
+    if (isset($_POST['add_day']) && isset($_POST['add_meal_data'])) {
+        $day = $_POST['add_day'];
+        $mealData = json_decode($_POST['add_meal_data'], true);
+        
+        if ($mealData) {
+            $_SESSION['meal_plan'][$day][] = $mealData;
+            echo json_encode(['success' => true]);
+        } else {
+            echo json_encode(['success' => false, 'message' => 'Invalid meal data']);
+        }
+        exit;
+    }
+    
     // Remove meal from plan
     if (isset($_POST['remove_day']) && isset($_POST['remove_index'])) {
         $day = $_POST['remove_day'];
@@ -483,7 +497,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 
                 // Load new content after slight delay
                 setTimeout(() => {
-                    searchIframe.src = `search.php?modal=true&day=${encodeURIComponent(day)}`;            
+                    searchIframe.src = `search.php?modal=true&day=${encodeURIComponent(day)}`;
                     mealModal.classList.remove('hidden');
                 }, 50);
             });
@@ -512,6 +526,44 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                         mealModal.classList.add('hidden');
                         window.location.reload();
                     }
+                });
+            } else if (e.data.action === 'addRecipe') {
+                // Handle recipe data from search.php
+                const recipe = e.data.recipe;
+                const day = e.data.day;
+                
+                // Create a meal object from the recipe data
+                const meal = {
+                    id: recipe.id,
+                    name: recipe.recipe,
+                    image: recipe.imageURL || 'static/images/default-recipe.jpg',
+                    description: recipe.description || '',
+                    ingredients: recipe.ingredients ? recipe.ingredients.split(', ') : [],
+                    instructions: recipe.instructions || '',
+                    nutrition: []  // Empty nutrition for now
+                };
+                
+                // Add the meal to the session via AJAX
+                const formData = new FormData();
+                formData.append('add_day', day);
+                formData.append('add_meal_data', JSON.stringify(meal));
+                
+                fetch('dashboard.php', {
+                    method: 'POST',
+                    body: formData
+                })
+                .then(response => response.json())
+                .then(data => {
+                    if (data.success) {
+                        mealModal.classList.add('hidden');
+                        window.location.reload();
+                    } else {
+                        alert('Failed to add meal: ' + (data.message || 'Unknown error'));
+                    }
+                })
+                .catch(error => {
+                    console.error('Error:', error);
+                    alert('An error occurred while adding the meal');
                 });
             }
         });
