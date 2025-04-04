@@ -364,6 +364,10 @@ public function getAllRecipes(): array {
 
         return $recipe;
     }
+
+	public function getRandomRecipeWithImage(){
+			return $this->recipeProvider->getRandomRecipeWithImage();
+	}
 }
 
 /**
@@ -648,6 +652,8 @@ class RedbeanRecipeDataProvider implements RecipeDataProvider {
 
         $randomIndex = array_rand($rand_recipes);
         $randomRecipe = $rand_recipes[$randomIndex];
+
+		$randomRecipe['tags'] = json_decode($randomRecipe['tags'], true);
 
         return $randomRecipe;
     }
