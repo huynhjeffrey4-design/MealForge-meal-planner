@@ -30,7 +30,7 @@ jobs:
     - name: Lint
       run: find . -name "*.php" -type f -exec php -l {} \;
 
-  deploy-to-dev:
+  deploy-and-test-on-dev:
     runs-on: self-hosted
     steps:
       - name: Checkout code
@@ -53,6 +53,44 @@ jobs:
             echo "❌ Deployment failed - index.php not found"
             exit 1
           fi
+      - name: Reset database
+        run: |
+          echo "Resetting database on dev server..."
+          chmod +x ./scripts/reset_db.sh
+          ./scripts/reset_db.sh
+      - name: Install dependencies for testing
+        run: /home/csdue/petervai/composer.phar install --prefer-dist --no-progress --no-interaction --no-suggest
+      - name: Run tests on dev server
+        run: |
+          cd /data/web/CSE442/2025-Spring/cse-442v/
+          source .env
+          cat > tests/Acceptance.suite.yml << EOF
+          actor: AcceptanceTester
+          modules:
+              enabled:
+                  - PhpBrowser:
+                      url: https://se-dev.cse.buffalo.edu/CSE442/2025-Spring/cse-442v/
+                  - Asserts
+                  - Db:
+                      dsn: 'mysql:host=127.0.0.1;dbname=${DB_DATABASE}'
+                      user: '${DB_USERNAME}'
+                      password: '${DB_PASSWORD}'
+                      dump: 'tests/Support/Data/dump.sql'
+                      populate: true
+                      cleanup: true
+                      reconnect: true
+                      waitlock: 10
+                      skip_cleanup_if_failed: true
+                      initial_queries:
+                        - 'CREATE DATABASE IF NOT EXISTS ${DB_DATABASE};'
+                        - 'USE ${DB_DATABASE};'
+                        - 'SET NAMES utf8;'
+          step_decorators:
+              - Codeception\Step\ConditionalAssertion
+              - Codeception\Step\TryTo
+              - Codeception\Step\Retry
+          EOF
+          php vendor/bin/codecept run Acceptance
 
   test-github-runners:
     runs-on: ubuntu-latest
@@ -102,54 +140,9 @@ jobs:
           DB_USERNAME: root
           DB_PASSWORD: password
 
-  test-on-dev-server:
-    runs-on: self-hosted
-    needs: [deploy-to-dev]
-    steps:
-      - name: Checkout code
-        uses: actions/checkout@v4
-      - name: Reset database
-        run: |
-          echo "Resetting database on dev server..."
-          chmod +x ./scripts/reset_db.sh
-          ./scripts/reset_db.sh
-      - name: Install dependencies for testing
-        run: /home/csdue/petervai/composer.phar install --prefer-dist --no-progress --no-interaction --no-suggest
-      - name: Run tests on dev server
-        run: |
-          cd /data/web/CSE442/2025-Spring/cse-442v/
-          source .env
-          cat > tests/Acceptance.suite.yml << EOF
-          actor: AcceptanceTester
-          modules:
-              enabled:
-                  - PhpBrowser:
-                      url: https://se-dev.cse.buffalo.edu/CSE442/2025-Spring/cse-442v/
-                  - Asserts
-                  - Db:
-                      dsn: 'mysql:host=127.0.0.1;dbname=${DB_DATABASE}'
-                      user: '${DB_USERNAME}'
-                      password: '${DB_PASSWORD}'
-                      dump: 'tests/Support/Data/dump.sql'
-                      populate: true
-                      cleanup: true
-                      reconnect: true
-                      waitlock: 10
-                      skip_cleanup_if_failed: true
-                      initial_queries:
-                        - 'CREATE DATABASE IF NOT EXISTS ${DB_DATABASE};'
-                        - 'USE ${DB_DATABASE};'
-                        - 'SET NAMES utf8;'
-          step_decorators:
-              - Codeception\Step\ConditionalAssertion
-              - Codeception\Step\TryTo
-              - Codeception\Step\Retry
-          EOF
-          php vendor/bin/codecept run Acceptance
-
   final-deployment:
     runs-on: self-hosted
-    needs: [test-on-dev-server]
+    needs: [deploy-and-test-on-dev]
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
