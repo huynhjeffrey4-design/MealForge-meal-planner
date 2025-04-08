@@ -1,4 +1,5 @@
 <?php
+
 session_start();
 require_once __DIR__ . '/../controllers/user.php';
 
@@ -13,17 +14,17 @@ $userController = getUserController();
 if (isset($_FILES['profile_picture']) && $_FILES['profile_picture']['error'] === UPLOAD_ERR_OK) {
     $imageData = file_get_contents($_FILES['profile_picture']['tmp_name']);
     $base64Image = 'data:' . $_FILES['profile_picture']['type'] . ';base64,' . base64_encode($imageData);
-    
+
     $userData = [
         'profile_picture' => $base64Image
     ];
-    
+
     $success = $userController->updateUser($userId, $userData);
-    
+
     if ($success) {
         $_SESSION['message'] = "Profile picture updated successfully!";
         $_SESSION['message_type'] = "success";
-        
+
         $updatedUser = $userController->getUserById($userId);
         if ($updatedUser) {
             $_SESSION['user'] = $updatedUser;

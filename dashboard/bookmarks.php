@@ -70,9 +70,9 @@ define('IN_SUBDIRECTORY', true);
     </script>
 </head>
 <body class="bg-gray-50">
-    <?php 
-    include_once __DIR__ . '/../header.php'; 
-    ?>
+    <?php
+    include_once __DIR__ . '/../header.php';
+?>
     
     <div class="container mx-auto py-8 px-4 md:px-12">
         <header class="mb-8 pb-2 border-b border-gray-200">

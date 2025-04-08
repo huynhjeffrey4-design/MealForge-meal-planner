@@ -15,11 +15,11 @@ $token = '';
 if (isset($_GET['user_id']) && isset($_GET['token'])) {
     $userId = (int)$_GET['user_id'];
     $token = $_GET['token'];
-    
+
     // Verify the token
     $forgotPasswordController = new ForgotPasswordController();
     $validToken = $forgotPasswordController->verifyToken($userId, $token);
-    
+
     if ($validToken) {
         // Get the user's email for the password reset
         $email = $forgotPasswordController->getUserEmail($userId);
@@ -44,11 +44,11 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && $validToken) {
         $error = 'Password must be at least 8 characters long';
     } else {
         $userController = getUserController();
-        
+
         try {
             // Update the user's password
             $result = $userController->resetPassword($email, $_POST['password']);
-            
+
             if ($result['success']) {
                 // Invalidate the token so it can't be used again
                 $forgotPasswordController->invalidateToken($userId, $token);

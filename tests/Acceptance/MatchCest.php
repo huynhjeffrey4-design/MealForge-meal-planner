@@ -1,20 +1,23 @@
 <?php
+
 declare(strict_types=1);
+
 namespace Tests\Acceptance;
+
 use Tests\Support\AcceptanceTester;
 
 final class MatchCest
 {
     public function _before(AcceptanceTester $I): void
     {
-		$email = 'test@email.com';
-		$password = 'password123';
+        $email = 'test@email.com';
+        $password = 'password123';
 
-		$I->amOnPage('/login.php');
-		$I->fillField('email', $email);
-		$I->fillField('password', $password);
-		$I->click('Continue');
-		$I->seeCurrentUrlEquals('/profile.php');
+        $I->amOnPage('/login.php');
+        $I->fillField('email', $email);
+        $I->fillField('password', $password);
+        $I->click('Continue');
+        $I->seeCurrentUrlEquals('/profile.php');
     }
 
     public function testPageLayout(AcceptanceTester $I): void

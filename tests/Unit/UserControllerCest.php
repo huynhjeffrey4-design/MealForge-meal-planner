@@ -1,7 +1,9 @@
 <?php
+
 declare(strict_types=1);
 
 namespace Tests\Unit;
+
 use Tests\Support\UnitTester;
 
 require_once __DIR__ . '/../../controllers/user.php';
@@ -20,7 +22,7 @@ final class UserControllerCest
     public function _after(UnitTester $I): void
     {
         if (session_status() === PHP_SESSION_ACTIVE) {
-          session_destroy();
+            session_destroy();
         }
     }
     public function testSuccessfulLogin(UnitTester $T): void
@@ -39,20 +41,21 @@ final class UserControllerCest
         // Assert
         $T->assertTrue($result['success']);
     }
-    public function testCharacterEscape(UnitTester $T): void {
-          // Escaped html characters
-          $unescaped = '<script>alert("XSS")</script>@example.com';
-		  $escaped_email = htmlspecialchars($unescaped);
-          $password = 'password';
-          $firstName = 'Secure';
-          $lastName = 'Tester';
-          $result = $this->provider->createUser($unescaped, $password, $firstName, $lastName);
-          $T->assertNotFalse($result['success']);
-          // Act
-          $result = $this->controller->login($unescaped, $password, false);
-          // Assert
-          $T->assertTrue($result['success']);
-		  $T->assertEquals($result['user']['email'], $escaped_email);
+    public function testCharacterEscape(UnitTester $T): void
+    {
+        // Escaped html characters
+        $unescaped = '<script>alert("XSS")</script>@example.com';
+        $escaped_email = htmlspecialchars($unescaped);
+        $password = 'password';
+        $firstName = 'Secure';
+        $lastName = 'Tester';
+        $result = $this->provider->createUser($unescaped, $password, $firstName, $lastName);
+        $T->assertNotFalse($result['success']);
+        // Act
+        $result = $this->controller->login($unescaped, $password, false);
+        // Assert
+        $T->assertTrue($result['success']);
+        $T->assertEquals($result['user']['email'], $escaped_email);
     }
     public function testFailedLoginWithIncorrectPassword(UnitTester $T): void
     {

@@ -17,7 +17,8 @@ if (isset($_GET['logout'])) {
     exit;
 }
 
-function handlePostSubmission($isLoggedIn, $postController) {
+function handlePostSubmission($isLoggedIn, $postController)
+{
     if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['description'], $_FILES['image']) && $isLoggedIn) {
         $description = $_POST['description'];
         $image = $_FILES['image'];
@@ -46,7 +47,8 @@ function handlePostSubmission($isLoggedIn, $postController) {
 }
 
 // Helper function to handle comment submissions
-function handleCommentSubmission($isLoggedIn, $postController) {
+function handleCommentSubmission($isLoggedIn, $postController)
+{
     if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['comment_body'], $_POST['post_id']) && $isLoggedIn) {
         $commentBody = $_POST['comment_body'];
         $postId = $_POST['post_id'];
@@ -60,7 +62,8 @@ function handleCommentSubmission($isLoggedIn, $postController) {
 }
 
 // Helper function to handle like submissions
-function handleLikeAction($isLoggedIn, $postController) {
+function handleLikeAction($isLoggedIn, $postController)
+{
     if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['id']) && $isLoggedIn) {
         $postId = $_POST['id'];
         $userEmail = $_SESSION['user']['email'];
@@ -188,12 +191,12 @@ $posts = $postController->getAllPosts();
                                             // Get the logged-in user's email
                                             $userEmail = $_SESSION['user']['email'];
 
-                                            // Get the liked_by field and convert it to an array
-                                            $likedByArray = explode(',', $post['liked_by']);
+                                        // Get the liked_by field and convert it to an array
+                                        $likedByArray = explode(',', $post['liked_by']);
 
-                                            // Check if the user's email is in the liked_by array
-                                            $isLiked = in_array($userEmail, $likedByArray);
-                                            ?>
+                                        // Check if the user's email is in the liked_by array
+                                        $isLiked = in_array($userEmail, $likedByArray);
+                                        ?>
                                             <button type="submit" class="like-button <?= $isLiked ? 'liked' : '' ?>">
                                                 <i data-lucide="thumbs-up" class="h-5 w-5 <?= $isLiked ? 'text-red-500' : 'text-black' ?>"></i>
                                             </button>
@@ -221,12 +224,12 @@ $posts = $postController->getAllPosts();
                         <h3 class="text-3xl font-bold underline mb-3">Comments</h3>
                         <?php
                         $commentsWithUserData = $postController->getCommentsForPost($post['id']);
-                        if ($commentsWithUserData):
-                            foreach ($commentsWithUserData as $commentData):
-                                $comment = $commentData['comment'];
-                                $commentUser = $commentData['user'];
-                                $formattedDate = date('m/d/Y', strtotime($comment['comment_time']));
-                                ?>
+                    if ($commentsWithUserData):
+                        foreach ($commentsWithUserData as $commentData):
+                            $comment = $commentData['comment'];
+                            $commentUser = $commentData['user'];
+                            $formattedDate = date('m/d/Y', strtotime($comment['comment_time']));
+                            ?>
                                 <div class="comment mb-4 flex items-start">
                                     <div class="flex items-center space-x-4">
                                         <!-- Profile Picture of the Commenter -->
