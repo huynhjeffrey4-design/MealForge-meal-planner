@@ -32,7 +32,6 @@ jobs:
 
   deploy-to-dev:
     runs-on: self-hosted
-    needs: [validate-lint]
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
@@ -57,7 +56,6 @@ jobs:
 
   test-github-runners:
     runs-on: ubuntu-latest
-    needs: [validate-lint]
     services:
       mysql:
         image: mysql:8.0
@@ -106,16 +104,14 @@ jobs:
 
   test-on-dev-server:
     runs-on: self-hosted
-    needs: [deploy-to-dev, test-github-runners]
+    needs: [deploy-to-dev]
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
       - name: Reset database
         run: |
           echo "Resetting database on dev server..."
-          # Set permissions on the reset script
           chmod +x ./scripts/reset_db.sh
-          # Run the reset script
           ./scripts/reset_db.sh
       - name: Install dependencies for testing
         run: /home/csdue/petervai/composer.phar install --prefer-dist --no-progress --no-interaction --no-suggest
@@ -169,9 +165,7 @@ jobs:
       - name: Reset database for production
         run: |
           echo "Resetting database for production use..."
-          # Set permissions on the reset script
           chmod +x ./scripts/reset_db.sh
-          # Run the reset script
           ./scripts/reset_db.sh
       - name: Verify final deployment
         run: |
