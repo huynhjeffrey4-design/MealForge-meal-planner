@@ -1,41 +1,40 @@
 name: Pull Request
-
 on:
   pull_request:
-
 jobs:
   validate-lint: 
     runs-on: ubuntu-latest
-
     steps:
     - uses: actions/checkout@v4
-
     - name: Setup PHP
       uses: shivammathur/setup-php@v2
       with:
         php-version: ${{ matrix.php-version }}
         extensions: curl, openssl, pdo, pdo_sqlite, mbstring, xml, session
         coverage: xdebug
-        tools: composer:v2
-
+        tools: composer:v2, php-cs-fixer
     - name: Validate composer.json and composer.lock
       run: composer validate
-
+    - name: Check code formatting
+      run: |
+        # Run php-cs-fixer in dry-run mode to check if files are formatted
+        php-cs-fixer fix --dry-run --diff
+        
+        # If the previous command returns a non-zero exit code, it means files are not formatted
+        if [ $? -ne 0 ]; then
+          echo "::error::Code is not properly formatted. Please run php-cs-fixer before pushing your changes."
+          exit 1
+        fi
     - name: Lint
       run: find . -name "*.php" -type f -exec php -l {} \;
-
   test-unit:
     runs-on: ubuntu-latest
-
     needs: [validate-lint]
-
     env:
       PROVIDER_RECIPE: mock
       PROVIDER_USER: mock
-
     steps:
     - uses: actions/checkout@v4
-
     - name: Setup PHP
       uses: shivammathur/setup-php@v2
       with:
@@ -43,21 +42,15 @@ jobs:
         extensions: curl, openssl, pdo, pdo_sqlite, mbstring, xml, session
         coverage: xdebug
         tools: composer:v2
-
     - name: Validate composer.json and composer.lock
       run: composer validate
-
     - name: Install dependencies
       run: composer install --prefer-dist --no-progress --no-interaction --no-suggest
-
     - name: Run tests
       run: ./scripts/test_unit.sh
-
-
   test-acceptance:
     runs-on: ubuntu-latest
     needs: [validate-lint]
-
     services:
       mysql:
         image: mysql:8.0
@@ -67,12 +60,9 @@ jobs:
         ports:
           - 3306:3306
         options: --health-cmd="mysqladmin ping" --health-interval=10s --health-timeout=5s --health-retries=3
-
-
     steps:
       - name: Checkout
         uses: actions/checkout@v2
-
       - name: Install PHP
         uses: shivammathur/setup-php@v2
         with:
@@ -81,19 +71,14 @@ jobs:
           ini-values: memory_limit=-1, date.timezone='UTC'
           coverage: xdebug
           tools: composer:v2
-
       - name: Validate composer.json and composer.lock
         run: composer validate
-
       - name: Install dependencies
         run: composer install --prefer-dist --no-progress --no-interaction --no-suggest
-
       - name: Start application
         run: php -S 0.0.0.0:8080 -t . &
-
       - name: Take a break
         run: sleep 10
-
       - name: Run acceptance tests
         run: php vendor/bin/codecept run Acceptance
         env:
