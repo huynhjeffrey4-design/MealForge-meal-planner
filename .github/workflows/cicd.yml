@@ -1,0 +1,156 @@
+name: CI/CD
+on:
+  pull_request:
+    branches:
+      - dev
+  workflow_dispatch:
+
+jobs:
+  validate-lint: 
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@v4
+    - name: Setup PHP
+      uses: shivammathur/setup-php@v2
+      with:
+        php-version: '8.1'
+        extensions: curl, openssl, pdo, pdo_sqlite, mbstring, xml, session
+        coverage: xdebug
+        tools: composer:v2, php-cs-fixer
+    - name: Validate composer.json and composer.lock
+      run: composer validate
+    - name: Check code formatting
+      run: |
+        php-cs-fixer fix --dry-run --diff .
+        
+        if [ $? -ne 0 ]; then
+          echo "::error::Code is not properly formatted. Please run php-cs-fixer before pushing your changes."
+          exit 1
+        fi
+    - name: Lint
+      run: find . -name "*.php" -type f -exec php -l {} \;
+
+  deploy-to-dev:
+    runs-on: self-hosted
+    needs: [validate-lint]
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+      - name: Display deployment start
+        run: echo "Starting deployment of PHP application to dev server..."
+      - name: Install dependencies
+        run: /home/csdue/petervai/composer.phar install --prefer-dist --no-progress --no-interaction --no-suggest --no-scripts
+      - name: Transfer files to web directory
+        run: |
+          chmod 777 ./*
+          rm -rf /data/web/CSE442/2025-Spring/cse-442v/*
+          cp -r * /data/web/CSE442/2025-Spring/cse-442v/
+      - name: Verify deployment
+        run: |
+          echo "Checking if index.php exists..."
+          if [ -f "/data/web/CSE442/2025-Spring/cse-442v/index.php" ]; then
+            echo "✅ Deployment successful"
+          else
+            echo "❌ Deployment failed - index.php not found"
+            exit 1
+          fi
+
+  test-github-runners:
+    runs-on: ubuntu-latest
+    needs: [validate-lint]
+    services:
+      mysql:
+        image: mysql:8.0
+        env:
+          MYSQL_ROOT_PASSWORD: password
+          MYSQL_DATABASE: cse442_2025_spring_team_v_db
+        ports:
+          - 3306:3306
+        options: --health-cmd="mysqladmin ping" --health-interval=10s --health-timeout=5s --health-retries=3
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+      - name: Install PHP
+        uses: shivammathur/setup-php@v2
+        with:
+          php-version: '8.1'
+          extensions: curl, mbstring, openssl, pdo, pdo_mysql
+          ini-values: memory_limit=-1, date.timezone='UTC'
+          coverage: xdebug
+          tools: composer:v2
+      - name: Validate composer.json and composer.lock
+        run: composer validate
+      - name: Install dependencies
+        run: composer install --prefer-dist --no-progress --no-interaction --no-suggest
+      
+      # Unit Tests
+      - name: Run unit tests
+        run: ./scripts/test_unit.sh
+        env:
+          PROVIDER_RECIPE: mock
+          PROVIDER_USER: mock
+      
+      # Acceptance Tests
+      - name: Start application for acceptance tests
+        run: php -S 0.0.0.0:8080 -t . &
+      - name: Take a break
+        run: sleep 10
+      - name: Run acceptance tests
+        run: php vendor/bin/codecept run Acceptance
+        env:
+          DB_HOST: 127.0.0.1
+          DB_PORT: 3306
+          DB_DATABASE: cse442_2025_spring_team_v_db
+          DB_USERNAME: root
+          DB_PASSWORD: password
+
+  test-on-dev-server:
+    runs-on: self-hosted
+    needs: [deploy-to-dev, test-github-runners]
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+      - name: Reset database
+        run: |
+          echo "Resetting database on dev server..."
+          chmod +x ./scripts/reset_db.sh
+          ./scripts/reset_db.sh
+      - name: Install dependencies for testing
+        run: /home/csdue/petervai/composer.phar install --prefer-dist --no-progress --no-interaction --no-suggest
+      - name: Run tests on dev server
+        run: |
+          cd /data/web/CSE442/2025-Spring/cse-442v/
+          source .env
+          php vendor/bin/codecept run Acceptance
+
+  final-deployment:
+    runs-on: self-hosted
+    needs: [test-on-dev-server]
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+      - name: Display final deployment start
+        run: echo "Starting final deployment after successful tests..."
+      - name: Install dependencies
+        run: /home/csdue/petervai/composer.phar install --prefer-dist --no-progress --no-interaction --no-suggest --no-scripts
+      - name: Transfer files to web directory
+        run: |
+          chmod 777 ./*
+          rm -rf /data/web/CSE442/2025-Spring/cse-442v/*
+          cp -r * /data/web/CSE442/2025-Spring/cse-442v/
+      - name: Reset database for production
+        run: |
+          echo "Resetting database for production use..."
+          # Set permissions on the reset script
+          chmod +x ./scripts/reset_db.sh
+          # Run the reset script
+          ./scripts/reset_db.sh
+      - name: Verify final deployment
+        run: |
+          echo "Checking if index.php exists..."
+          if [ -f "/data/web/CSE442/2025-Spring/cse-442v/index.php" ]; then
+            echo "✅ Final deployment successful"
+          else
+            echo "❌ Final deployment failed - index.php not found"
+            exit 1
+          fi
