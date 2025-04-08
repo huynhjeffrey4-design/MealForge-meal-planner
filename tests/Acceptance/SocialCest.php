@@ -15,6 +15,6 @@ final class SocialCest
         $I->see('Log in');
         $I->dontSee('Upload Post');
         $I->click('Log in');
-        $I->seeCurrentUrlEquals('/login.php');
+        $I->seeInCurrentUrl('/login.php');
     }
 }

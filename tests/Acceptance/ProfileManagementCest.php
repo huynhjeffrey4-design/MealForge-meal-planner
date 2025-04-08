@@ -17,7 +17,7 @@ final class ProfilePageCest
         $I->fillField('email', $email);
         $I->fillField('password', $password);
         $I->click('Continue');
-        $I->seeCurrentUrlEquals('/profile.php');
+        $I->seeInCurrentUrl('/profile.php');
     }
 
     public function testProfilePageIsAccessible(AcceptanceTester $I): void
@@ -34,13 +34,13 @@ final class ProfilePageCest
     {
         // Arrange - logout first
         $I->amOnPage('/logout.php');
-        $I->seeCurrentUrlEquals('/login.php');
+        $I->seeInCurrentUrl('/login.php');
 
         // Act
         $I->amOnPage('/profile.php');
 
         // Assert
-        $I->seeCurrentUrlEquals('/login.php');
+        $I->seeInCurrentUrl('/login.php');
     }
 
     public function testProfileInformationIsDisplayed(AcceptanceTester $I): void

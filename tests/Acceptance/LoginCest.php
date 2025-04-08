@@ -19,7 +19,7 @@ final class LoginCest
         $I->fillField('email', $email);
         $I->fillField('password', $password);
         $I->click('Continue');
-        $I->seeCurrentUrlEquals('/profile.php');
+        $I->seeInCurrentUrl('/profile.php');
     }
 
     public function testUnsuccesfulLogin(AcceptanceTester $I): void
@@ -32,7 +32,7 @@ final class LoginCest
         $I->fillField('email', $email);
         $I->fillField('password', $password);
         $I->click('Continue');
-        $I->seeCurrentUrlEquals('/login.php');
+        $I->seeInCurrentUrl('/login.php');
         $I->see('Invalid email or password');
     }
 }

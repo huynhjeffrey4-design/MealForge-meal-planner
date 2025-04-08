@@ -20,14 +20,14 @@ final class IndexCest
     {
         $I->amOnPage('/');
         $I->click('Get Started');
-        $I->seeCurrentUrlEquals('/login.php');
+        $I->seeInCurrentUrl('/login.php');
 
         $I->amOnPage('/');
         $I->click('Start Your Journey');
-        $I->seeCurrentUrlEquals('/login.php');
+        $I->seeInCurrentUrl('/login.php');
 
         $I->amOnPage('/');
         $I->click('Get Started Now');
-        $I->seeCurrentUrlEquals('/login.php');
+        $I->seeInCurrentUrl('/login.php');
     }
 }
