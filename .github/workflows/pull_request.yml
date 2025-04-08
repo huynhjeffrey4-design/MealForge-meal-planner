@@ -9,7 +9,7 @@ jobs:
     - name: Setup PHP
       uses: shivammathur/setup-php@v2
       with:
-        php-version: ${{ matrix.php-version }}
+        php-version: '8.1'
         extensions: curl, openssl, pdo, pdo_sqlite, mbstring, xml, session
         coverage: xdebug
         tools: composer:v2, php-cs-fixer
@@ -17,10 +17,8 @@ jobs:
       run: composer validate
     - name: Check code formatting
       run: |
-        # Run php-cs-fixer in dry-run mode to check if files are formatted
-        php-cs-fixer fix --dry-run --diff
+        php-cs-fixer fix --dry-run --diff .
         
-        # If the previous command returns a non-zero exit code, it means files are not formatted
         if [ $? -ne 0 ]; then
           echo "::error::Code is not properly formatted. Please run php-cs-fixer before pushing your changes."
           exit 1
@@ -66,7 +64,7 @@ jobs:
       - name: Install PHP
         uses: shivammathur/setup-php@v2
         with:
-          php-version: ${{ matrix.php-version }}
+          php-version: '8.1'
           extensions: curl, mbstring, openssl, pdo, pdo_mysql
           ini-values: memory_limit=-1, date.timezone='UTC'
           coverage: xdebug
