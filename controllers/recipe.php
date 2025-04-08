@@ -1,4 +1,5 @@
 <?php
+
 //
 require_once __DIR__ . '/../setup.php';
 require_once __DIR__ . '/../SetupRedbean.php';
@@ -9,7 +10,8 @@ require_once __DIR__ . '/../SetupRedbean.php';
  * @param mixed $data Data to be sanitized
  * @return mixed Sanitized data
  */
-function sanitizeOutput($data) {
+function sanitizeOutput($data)
+{
     if (is_string($data)) {
         return htmlspecialchars($data, ENT_QUOTES, 'UTF-8');
     } elseif (is_array($data)) {
@@ -23,10 +25,12 @@ function sanitizeOutput($data) {
 /**
  * Recipe Controller with parameter-based filtering
  */
-class RecipeController {
+class RecipeController
+{
     private $recipeProvider;
 
-    public function __construct(?RecipeDataProvider $recipeProvider) {
+    public function __construct(?RecipeDataProvider $recipeProvider)
+    {
         if ($recipeProvider !== null) {
             $this->recipeProvider = $recipeProvider;
         } else {
@@ -45,7 +49,8 @@ class RecipeController {
      *
      * @return array All available recipes
      */
-    public function getAllRecipes(): array {
+    public function getAllRecipes(): array
+    {
         $recipes = $this->recipeProvider->getAllRecipes();
 
         // Process and sanitize recipes
@@ -99,14 +104,30 @@ class RecipeController {
             }
 
             // Sanitize string fields to prevent XSS
-            if (isset($recipe['recipe'])) $recipes[$key]['recipe'] = sanitizeOutput($recipe['recipe']);
-            if (isset($recipe['description'])) $recipes[$key]['description'] = sanitizeOutput($recipe['description']);
-            if (isset($recipe['dish_type'])) $recipes[$key]['dish_type'] = sanitizeOutput($recipe['dish_type']);
-            if (isset($recipe['ingredients'])) $recipes[$key]['ingredients'] = sanitizeOutput($recipe['ingredients']);
-            if (isset($recipe['instructions'])) $recipes[$key]['instructions'] = sanitizeOutput($recipe['instructions']);
-            if (isset($recipe['difficulty'])) $recipes[$key]['difficulty'] = sanitizeOutput($recipe['difficulty']);
-            if (isset($recipe['subcategory'])) $recipes[$key]['subcategory'] = sanitizeOutput($recipe['subcategory']);
-            if (isset($recipe['meal_type'])) $recipes[$key]['meal_type'] = sanitizeOutput($recipe['meal_type']);
+            if (isset($recipe['recipe'])) {
+                $recipes[$key]['recipe'] = sanitizeOutput($recipe['recipe']);
+            }
+            if (isset($recipe['description'])) {
+                $recipes[$key]['description'] = sanitizeOutput($recipe['description']);
+            }
+            if (isset($recipe['dish_type'])) {
+                $recipes[$key]['dish_type'] = sanitizeOutput($recipe['dish_type']);
+            }
+            if (isset($recipe['ingredients'])) {
+                $recipes[$key]['ingredients'] = sanitizeOutput($recipe['ingredients']);
+            }
+            if (isset($recipe['instructions'])) {
+                $recipes[$key]['instructions'] = sanitizeOutput($recipe['instructions']);
+            }
+            if (isset($recipe['difficulty'])) {
+                $recipes[$key]['difficulty'] = sanitizeOutput($recipe['difficulty']);
+            }
+            if (isset($recipe['subcategory'])) {
+                $recipes[$key]['subcategory'] = sanitizeOutput($recipe['subcategory']);
+            }
+            if (isset($recipe['meal_type'])) {
+                $recipes[$key]['meal_type'] = sanitizeOutput($recipe['meal_type']);
+            }
         }
 
         return $recipes;
@@ -129,14 +150,30 @@ class RecipeController {
         $randomRecipe['tags'] = json_decode($randomRecipe['tags']);
 
         // Sanitize string fields to prevent XSS
-        if (isset($randomRecipe['recipe'])) $randomRecipe['recipe'] = sanitizeOutput($randomRecipe['recipe']);
-        if (isset($randomRecipe['description'])) $randomRecipe['description'] = sanitizeOutput($randomRecipe['description']);
-        if (isset($randomRecipe['dish_type'])) $randomRecipe['dish_type'] = sanitizeOutput($randomRecipe['dish_type']);
-        if (isset($randomRecipe['ingredients'])) $randomRecipe['ingredients'] = sanitizeOutput($randomRecipe['ingredients']);
-        if (isset($randomRecipe['instructions'])) $randomRecipe['instructions'] = sanitizeOutput($randomRecipe['instructions']);
-        if (isset($randomRecipe['difficulty'])) $randomRecipe['difficulty'] = sanitizeOutput($randomRecipe['difficulty']);
-        if (isset($randomRecipe['subcategory'])) $randomRecipe['subcategory'] = sanitizeOutput($randomRecipe['subcategory']);
-        if (isset($randomRecipe['meal_type'])) $randomRecipe['meal_type'] = sanitizeOutput($randomRecipe['meal_type']);
+        if (isset($randomRecipe['recipe'])) {
+            $randomRecipe['recipe'] = sanitizeOutput($randomRecipe['recipe']);
+        }
+        if (isset($randomRecipe['description'])) {
+            $randomRecipe['description'] = sanitizeOutput($randomRecipe['description']);
+        }
+        if (isset($randomRecipe['dish_type'])) {
+            $randomRecipe['dish_type'] = sanitizeOutput($randomRecipe['dish_type']);
+        }
+        if (isset($randomRecipe['ingredients'])) {
+            $randomRecipe['ingredients'] = sanitizeOutput($randomRecipe['ingredients']);
+        }
+        if (isset($randomRecipe['instructions'])) {
+            $randomRecipe['instructions'] = sanitizeOutput($randomRecipe['instructions']);
+        }
+        if (isset($randomRecipe['difficulty'])) {
+            $randomRecipe['difficulty'] = sanitizeOutput($randomRecipe['difficulty']);
+        }
+        if (isset($randomRecipe['subcategory'])) {
+            $randomRecipe['subcategory'] = sanitizeOutput($randomRecipe['subcategory']);
+        }
+        if (isset($randomRecipe['meal_type'])) {
+            $randomRecipe['meal_type'] = sanitizeOutput($randomRecipe['meal_type']);
+        }
 
         return $randomRecipe;
     }
@@ -183,15 +220,29 @@ class RecipeController {
         ?int $perPage = 15
     ): array {
         // Sanitize input parameters to prevent XSS
-        if ($search !== null) $search = sanitizeOutput($search);
-        if ($dietary !== null) $dietary = sanitizeOutput($dietary);
-        if ($mealType !== null) $mealType = sanitizeOutput($mealType);
-        if ($priceRange !== null) $priceRange = sanitizeOutput($priceRange);
+        if ($search !== null) {
+            $search = sanitizeOutput($search);
+        }
+        if ($dietary !== null) {
+            $dietary = sanitizeOutput($dietary);
+        }
+        if ($mealType !== null) {
+            $mealType = sanitizeOutput($mealType);
+        }
+        if ($priceRange !== null) {
+            $priceRange = sanitizeOutput($priceRange);
+        }
 
         // Force integer type for numeric parameters to prevent SQL injection
-        if ($maxPrepTime !== null) $maxPrepTime = (int)$maxPrepTime;
-        if ($page !== null) $page = (int)$page;
-        if ($perPage !== null) $perPage = (int)$perPage;
+        if ($maxPrepTime !== null) {
+            $maxPrepTime = (int)$maxPrepTime;
+        }
+        if ($page !== null) {
+            $page = (int)$page;
+        }
+        if ($perPage !== null) {
+            $perPage = (int)$perPage;
+        }
 
         // Get all recipes first (already sanitized in getAllRecipes)
         $recipes = $this->getAllRecipes();
@@ -199,7 +250,7 @@ class RecipeController {
 
         // Filter by dietary preferences
         if (!empty($dietary)) {
-            $filteredRecipes = array_filter($filteredRecipes, function($recipe) use ($dietary) {
+            $filteredRecipes = array_filter($filteredRecipes, function ($recipe) use ($dietary) {
                 // Normalize the dietary preference by removing hyphens for "gluten-free" or "dairy-free"
                 $dietaryNormalized = strtolower(str_replace('-', ' ', $dietary));
 
@@ -230,14 +281,14 @@ class RecipeController {
 
         // Filter by meal type
         if (!empty($mealType)) {
-            $filteredRecipes = array_filter($filteredRecipes, function($recipe) use ($mealType) {
+            $filteredRecipes = array_filter($filteredRecipes, function ($recipe) use ($mealType) {
                 return $recipe['meal_type'] == $mealType;
             });
         }
 
         // Filter by max preparation time
         if (!empty($maxPrepTime)) {
-            $filteredRecipes = array_filter($filteredRecipes, function($recipe) use ($maxPrepTime) {
+            $filteredRecipes = array_filter($filteredRecipes, function ($recipe) use ($maxPrepTime) {
                 return $recipe['total_time'] <= $maxPrepTime;
             });
         }
@@ -245,7 +296,7 @@ class RecipeController {
         // Search by recipe name or description
         if (!empty($search)) {
             $search = strtolower($search);
-            $filteredRecipes = array_filter($filteredRecipes, function($recipe) use ($search) {
+            $filteredRecipes = array_filter($filteredRecipes, function ($recipe) use ($search) {
                 $recipeName = strtolower($recipe['recipe']);
                 $description = strtolower($recipe['description']);
                 $ingredients = strtolower($recipe['ingredients']);
@@ -270,7 +321,8 @@ class RecipeController {
      * @param string|null $priceRange Price range category (budget, moderate, premium)
      * @return array Filtered recipes
      */
-    public function searchActionRedbean($search = null, $dietary = null, $maxPrepTime = 60, $mealType = null, $minBudget = 0, $maxBudget = 75, $page = 1, $perPage = 10) {
+    public function searchActionRedbean($search = null, $dietary = null, $maxPrepTime = 60, $mealType = null, $minBudget = 0, $maxBudget = 75, $page = 1, $perPage = 10)
+    {
         // Start building the query
         $query = 'WHERE 1=1';
         $params = [];
@@ -400,7 +452,8 @@ class RecipeController {
      * @param int $recipeId ID of the recipe to retrieve
      * @return array|null Recipe data or null if not found
      */
-    public function getRecipeById($recipeId): array|null {
+    public function getRecipeById($recipeId): array|null
+    {
         // Cast to integer to prevent SQL injection
         $recipeId = (int)$recipeId;
 
@@ -414,14 +467,30 @@ class RecipeController {
         $recipe['tags'] = json_decode($recipe['tags']);
 
         // Sanitize string fields to prevent XSS
-        if (isset($recipe['recipe'])) $recipe['recipe'] = sanitizeOutput($recipe['recipe']);
-        if (isset($recipe['description'])) $recipe['description'] = sanitizeOutput($recipe['description']);
-        if (isset($recipe['dish_type'])) $recipe['dish_type'] = sanitizeOutput($recipe['dish_type']);
-        if (isset($recipe['ingredients'])) $recipe['ingredients'] = sanitizeOutput($recipe['ingredients']);
-        if (isset($recipe['instructions'])) $recipe['instructions'] = sanitizeOutput($recipe['instructions']);
-        if (isset($recipe['difficulty'])) $recipe['difficulty'] = sanitizeOutput($recipe['difficulty']);
-        if (isset($recipe['subcategory'])) $recipe['subcategory'] = sanitizeOutput($recipe['subcategory']);
-        if (isset($recipe['meal_type'])) $recipe['meal_type'] = sanitizeOutput($recipe['meal_type']);
+        if (isset($recipe['recipe'])) {
+            $recipe['recipe'] = sanitizeOutput($recipe['recipe']);
+        }
+        if (isset($recipe['description'])) {
+            $recipe['description'] = sanitizeOutput($recipe['description']);
+        }
+        if (isset($recipe['dish_type'])) {
+            $recipe['dish_type'] = sanitizeOutput($recipe['dish_type']);
+        }
+        if (isset($recipe['ingredients'])) {
+            $recipe['ingredients'] = sanitizeOutput($recipe['ingredients']);
+        }
+        if (isset($recipe['instructions'])) {
+            $recipe['instructions'] = sanitizeOutput($recipe['instructions']);
+        }
+        if (isset($recipe['difficulty'])) {
+            $recipe['difficulty'] = sanitizeOutput($recipe['difficulty']);
+        }
+        if (isset($recipe['subcategory'])) {
+            $recipe['subcategory'] = sanitizeOutput($recipe['subcategory']);
+        }
+        if (isset($recipe['meal_type'])) {
+            $recipe['meal_type'] = sanitizeOutput($recipe['meal_type']);
+        }
 
         return $recipe;
     }
@@ -457,14 +526,17 @@ interface RecipeDataProvider
 /**
  * Mock implementation of recipe data provider
  */
-class MockRecipeDataProvider implements RecipeDataProvider {
+class MockRecipeDataProvider implements RecipeDataProvider
+{
     private $recipes = [];
 
-    public function __construct() {
+    public function __construct()
+    {
         $this->initializeRecipes();
     }
 
-    public function getAllRecipes(): array {
+    public function getAllRecipes(): array
+    {
         return $this->recipes;
     }
 
@@ -473,7 +545,7 @@ class MockRecipeDataProvider implements RecipeDataProvider {
         // Cast to integer to prevent SQL injection
         $recipeId = (int)$recipeId;
 
-        $filterf = function($recipe) use ($recipeId) {
+        $filterf = function ($recipe) use ($recipeId) {
             return $recipe['id'] == $recipeId;
         };
         $result = array_filter($this->recipes, $filterf);
@@ -483,7 +555,8 @@ class MockRecipeDataProvider implements RecipeDataProvider {
     /**
      * Initialize mock recipe data
      */
-    private function initializeRecipes(): void {
+    private function initializeRecipes(): void
+    {
         $this->recipes = [
             [
                 'id' => 1,
@@ -633,7 +706,8 @@ class MockRecipeDataProvider implements RecipeDataProvider {
     }
 }
 
-class RedbeanRecipeDataProvider implements RecipeDataProvider {
+class RedbeanRecipeDataProvider implements RecipeDataProvider
+{
     /**
      * @param array<int,mixed> $config
      */
@@ -643,7 +717,8 @@ class RedbeanRecipeDataProvider implements RecipeDataProvider {
         $dbConnection->setup($config);
     }
 
-    public function getAllRecipes(): array {
+    public function getAllRecipes(): array
+    {
         // Using RedBean's findAll which uses prepared statements internally
         $recipes = \R::findAll('recipes');
         return \R::exportAll($recipes);
@@ -661,7 +736,8 @@ class RedbeanRecipeDataProvider implements RecipeDataProvider {
         return $recipe->export();
     }
 
-    public function getRandomRecipeWithImage(): array {
+    public function getRandomRecipeWithImage(): array
+    {
         // Using parameterized query to prevent SQL injection
         $recipes = \R::findAll('recipes', 'WHERE imageURL IS NOT NULL');
         $rand_recipes = \R::exportAll($recipes);

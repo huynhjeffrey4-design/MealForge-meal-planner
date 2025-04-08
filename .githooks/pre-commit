@@ -1,0 +1,10 @@
+#!/bin/bash
+
+echo "Running PHP CS Fixer..."
+./vendor/bin/php-cs-fixer fix .
+
+# Add the fixed files to the commit
+git add -u
+
+# Continue with the commit
+exit 0

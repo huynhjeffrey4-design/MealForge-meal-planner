@@ -11,10 +11,10 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         $error = 'Please enter your email address';
     } else {
         $forgotPasswordController = new ForgotPasswordController();
-        
+
         try {
             $result = $forgotPasswordController->forgotPassword($_POST['email']);
-            
+
             // Always show success message regardless of whether the email exists
             // This prevents user enumeration attacks
             $success = 'If an account exists with this email, a password reset link has been sent.';

@@ -13,7 +13,7 @@ if (!isset($_SESSION['user']) && !$allowPublicAccess) {
     if (!headers_sent() && !isset($_SERVER['HTTP_X_REQUESTED_WITH'])) {
         header('Location: login.php');
         exit;
-    } else if (!isset($_SERVER['HTTP_X_REQUESTED_WITH'])) {
+    } elseif (!isset($_SERVER['HTTP_X_REQUESTED_WITH'])) {
         // If headers are already sent but it's not an AJAX call
         die('Session expired. Please <a href="login.php">login again</a>');
     }
@@ -24,19 +24,19 @@ if (!isset($_SESSION['user']) && !$allowPublicAccess) {
 if (!defined('HEADER_SCRIPT_RUN')) {
     define('HEADER_SCRIPT_RUN', true);
     $profilePicture = isset($_SESSION['user']) ? ($_SESSION['user']['profile_picture'] ?? 'assets/default-profile.jpg') : 'assets/default-profile.jpg';
-    
+
     // Get current page to highlight active nav item
     $currentPage = basename($_SERVER['PHP_SELF']);
-    
+
     // Determine if user is logged in
     $isLoggedIn = isset($_SESSION['user']);
-    
+
     // Determine base path based on whether we're in a subdirectory
     $basePath = '';
     if (defined('IN_SUBDIRECTORY') && IN_SUBDIRECTORY) {
         $basePath = '../';
     }
-?>
+    ?>
 <header class="bg-white shadow-sm fixed w-full top-0 z-50">
     <nav class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <!-- Added pt-4 pb-4 for more vertical padding -->

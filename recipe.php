@@ -15,18 +15,19 @@ if ($recipe_id) {
 
 $recipeNotFound = ($recipe == null);
 if (!$recipeNotFound) {
-  // TODO: move some of this parsing logic to controller or provider
+    // TODO: move some of this parsing logic to controller or provider
     $ingredientsList = explode(", ", $recipe['ingredients']);
 
     $instructionsList = explode(". ", $recipe['instructions']);
 
     $tagsList = [];
     if (!empty($recipe['tags'])) {
-            $tagsList = $recipe['tags'];
+        $tagsList = $recipe['tags'];
     }
 
     //NOTE: Dummy rating, replace with actual data one day
-    function generateRating() {
+    function generateRating()
+    {
         return [
             'rating' => rand(40, 50) / 10,
             'reviews' => rand(80, 150)
@@ -39,9 +40,9 @@ if (!$recipeNotFound) {
 
 $isBookmarked = false;
 if (isset($_SESSION['user']) && isset($_SESSION['user']['id']) && $recipe_id) {
-  $user_id = $_SESSION['user']['id'];
-  $bookmarkController = new BookmarkController($user_id);
-  $isBookmarked = $bookmarkController->isBookmarked($recipe_id);
+    $user_id = $_SESSION['user']['id'];
+    $bookmarkController = new BookmarkController($user_id);
+    $isBookmarked = $bookmarkController->isBookmarked($recipe_id);
 }
 
 ?>
@@ -296,9 +297,9 @@ if (isset($_SESSION['user']) && isset($_SESSION['user']['id']) && $recipe_id) {
                 <h2 class="text-xl font-bold mb-4">Instructions</h2>
                 <ol class="list-none space-y-4">
                     <?php foreach (array_values($instructionsList) as $i => $instruction): ?>
-                        <?php 
+                        <?php
 // NOTE: in a perfect world steps and ingredients would be in their own tables
-// and we wouldn't do this 
+// and we wouldn't do this
                         // Extract the step number and instruction text
                         preg_match('/^(\d+)\.?\s*(.+)$/', $instruction, $matches);
                         if (count($matches) >= 3) {

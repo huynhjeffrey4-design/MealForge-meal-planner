@@ -6,10 +6,12 @@ require_once __DIR__ . '/../SetupRedbean.php';
 /**
  * post Controller with parameter-based filtering
  */
-class PostController {
+class PostController
+{
     private $postProvider;
 
-    public function __construct(?PostDataProvider $postProvider) {
+    public function __construct(?PostDataProvider $postProvider)
+    {
         if ($postProvider !== null) {
             $this->postProvider = $postProvider;
         } else {
@@ -23,13 +25,15 @@ class PostController {
      *
      * @return array All available posts
      */
-    public function getAllPosts(): array {
+    public function getAllPosts(): array
+    {
         $posts =  $this->postProvider->getAllPosts();
 
         return $posts;
     }
 
-    public function getCommentsForPost($postId): array {
+    public function getCommentsForPost($postId): array
+    {
         $comments = $this->postProvider->getCommentsForPost($postId);
 
         return $comments;
@@ -41,7 +45,8 @@ class PostController {
      * @param int $postId ID of the post to retrieve
      * @return array|null post data or null if not found
      */
-    public function getPostById($postId): array|null {
+    public function getPostById($postId): array|null
+    {
         $posts = $this->postProvider->getAllPosts();
 
         foreach ($posts as $post) {
@@ -54,17 +59,20 @@ class PostController {
     }
 
     // Add a new post
-    public function addPost($userId, $firstName, $lastName, $description, $base64Image, $profile_pic): void {
+    public function addPost($userId, $firstName, $lastName, $description, $base64Image, $profile_pic): void
+    {
         $this->postProvider->addPost($userId, $firstName, $lastName, $description, $base64Image, $profile_pic);
     }
 
     // Add a comment to a post
-    public function addComment($postId, $userId, $commentBody): void {
+    public function addComment($postId, $userId, $commentBody): void
+    {
         $this->postProvider->addComment($postId, $userId, $commentBody);
     }
 
     // Toggle like status on a post
-    public function toggleLike($postId, $userEmail): void {
+    public function toggleLike($postId, $userEmail): void
+    {
         $this->postProvider->toggleLike($postId, $userEmail);
     }
 }
@@ -100,21 +108,25 @@ interface PostDataProvider
 /**
  * Mock implementation of post data provider
  */
-class MockPostDataProvider implements PostDataProvider {
+class MockPostDataProvider implements PostDataProvider
+{
     private $posts = [];
 
-    public function __construct() {
+    public function __construct()
+    {
         $this->initializePosts();
     }
 
-    public function getAllPosts(): array {
+    public function getAllPosts(): array
+    {
         return $this->posts;
     }
 
     /**
      * Initialize mock post data
      */
-    private function initializePosts(): void {
+    private function initializePosts(): void
+    {
         $this->posts = [
             [
                 'first_name' => 'John',
@@ -153,19 +165,22 @@ class MockPostDataProvider implements PostDataProvider {
     }
 }
 
-class RedbeanPostDataProvider implements PostDataProvider {
+class RedbeanPostDataProvider implements PostDataProvider
+{
     public function __construct(array $config = [])
     {
         $dbConnection = DatabaseConnection::getInstance();
         $dbConnection->setup($config);
     }
 
-    public function getAllPosts(): array {
+    public function getAllPosts(): array
+    {
         $posts = \R::findAll('post', 'ORDER BY post_time DESC');
         return \R::exportAll($posts);
     }
 
-    public function getCommentsForPost($postId): array {
+    public function getCommentsForPost($postId): array
+    {
         $comments = \R::findAll('comment', 'WHERE post_id = ? ORDER BY comment_time ASC', [$postId]);
 
         $commentsWithUserData = [];
@@ -181,7 +196,8 @@ class RedbeanPostDataProvider implements PostDataProvider {
     }
 
     // Add a new post to the database
-    public function addPost($userId, $firstName, $lastName, $description, $base64Image, $profile_pic): void {
+    public function addPost($userId, $firstName, $lastName, $description, $base64Image, $profile_pic): void
+    {
         $post = \R::dispense('post');
         $post->user_id = $userId;
         $post->first_name = $firstName;
@@ -197,7 +213,8 @@ class RedbeanPostDataProvider implements PostDataProvider {
     }
 
     // Store a comment for a specific post
-    public function addComment($postId, $userId, $commentBody): void {
+    public function addComment($postId, $userId, $commentBody): void
+    {
         $comment = \R::dispense('comment');
         $comment->post_id = $postId;
         $comment->user_id = $userId;
@@ -208,7 +225,8 @@ class RedbeanPostDataProvider implements PostDataProvider {
     }
 
     // Toggle like status for a post
-    public function toggleLike($postId, $userEmail): void {
+    public function toggleLike($postId, $userEmail): void
+    {
         $post = \R::load('post', $postId);
         if ($post->id) {
             // Get the list of users who liked the post

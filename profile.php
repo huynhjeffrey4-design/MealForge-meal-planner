@@ -89,17 +89,17 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['edit_all'])) {
         'gender' => $_POST['gender'] ?? $gender,
         'phone_number' => $_POST['phone'] ?? $phone
     ];
-    
-    $userData['dietary_restrictions'] = isset($_POST['dietary_restrictions']) 
-        ? implode(',', $_POST['dietary_restrictions']) 
+
+    $userData['dietary_restrictions'] = isset($_POST['dietary_restrictions'])
+        ? implode(',', $_POST['dietary_restrictions'])
         : '';
-    
-    $userData['dietary_preferences'] = isset($_POST['dietary_preferences']) 
-        ? implode(',', $_POST['dietary_preferences']) 
+
+    $userData['dietary_preferences'] = isset($_POST['dietary_preferences'])
+        ? implode(',', $_POST['dietary_preferences'])
         : '';
-    
+
     $userUpdateSuccess = $userController->updateUser($userId, $userData);
-    
+
     if ($userUpdateSuccess) {
         $_SESSION['message'] = 'Profile updated successfully';
         $_SESSION['message_type'] = 'success';
@@ -107,7 +107,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['edit_all'])) {
         $_SESSION['message'] = 'Failed to update profile';
         $_SESSION['message_type'] = 'error';
     }
-    
+
     header('Location: profile.php');
     exit;
 }

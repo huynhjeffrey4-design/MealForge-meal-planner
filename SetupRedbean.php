@@ -10,8 +10,8 @@ class DatabaseConnection
 {
     private static $instance = null;
     private $isConnected = false;
-	public $cstr = "";
-    
+    public $cstr = "";
+
     /**
      * Get singleton instance
      */
@@ -22,10 +22,10 @@ class DatabaseConnection
         }
         return self::$instance;
     }
-    
+
     /**
      * Setup database connection with environment-aware configuration
-     * 
+     *
      * @param array $config Optional configuration override
      * @return bool Connection success status
      */
@@ -34,7 +34,7 @@ class DatabaseConnection
         if ($this->isConnected) {
             return true;
         }
-        
+
         $default = [
             'username' => env('DB_USERNAME', 'root'),
             'password' => env('DB_PASSWORD', 'password'),
@@ -42,26 +42,26 @@ class DatabaseConnection
             'database' => 'cse442_2025_spring_team_v_db',
             'port'     => '3306'
         ];
-        
+
         $config = array_merge($default, $config);
-        
+
         $conn_string = "mysql:host={$config['host']};port={$config['port']};dbname={$config['database']}";
 
-		$this->cstr = $conn_string . " " . $config['username'] . " " . $config['password'];
-        
+        $this->cstr = $conn_string . " " . $config['username'] . " " . $config['password'];
+
         try {
-		  if (!\R::testConnection()){
-			\R::setup($conn_string, $config['username'], $config['password']);
-		  }
-		  $this->isConnected = \R::testConnection();
-		  return $this->isConnected;
+            if (!\R::testConnection()) {
+                \R::setup($conn_string, $config['username'], $config['password']);
+            }
+            $this->isConnected = \R::testConnection();
+            return $this->isConnected;
         } catch (\Exception $e) {
             // Log error or handle as needed
             throw "DB Connection failed: " . $e->getMessage() . "Config: " . json_encode($config);
-			return false;
+            return false;
         }
     }
-    
+
     /**
      * Close the database connection
      */
@@ -72,10 +72,10 @@ class DatabaseConnection
             $this->isConnected = false;
         }
     }
-    
+
     /**
      * Check if connected to database
-     * 
+     *
      * @return bool Connection status
      */
     public function isConnected()

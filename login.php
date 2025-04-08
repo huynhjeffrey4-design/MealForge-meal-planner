@@ -6,36 +6,36 @@ session_start();
 $error = '';
 
 if (isset($_SESSION['user'])) {
-	unset($_SESSION['user']);
-	header('Location: login.php');
-	exit;
+    unset($_SESSION['user']);
+    header('Location: login.php');
+    exit;
 }
 
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
-	if (empty($_POST['email']) || empty($_POST['password'])) {
-		$error = 'Please enter both email and password';
-	} else {
-		$userController = getUserController();
+    if (empty($_POST['email']) || empty($_POST['password'])) {
+        $error = 'Please enter both email and password';
+    } else {
+        $userController = getUserController();
 
-		$res = $userController->login($_POST['email'], $_POST['password'], isset($_POST['remember']));
+        $res = $userController->login($_POST['email'], $_POST['password'], isset($_POST['remember']));
 
-		if ($res['success']) {
-			$_SESSION['user'] = $res['user'];
-			if (isset($_GET['redirect'])) {
-				header('Location: ' . $_GET['redirect']);
-				exit;
-			}
-			header('Location: profile.php');
-			exit;
-		} else {
-			$error = $res['validation']->getError('general');
-		}
-	}
+        if ($res['success']) {
+            $_SESSION['user'] = $res['user'];
+            if (isset($_GET['redirect'])) {
+                header('Location: ' . $_GET['redirect']);
+                exit;
+            }
+            header('Location: profile.php');
+            exit;
+        } else {
+            $error = $res['validation']->getError('general');
+        }
+    }
 }
 
 $registration_success = isset($_SESSION['registration_success']) && $_SESSION['registration_success'] === true;
 if ($registration_success) {
-	unset($_SESSION['registration_success']);
+    unset($_SESSION['registration_success']);
 }
 ?>
 

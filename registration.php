@@ -19,16 +19,16 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         'email' => trim($_POST['email'] ?? ''),
         'password' => $_POST['password'] ?? ''
     ];
-    
+
     $userController = getUserController();
-    
+
     $result = $userController->createUser(
         $formData['email'],
         $formData['password'],
         $formData['firstName'],
         $formData['lastName']
     );
-    
+
     if ($result['success']) {
         $_SESSION['registration_success'] = true;
         header("Location: login.php");

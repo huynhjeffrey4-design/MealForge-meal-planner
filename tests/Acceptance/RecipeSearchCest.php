@@ -1,6 +1,9 @@
 <?php
+
 declare(strict_types=1);
+
 namespace Tests\Acceptance;
+
 use Tests\Support\AcceptanceTester;
 
 final class RecipeSearchCest
@@ -14,18 +17,18 @@ final class RecipeSearchCest
         $I->fillField('password', 'password123');
         $I->click('Continue');
     }
-    
+
     /**
      * Test basic components are present.
      */
     public function testSearchPageComponents(AcceptanceTester $I): void
     {
         $I->amOnPage('/search.php');
-		$I->see('Filters');
+        $I->see('Filters');
         $I->see('Apply Filters', 'button');
         $I->see('Showing'); // Recipe count indicates recipes are displaying
     }
-    
+
     /**
      * Test searching for recipes by keyword
      */
@@ -33,17 +36,17 @@ final class RecipeSearchCest
     {
         // Arrange
         $searchTerm = 'Broccoli';
-        
+
         // Act
         $I->amOnPage('/search.php');
         $I->submitForm('#search-form', ['search' => $searchTerm]);
         $I->click('Apply Filters');
-        
+
         // Check if we see the search term in the URL, which is sufficient
         // since the actual recipe content depends on the database
         $I->seeInCurrentUrl('search=' . urlencode($searchTerm));
     }
-    
+
     /**
      * Test filtering recipes by dietary preference
      */
@@ -51,17 +54,17 @@ final class RecipeSearchCest
     {
         // Act
         $I->amOnPage('/search.php');
-		$I->see('Vegetarian', "label");
+        $I->see('Vegetarian', "label");
 
-		$I->submitForm("#filter-form", ["dietary" => "Vegetarian"]);
+        $I->submitForm("#filter-form", ["dietary" => "Vegetarian"]);
 
-        
+
         // Assert
         $I->seeInCurrentUrl('dietary=Vegetarian');
         // Check for the dietary preference in the URL, which is sufficient
         // The actual recipe content depends on the database
     }
-    
+
     /**
      * Test filtering recipes by maximum preparation time
      */
@@ -69,13 +72,13 @@ final class RecipeSearchCest
     {
         // Act
         $I->amOnPage('/search.php');
-		$I->submitForm('#filter-form', ['max_prep_time' => 20]);
-        
+        $I->submitForm('#filter-form', ['max_prep_time' => 20]);
+
         // Assert
         $I->seeInCurrentUrl('max_prep_time=20');
         $I->dontSee('35 mins'); // Shouldn't see recipes with longer prep times
     }
-    
+
     /**
      * Test filtering recipes by meal type
      */
@@ -84,14 +87,14 @@ final class RecipeSearchCest
         // Act
         $I->amOnPage('/search.php');
         $I->selectOption('meal_type', 'Breakfast');
-		$I->click("Apply Filters");
-        
+        $I->click("Apply Filters");
+
         // Assert
         $I->seeInCurrentUrl('meal_type=Breakfast');
         $I->see('Breakfast'); // Should see Breakfast text somewhere in the results
     }
-    
-    
+
+
     /**
      * Test combining multiple filters
      */
@@ -99,18 +102,18 @@ final class RecipeSearchCest
     {
         // Act
         $I->amOnPage('/search.php');
-		$I->submitForm('#filter-form', [
-				'max_prep_time' => 120,
-				'dietary' => 'Vegetarian'
-		]);
-        
+        $I->submitForm('#filter-form', [
+                'max_prep_time' => 120,
+                'dietary' => 'Vegetarian'
+        ]);
+
         // Assert
         $I->seeInCurrentUrl('dietary=Vegetarian');
         $I->seeInCurrentUrl('max_prep_time=120');
         // Check for both filters in the URL, which is sufficient
         // The actual recipe content depends on the database
     }
-    
+
     /**
      * Test reset all filters functionality
      */
@@ -118,17 +121,17 @@ final class RecipeSearchCest
     {
         // Arrange - First apply some filters
         $I->amOnPage('/search.php?dietary=Vegetarian&max_prep_time=30&meal_type=Breakfast');
-        
+
         // Act - Click reset all
         $I->click('Reset All');
-        
+
         // Assert
         $I->seeCurrentUrlEquals('/search.php');
         $I->dontSeeInCurrentUrl('dietary');
         $I->dontSeeInCurrentUrl('max_prep_time');
         $I->dontSeeInCurrentUrl('meal_type');
     }
-    
+
     /**
      * Test no results scenario
      */
@@ -136,15 +139,15 @@ final class RecipeSearchCest
     {
         // Arrange - Apply very specific filters unlikely to match any recipes
         $searchUrl = '/search.php?search=nonexistentrecipe';
-        
+
         // Act
         $I->amOnPage($searchUrl);
-        
+
         // Assert
         $I->see('No recipes found', 'h3');
         $I->see('Try adjusting your filters or search criteria', 'p');
     }
-    
+
     /**
      * Test search form preserves other filter values
      */
@@ -153,16 +156,16 @@ final class RecipeSearchCest
         // Arrange - First apply some filters
         $I->amOnPage('/search.php');
         $I->selectOption('dietary', 'Vegetarian');
-		$I->click('Apply Filters');
-        
+        $I->click('Apply Filters');
+
         // Act - Then search for something
         $I->submitForm('#search-form', ['search' => 'bowl']);
-        
+
         // Assert
         $I->seeInCurrentUrl('search=bowl');
         $I->seeInCurrentUrl('dietary=Vegetarian');
     }
-    
+
     /**
      * Test applying filters via Apply Filters button
      */
@@ -171,37 +174,37 @@ final class RecipeSearchCest
         // Arrange
         $I->amOnPage('/search.php');
 
-		$I->submitForm('#filter-form', [
-				'dietary' => 'Gluten-Free',
-				'max_prep_time' => 45
-		]);
-        
+        $I->submitForm('#filter-form', [
+                'dietary' => 'Gluten-Free',
+                'max_prep_time' => 45
+        ]);
+
         // Assert
         $I->seeInCurrentUrl('dietary=Gluten-Free');
         $I->seeInCurrentUrl('max_prep_time=45');
     }
-    
+
     /**
      * Test back to Profile navigation
      */
     public function testBackToProfileNavigation(AcceptanceTester $I): void
     {
         // Arrange
-		$email = 'test@email.com';
-		$password = 'password123';
+        $email = 'test@email.com';
+        $password = 'password123';
 
-		$I->amOnPage('/login.php');
-		$I->fillField('email', $email);
-		$I->fillField('password', $password);
-		$I->click('Continue');
-		$I->seeCurrentUrlEquals('/profile.php');
+        $I->amOnPage('/login.php');
+        $I->fillField('email', $email);
+        $I->fillField('password', $password);
+        $I->click('Continue');
+        $I->seeCurrentUrlEquals('/profile.php');
 
-        
-		$I->amOnPage('/search.php');
+
+        $I->amOnPage('/search.php');
 
         // Act
         $I->click('Back to Profile');
-        
+
         // Assert
         $I->seeCurrentUrlEquals('/profile.php');
     }

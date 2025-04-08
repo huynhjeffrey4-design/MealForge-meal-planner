@@ -1,4 +1,5 @@
 <?php
+
 require_once __DIR__ . '/../controllers/bookmark.php';
 require_once __DIR__ . '/../controllers/recipe.php';
 
@@ -7,29 +8,29 @@ session_start();
 
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
-	if (!isset($_SESSION['user'])) {
-		$_SESSION['error'] = 'You must be logged in to bookmark a recipe. <a href="login.php">Log in</a>';
-	} else if (!isset($_POST['recipe_id'])) {
-		$_SESSION['error'] = "Error: we couldn't find that recipe...";
-	} else {
-		$recipeId = isset($_POST['recipe_id']) ? intval($_POST['recipe_id']) : null;
+    if (!isset($_SESSION['user'])) {
+        $_SESSION['error'] = 'You must be logged in to bookmark a recipe. <a href="login.php">Log in</a>';
+    } elseif (!isset($_POST['recipe_id'])) {
+        $_SESSION['error'] = "Error: we couldn't find that recipe...";
+    } else {
+        $recipeId = isset($_POST['recipe_id']) ? intval($_POST['recipe_id']) : null;
 
-		$bookmarkController = new BookmarkController($_SESSION['user']['id']);
+        $bookmarkController = new BookmarkController($_SESSION['user']['id']);
 
-		$result = $bookmarkController->toggleBookmark($recipeId);
+        $result = $bookmarkController->toggleBookmark($recipeId);
 
-		$recipeController = new RecipeController(null);
-		$recipe = $recipeController->getRecipeById($recipeId);
+        $recipeController = new RecipeController(null);
+        $recipe = $recipeController->getRecipeById($recipeId);
 
-		$_SESSION['message'] = 'Bookmark toggled for recipe ' . $recipe['recipe'];
-	}
+        $_SESSION['message'] = 'Bookmark toggled for recipe ' . $recipe['recipe'];
+    }
 
-	$isLocalhost = $_SERVER['HTTP_HOST'] === 'localhost:8080' || 
-	               $_SERVER['HTTP_HOST'] === 'localhost' || 
-	               strpos($_SERVER['HTTP_HOST'], '127.0.0.1') !== false;
-	
-	$pathPrefix = $isLocalhost ? '/' : '/CSE442/2025-Spring/cse-442v/';
-	
-	header('Location: ' . $pathPrefix . 'recipe.php?id=' . $recipeId);
-	exit;
+    $isLocalhost = $_SERVER['HTTP_HOST'] === 'localhost:8080' ||
+                   $_SERVER['HTTP_HOST'] === 'localhost' ||
+                   strpos($_SERVER['HTTP_HOST'], '127.0.0.1') !== false;
+
+    $pathPrefix = $isLocalhost ? '/' : '/CSE442/2025-Spring/cse-442v/';
+
+    header('Location: ' . $pathPrefix . 'recipe.php?id=' . $recipeId);
+    exit;
 }
