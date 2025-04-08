@@ -113,7 +113,9 @@ jobs:
       - name: Reset database
         run: |
           echo "Resetting database on dev server..."
+          # Set permissions on the reset script
           chmod +x ./scripts/reset_db.sh
+          # Run the reset script
           ./scripts/reset_db.sh
       - name: Install dependencies for testing
         run: /home/csdue/petervai/composer.phar install --prefer-dist --no-progress --no-interaction --no-suggest
@@ -121,6 +123,32 @@ jobs:
         run: |
           cd /data/web/CSE442/2025-Spring/cse-442v/
           source .env
+          cat > tests/Acceptance.suite.yml << EOF
+          actor: AcceptanceTester
+          modules:
+              enabled:
+                  - PhpBrowser:
+                      url: https://se-dev.cse.buffalo.edu/CSE442/2025-Spring/cse-442v/
+                  - Asserts
+                  - Db:
+                      dsn: 'mysql:host=127.0.0.1;dbname=${DB_DATABASE}'
+                      user: '${DB_USERNAME}'
+                      password: '${DB_PASSWORD}'
+                      dump: 'tests/Support/Data/dump.sql'
+                      populate: true
+                      cleanup: true
+                      reconnect: true
+                      waitlock: 10
+                      skip_cleanup_if_failed: true
+                      initial_queries:
+                        - 'CREATE DATABASE IF NOT EXISTS ${DB_DATABASE};'
+                        - 'USE ${DB_DATABASE};'
+                        - 'SET NAMES utf8;'
+          step_decorators:
+              - Codeception\Step\ConditionalAssertion
+              - Codeception\Step\TryTo
+              - Codeception\Step\Retry
+          EOF
           php vendor/bin/codecept run Acceptance
 
   final-deployment:
