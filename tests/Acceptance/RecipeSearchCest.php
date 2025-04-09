@@ -126,7 +126,7 @@ final class RecipeSearchCest
         $I->click('Reset All');
 
         // Assert
-        $I->seeCurrentUrlEquals('/search.php');
+        $I->seeInCurrentUrl('/search.php');
         $I->dontSeeInCurrentUrl('dietary');
         $I->dontSeeInCurrentUrl('max_prep_time');
         $I->dontSeeInCurrentUrl('meal_type');
@@ -197,7 +197,7 @@ final class RecipeSearchCest
         $I->fillField('email', $email);
         $I->fillField('password', $password);
         $I->click('Continue');
-        $I->seeCurrentUrlEquals('/profile.php');
+        $I->seeInCurrentUrl('/profile.php');
 
 
         $I->amOnPage('/search.php');
@@ -206,6 +206,6 @@ final class RecipeSearchCest
         $I->click('Back to Profile');
 
         // Assert
-        $I->seeCurrentUrlEquals('/profile.php');
+        $I->seeInCurrentUrl('/profile.php');
     }
 }

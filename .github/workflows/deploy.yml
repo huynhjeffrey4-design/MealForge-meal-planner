@@ -1,9 +1,6 @@
-name: Deploy to Aptitude Server
+name: Manual Deploy
 
 on:
-  pull_request:
-    branches:
-      - dev
   workflow_dispatch:
 
 jobs:
