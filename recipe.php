@@ -48,7 +48,7 @@ if (isset($_SESSION['user']) && isset($_SESSION['user']['id']) && $recipe_id) {
 // Added for recipe liking and commenting
 function handleCommentSubmission($isLoggedIn, $recipeController, $recipe_id) : void
 {
-    if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['comment_body']) && $recipe_id != null && $isLoggedIn) {
+    if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['comment_body']) && $recipe_id != null && $isLoggedIn && !isset($_POST['save_comment'])) {
         $commentBody = $_POST['comment_body'];
         $userId = $_SESSION['user']['id'];
 
@@ -66,7 +66,6 @@ function handleCommentSubmission($isLoggedIn, $recipeController, $recipe_id) : v
 function handleLikeAction($isLoggedIn, $recipeController, $recipe_id) : void
 {
     if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['id']) && $isLoggedIn) {
-        $recipe_id = $_POST['id'];  // Use 'id' here
 
         $userId = $_SESSION['user']['id'];  // Get the logged-in user's ID
 
@@ -79,49 +78,47 @@ function handleLikeAction($isLoggedIn, $recipeController, $recipe_id) : void
     }
 }
 
-// Handle Edit Comment
-if (isset($_POST['save_comment'], $_POST['comment_id'], $_POST['comment_body'])) {
-    $commentId = $_POST['comment_id'];
-    $newCommentBody = $_POST['comment_body'];
-    $userId = $_SESSION['user']['id'];  // Assuming the user is logged in
+function handleEditComment($isLoggedIn, $recipeController, $recipe_id): void {
+    if (isset($_POST['save_comment'], $_POST['comment_id'], $_POST['comment_body'])) {
+        $commentId = $_POST['comment_id'];
+        $newCommentBody = $_POST['comment_body'];
+        $userId = $_SESSION['user']['id'];  // Assuming the user is logged in
 
-    // Call the method to edit the comment
-    $editSuccess = $recipeController->editComment($commentId, $newCommentBody, $userId);
-    if ($editSuccess) {
-        header("Location: recipe.php?id=" . $recipe_id); // Reload page after editing
-        exit;
-    } else {
-        echo "You are not authorized to edit this comment.";
+        // Call the method to edit the comment
+        $editSuccess = $recipeController->editComment($commentId, $newCommentBody, $userId);
+        if ($editSuccess) {
+            header("Location: recipe.php?id=" . $recipe_id); // Reload page after editing
+            exit;
+        } else {
+            echo "You are not authorized to edit this comment.";
+        }
     }
 }
 
-// Handle Delete Comment Logic (inside recipe.php)
-if (isset($_POST['delete_confirmed']) && isset($_POST['delete_comment_id'])) {
-    $commentId = $_POST['delete_comment_id'];
-    $userId = $_SESSION['user']['id']; // Get the current logged-in user ID
 
-    // Call the deleteComment method from the controller
-    $deleteSuccess = $recipeController->deleteComment($commentId, $userId);
-
-    if ($deleteSuccess) {
-        // Reload the page after deletion
-        header("Location: recipe.php?id=" . $recipe_id); // Redirect to the same page to reflect the changes
-        exit;
-    } else {
-        echo "You are not authorized to delete this comment.";
+function handleDeleteComment($isLoggedIn, $recipeController, $recipe_id): void {
+    if ($isLoggedIn && isset($_POST['delete_comment_id'])) {
+        $commentId = $_POST['delete_comment_id'];
+        $userId = $_SESSION['user']['id'];
+        // Delete the comment from the database
+        $deleteSuccess = $recipeController->deleteComment($commentId, $userId);
+        if ($deleteSuccess) {
+            // Optionally: Set a success message or redirect
+            header("Location: recipe.php?id=" . $recipe_id);
+            exit;
+        } else {
+            // Handle deletion failure (e.g., log the error, show a message)
+            echo "Failed to delete the comment.";
+        }
     }
 }
 
-// Handle Cancel Delete Logic
-if (isset($_POST['cancel_delete'])) {
-    // Just reload the page if the delete is canceled
-    header("Location: recipe.php?id=" . $recipe_id);
-    exit;
-}
 
 $isLoggedIn = isset($_SESSION['user']['id']);
 handleCommentSubmission($isLoggedIn, $recipeController, $recipe_id);
 handleLikeAction($isLoggedIn, $recipeController, $recipe_id);
+handleEditComment($isLoggedIn, $recipeController, $recipe_id);
+handleDeleteComment($isLoggedIn, $recipeController, $recipe_id);
 ?>
 
 <!DOCTYPE html>
