@@ -350,7 +350,7 @@ handleDeleteComment($isLoggedIn, $recipeController, $recipe_id);
                         // Get the logged-in user's ID
                         $userId = $_SESSION['user']['id'];
 
-                        // Check if the recipe is liked by the logged-in user
+                        // Check if the recipe is liked by the logged-in user.
                         $isLiked = $recipeController->isLikedByUser($recipe_id, $userId);
                         ?>
 
