@@ -436,7 +436,7 @@ handleLikeAction($isLoggedIn, $recipeController, $recipe_id);
                 </ol>
             </div>
 
-            <!-- Display Comments -->
+            <!-- Display Comments for this recipe -->
             <div class="comments mt-6">
                 <h3 class="text-3xl font-bold underline mb-3">Comments</h3>
                 <?php
