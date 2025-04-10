@@ -605,6 +605,76 @@ class RecipeController
 
         return $recipe;
     }
+
+    public function appendAutoTagsToRecipe($recipeId)
+    {
+        // 用 Provider 获取原始数据（array）
+        $recipe = $this->recipeProvider->getRecipeById($recipeId);
+    
+        if ($recipe === null) {
+            return ['success' => false, 'message' => "Recipe ID $recipeId not found"];
+        }
+    
+        // 原有标签处理（JSON 字符串或数组）
+        $existingTags = [];
+        if (!empty($recipe['tags'])) {
+            if (is_string($recipe['tags'])) {
+                $decoded = json_decode($recipe['tags'], true);
+                if (json_last_error() === JSON_ERROR_NONE && is_array($decoded)) {
+                    $existingTags = $decoded;
+                }
+            } elseif (is_array($recipe['tags'])) {
+                $existingTags = $recipe['tags'];
+            }
+        }
+    
+        // 营养标签生成
+        $newTags = $this->generateNutrientTags($recipe);
+        $mergedTags = array_values(array_unique(array_merge($existingTags, $newTags)));
+    
+        // RedBean 保存标签（获取 bean 对象）
+        $bean = \R::load('recipes', $recipeId);
+        $bean->tags = json_encode($mergedTags, JSON_UNESCAPED_UNICODE);
+        \R::store($bean);
+    
+        return [
+            'success' => true,
+            'message' => "Updated recipe ID $recipeId",
+            'tags' => $mergedTags
+        ];
+    }    
+    
+    // 工具函数：生成标签
+    private function generateNutrientTags($r) {
+        $tags = [];
+    
+        $sugar = $this->parseNutrient($r['nutrients_sugars'] ?? '');
+        $fat = $this->parseNutrient($r['nutrients_fat'] ?? '');
+        $saturates = $this->parseNutrient($r['nutrients_saturates'] ?? '');
+        $salt = $this->parseNutrient($r['nutrients_salt'] ?? '');
+        $protein = $this->parseNutrient($r['nutrients_protein'] ?? '');
+        $fibre = $this->parseNutrient($r['nutrients_fibre'] ?? '');
+        $kcal = $this->parseNutrient($r['nutrients_kcal'] ?? '');
+    
+        if ($sugar > 22) $tags[] = "High Sugar";
+        elseif ($sugar > 0 && $sugar < 8) $tags[] = "Low Sugar";
+    
+        if ($fat > 17) $tags[] = "High Fat";
+        if ($saturates > 5) $tags[] = "High Saturates";
+        if ($salt > 1.5) $tags[] = "High Salt";
+    
+        if ($protein > 10) $tags[] = "High Protein";
+        if ($fibre > 5) $tags[] = "High Fiber";
+        if ($kcal > 700) $tags[] = "Treat Only";
+    
+        return $tags;
+    }
+    
+    // 工具函数：字符串去单位转数字
+    private function parseNutrient($value) {
+        return is_numeric($value) ? floatval($value) : floatval(preg_replace('/[^0-9.]/', '', $value));
+    }
+    
 }
 
 /**
