@@ -140,7 +140,7 @@ $posts = $postController->getAllPosts();
         <div class="mb-8 bg-green-50 p-6 rounded-lg border border-green-200">
             <p class="text-gray-700">
                 <a href="login.php" class="text-green-600 font-semibold">Log in</a> or 
-                <a href="signup.php" class="text-green-600 font-semibold">sign up</a> 
+                <a href="registration.php" class="text-green-600 font-semibold">sign up</a>
                 to share your own recipes and like posts!
             </p>
         </div>

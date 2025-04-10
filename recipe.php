@@ -1,13 +1,13 @@
 <?php
 require_once __DIR__ . '/controllers/recipe.php';
 require_once __DIR__ . '/controllers/bookmark.php';
+require_once __DIR__ . '/controllers/user.php';
 
 session_start();
 
 $recipeController = new RecipeController(null);
 
 $recipe_id = isset($_GET['id']) ? intval($_GET['id']) : null;
-
 $recipe = null;
 if ($recipe_id) {
     $recipe = $recipeController->getRecipeById($recipe_id);
@@ -45,6 +45,38 @@ if (isset($_SESSION['user']) && isset($_SESSION['user']['id']) && $recipe_id) {
     $isBookmarked = $bookmarkController->isBookmarked($recipe_id);
 }
 
+// Added for recipe liking and commenting
+function handleCommentSubmission($isLoggedIn, $recipeController, $recipe_id)
+{
+    if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['comment_body']) && $recipe_id != null && $isLoggedIn) {
+        $commentBody = $_POST['comment_body'];
+        $userId = $_SESSION['user']['id'];
+
+        // Add the comment
+        $recipeController->addComment($recipe_id, $userId, $commentBody);
+
+        // Redirect always to search.php after comment submission
+        header("Location: search.php");
+        exit;
+    }
+}
+
+
+// Helper function to handle like submissions
+function handleLikeAction($isLoggedIn, $recipeController, $recipeId)
+{
+    if ($_SERVER['REQUEST_METHOD'] === 'POST' && $isLoggedIn) {
+        $userEmail = $_SESSION['user']['email'];
+
+        $recipeController->toggleLike($recipeId, $userEmail);
+
+        exit;
+    }
+}
+// Check if user is logged in
+$isLoggedIn = isset($_SESSION['user']['id']);
+handleCommentSubmission($isLoggedIn, $recipeController, $recipe_id);
+handleLikeAction($isLoggedIn, $recipeController, $recipe_id);
 ?>
 
 <!DOCTYPE html>
@@ -101,8 +133,9 @@ if (isset($_SESSION['user']) && isset($_SESSION['user']['id']) && $recipe_id) {
     </style>
 </head>
 <body class="bg-gray-100">
+<?php include 'header.php'; ?>
     <div class="container mx-auto max-w-3xl p-4">
-        <!-- Back to Search Button -->
+        <!-- Return button -->
         <div class="mb-6 print-hide">
             <a href="javascript:history.back()" class="flex items-center text-gray-600 hover:text-gray-900">
                 <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="mr-2">
@@ -123,7 +156,7 @@ if (isset($_SESSION['user']) && isset($_SESSION['user']['id']) && $recipe_id) {
             </svg>
             <h2 class="text-2xl font-bold text-gray-800 mb-2">Recipe Not Found</h2>
             <p class="text-gray-600 mb-6">The recipe you're looking for doesn't exist or was not specified.</p>
-            <a href="recipes.php" class="inline-flex items-center px-4 py-2 bg-green-600 text-white font-medium rounded-lg hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-green-500">
+            <a href="recipe.php" class="inline-flex items-center px-4 py-2 bg-green-600 text-white font-medium rounded-lg hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-green-500">
                 Browse All Recipes
                 <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="ml-2">
                     <path d="M9 18l6-6-6-6"></path>
@@ -153,7 +186,7 @@ if (isset($_SESSION['user']) && isset($_SESSION['user']['id']) && $recipe_id) {
         <div class="bg-white rounded-lg shadow-md p-6">
             <!-- Recipe Header -->
             <div class="flex justify-between items-start mb-4">
-                <h1 class="text-3xl font-bold text-gray-800"><?= htmlspecialchars($recipe['recipe']) ?></h1>
+                <h1 class="text-3xl font-bold text-gray-800 mr-3"><?= htmlspecialchars($recipe['recipe']) ?></h1>
                 <div class="flex space-x-4">
                     <!-- Print Icon -->
                     <button id="print-button" class="text-gray-500 hover:text-gray-700">
@@ -258,14 +291,45 @@ if (isset($_SESSION['user']) && isset($_SESSION['user']['id']) && $recipe_id) {
                 </div>
             </div>
 
-            <!-- Tags -->
-            <?php if (!empty($tagsList)): ?>
-            <div class="flex flex-wrap gap-2 mb-4">
-                <?php foreach ($tagsList as $tag): ?>
-                    <span class="px-3 py-1 bg-green-100 text-green-800 rounded-full text-sm"><?= htmlspecialchars(trim($tag)) ?></span>
-                <?php endforeach; ?>
+            <!-- Tags and Like Button in the same row -->
+            <div class="flex justify-between items-center mb-4">
+                <!-- Tags -->
+                <?php if (!empty($tagsList)): ?>
+                    <div class="flex flex-wrap gap-2">
+                        <?php foreach ($tagsList as $tag): ?>
+                            <span class="px-3 py-1 bg-green-100 text-green-800 rounded-full text-sm"><?= htmlspecialchars(trim($tag)) ?></span>
+                        <?php endforeach; ?>
+                    </div>
+                <?php endif; ?>
+
+                <!-- Like Button -->
+                <div class="flex items-center space-x-2">
+                    <!-- Like button with dynamic class based on whether user has liked or not -->
+                    <?php if ($isLoggedIn): ?>
+                        <form action="recipe.php" method="POST" class="like-form" data-recipe-id="<?= $recipe['likes'] ?>">
+                            <?php
+                            // Get the logged-in user's email
+                            $userEmail = $_SESSION['user']['email'];
+
+                            // Get the liked_by field and convert it to an array
+                            $likedByArray = !empty($recipe['liked_by']) ? explode(',', $recipe['liked_by']) : [];
+
+                            // Check if the user's email is in the liked_by array
+                            $isLiked = in_array($userEmail, $likedByArray);
+                            ?>
+                            <button type="submit" class="like-button <?= $isLiked ? 'liked' : '' ?>">
+                                <i data-lucide="thumbs-up" class="h-5 w-5 <?= $isLiked ? 'text-red-500' : 'text-black' ?>"></i>
+                            </button>
+                        </form>
+                    <?php else: ?>
+                        <a href="login.php" class="text-primary font-bold no-underline">
+                            <i data-lucide="thumbs-up" class="h-5 w-5 text-black"></i>
+                        </a>
+                    <?php endif; ?>
+                    <span class="like-count text-black font-bold <?= isset($isLiked) && $isLiked ? 'liked' : '' ?>"><?= $recipe['likes'] ?></span>
+                </div>
             </div>
-            <?php endif; ?>
+
 
             <!-- Ingredients -->
             <div class="mb-8">
@@ -321,6 +385,56 @@ if (isset($_SESSION['user']) && isset($_SESSION['user']['id']) && $recipe_id) {
                     <?php endforeach; ?>
                 </ol>
             </div>
+
+            <!-- Display Comments -->
+            <div class="comments mt-6">
+                <h3 class="text-3xl font-bold underline mb-3">Comments</h3>
+                <?php
+                $commentsWithUserData = $recipeController->getCommentsForRecipe($recipe['id']);
+                if ($commentsWithUserData):
+                    foreach ($commentsWithUserData as $commentData):
+                        $comment = $commentData['comment'];
+                        $commentUser = $commentData['user'];
+                        $formattedDate = date('m/d/Y', strtotime($comment['comment_time']));
+                        ?>
+                        <div class="comment mb-4 flex items-start">
+                            <div class="flex items-center space-x-4">
+                                <!-- Profile Picture of the Commenter -->
+                                <img src="<?= htmlspecialchars($commentUser->profile_picture ?: 'prof_pics/default_avatar.png') ?>" alt="Profile Picture" class="w-9 h-9 rounded-full object-cover">
+
+                                <div class="flex-1">
+                                    <p><strong><?= htmlspecialchars($commentUser->first_name) . ' ' . htmlspecialchars($commentUser->last_name) ?>:</strong> <?= htmlspecialchars($comment['comment_body']) ?></p>
+                                    <p class="text-sm text-gray-400"><?= $formattedDate ?></p>
+                                </div>
+                            </div>
+                        </div>
+                    <?php endforeach; ?>
+                <?php else: ?>
+                    <p>No comments yet. Be the first to comment!</p>
+                <?php endif; ?>
+            </div>
+
+
+            <!-- Comment Form (Only for logged-in users) -->
+            <?php if ($isLoggedIn): ?>
+                <div class="comment-form mt-4">
+                    <form method="POST" action="recipe.php?id=<?= $recipe_id ?>" class="space-y-4">
+                        <!-- Hidden input for recipe_id -->
+                        <input type="hidden" name="recipe_id" value="<?= $recipe_id ?>">
+
+                        <!-- Textarea for the comment body -->
+                        <textarea name="comment_body" required rows="4" placeholder="Write your comment here..." class="w-full border border-gray-300 p-2 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"></textarea>
+
+                        <!-- Submit button -->
+                        <button type="submit" class="px-4 py-2 bg-green-500 text-white font-semibold rounded-md hover:bg-green-600 focus:outline-none focus:ring-2 focus:ring-green-500">
+                            Submit Comment
+                        </button>
+                    </form>
+                </div>
+            <?php else: ?>
+                <p class="mt-4 text-sm text-gray-600">Please <a href="login.php" class="text-primary">log in</a> to comment.</p>
+            <?php endif; ?>
+
         </div>
         <?php endif; ?>
     </div>
@@ -334,5 +448,58 @@ if (isset($_SESSION['user']) && isset($_SESSION['user']['id']) && $recipe_id) {
             window.print();
         });
 	</script>
+
+    <!-- Dynamic liking -->
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            const likeButtons = document.querySelectorAll('.like-button');
+
+            likeButtons.forEach(button => {
+                button.addEventListener('click', function(e) {
+                    e.preventDefault();
+
+                    // Only proceed if the user is logged in
+                    if (<?= json_encode($isLoggedIn) ?>) {
+                        const postId = button.closest('form').dataset.postId;
+                        const likeCountElement = button.closest('.flex').querySelector('.like-count');
+                        const icon = button.querySelector('svg'); // Select the SVG element (thumbs-up icon)
+
+                        // Make the AJAX call to like/unlike the post
+                        fetch('social.php', {
+                            method: 'POST',
+                            body: new URLSearchParams({
+                                'id': postId
+                            }),
+                            headers: {
+                                'Content-Type': 'application/x-www-form-urlencoded'
+                            }
+                        })
+                            .then(response => response.json())
+                            .then(response => { // Using response here instead of data
+                                // Update the like count
+                                likeCountElement.textContent = response.likes;
+
+                                // Dynamically toggle the color based on the current like state
+                                if (response.liked) { // Now we check the 'liked' status correctly
+                                    // change like icon to red
+                                    icon.classList.add('text-red-500');
+                                    icon.classList.remove('text-black');
+
+                                } else {
+                                    // change like icon to black
+                                    icon.classList.add('text-black');
+                                    icon.classList.remove('text-red-500');
+                                }
+                            })
+                            .catch(error => {
+                                console.error('Error:', error);
+                            });
+                    } else {
+                        window.location.href = 'login.php';  // Redirect to login page if not logged in
+                    }
+                });
+            });
+        });
+    </script>
 </body>
 </html>

@@ -39,11 +39,22 @@ class RecipeController
         }
     }
 
-    /**
-     * Get all recipes without filtering
-     *
-     * @return array All available recipes
-     */
+    public function getCommentsForRecipe($recipeId): array{
+        return $this->recipeProvider->getCommentsForRecipe($recipeId);
+    }
+
+    // Add a comment to a post
+    public function addComment($recipeId, $userId, $commentBody): void
+    {
+        $this->recipeProvider->addComment($recipeId, $userId, $commentBody);
+    }
+
+    // Toggle like status on a post
+    public function toggleLike($recipeId, $userEmail): void
+    {
+        $this->recipeProvider->toggleLike($recipeId, $userEmail);
+    }
+
     /**
      * Get all recipes without filtering
      *
@@ -714,5 +725,65 @@ class RedbeanRecipeDataProvider implements RecipeDataProvider
         $randomRecipe = $rand_recipes[$randomIndex];
 
         return $randomRecipe;
+    }
+
+    public function getCommentsForRecipe($recipeId): array
+    {
+        $comments = \R::findAll('discussion', 'WHERE recipe_id = ? ORDER BY comment_time ASC', [$recipeId]);
+
+        $commentsWithUserData = [];
+        foreach ($comments as $comment) {
+            $commentUser = \R::load('user', $comment['user_id']);
+            $commentsWithUserData[] = [
+                'comment' => $comment,
+                'user' => $commentUser
+            ];
+        }
+        return $commentsWithUserData;
+    }
+
+    // Store a comment for a specific recipe
+    public function addComment($recipeId, $userId, $commentBody): void
+    {
+        $comment = \R::dispense('discussion');
+        $comment->recipe_id = $recipeId;
+        $comment->user_id = $userId;
+        $comment->comment_body = $commentBody;
+        $comment->comment_time = date('Y-m-d H:i:s');
+
+        \R::store($comment);
+    }
+
+    // Toggle like status for a recipe
+    public function toggleLike($recipeId, $userEmail): void
+    {
+        $recipe = \R::load('recipes', $recipeId);
+        if ($recipe->id) {
+            // Get the list of users who liked the post
+            $likedBy = explode(',', $recipe->liked_by);
+
+            // Toggle like status
+            if (in_array($userEmail, $likedBy)) {
+                // If the user has already liked, remove the like
+                $likedBy = array_diff($likedBy, [$userEmail]);
+                $recipe->likes--;
+            } else {
+                // If the user hasn't liked, add the like
+                $likedBy[] = $userEmail;
+                $recipe->likes++;
+            }
+
+            // Update the 'liked_by' field with the new list of users
+            $recipe->liked_by = implode(',', $likedBy);
+
+            // Store the updated post object back to the database
+            \R::store($recipe);
+
+            // Return the updated likes count and whether the user has liked the post
+            echo json_encode([
+                'likes' => $recipe->likes,
+                'liked' => in_array($userEmail, $likedBy)
+            ]);
+        }
     }
 }
