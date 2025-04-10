@@ -65,6 +65,11 @@ class RecipeController
         return $this->recipeProvider->isLikedByUser($recipeId, $userId);
     }
 
+    public function getLikedRecipes($userId): array
+    {
+        return $this->recipeProvider->getLikedRecipes($userId);
+    }
+
     /**
      * Get all recipes without filtering
      *
@@ -811,5 +816,25 @@ class RedbeanRecipeDataProvider implements RecipeDataProvider
         return $likeExists > 0; // Returns true if the user has liked the recipe, false otherwise
     }
 
+    // Function to get liked recipes by user
+    function getLikedRecipes($user_id) {
+        $likedRecipes = R::findAll('like', 'user_id = ?', [$user_id]);
 
+        // Array to store recipe data
+        $recipeData = [];
+
+        // Loop through each liked recipe and fetch full recipe details
+        foreach ($likedRecipes as $like) {
+            $recipe = R::load('recipes', $like->recipe_id); // Assuming recipe_id is the foreign key in the 'like' table
+            if ($recipe) {
+                // Add recipe data to the array
+                $recipeData[] = [
+                    'id' => $recipe->id,
+                    'name' => $recipe->recipe
+                ];
+            }
+        }
+
+        return $recipeData;
+    }
 }
