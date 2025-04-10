@@ -1,13 +1,54 @@
 <?php
-session_start();
+date_default_timezone_set('America/New_York');
 require_once __DIR__ . '/controllers/user.php';
 require_once __DIR__ . '/controllers/post.php';
-
+require_once 'SetupRedbean.php';
+DatabaseConnection::getInstance()->setup();
+session_start();
 // Initialize PostController with Redbean
 $postController = new PostController(new RedbeanPostDataProvider());
+$socialPosts = R::findAll('socialpost', 'ORDER BY timestamp DESC');
+
 
 // Check if user is logged in
 $isLoggedIn = isset($_SESSION['user']['id']);
+//   Step 1: 
+if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['like_post_id'])) {
+    $postId = $_POST['like_post_id'];
+    $userId = $_SESSION['user']['id'] ?? null;
+
+    if ($userId && $postId) {
+        $existing = R::findOne('likes', 'post_id = ? AND user_id = ?', [$postId, $userId]);
+        if (!$existing) {
+            $like = R::dispense('likes');
+            $like->post_id = $postId;
+            $like->user_id = $userId;
+            R::store($like);
+        }
+    }
+
+    header('Location: social.php');
+    exit;
+}
+//  Step 2: 
+if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['comment_post_id'])) {
+    $postId = $_POST['comment_post_id'];
+    $commentText = trim($_POST['comment_text'] ?? '');
+    $userId = $_SESSION['user']['id'] ?? null;
+
+    if ($userId && $postId && $commentText !== '') {
+        $comment = R::dispense('comment');
+        $comment->post_id = $postId;
+        $comment->user_id = $userId;
+        $comment->comment = $commentText;
+        R::store($comment);
+    }
+
+    header('Location: social.php');
+    exit;
+}
+
+
 
 // Handle Logout
 if (isset($_GET['logout'])) {
@@ -17,8 +58,40 @@ if (isset($_GET['logout'])) {
     exit;
 }
 
-function handlePostSubmission($isLoggedIn, $postController)
-{
+if ($_SERVER['REQUEST_METHOD'] === 'POST' && 
+    $_SERVER['CONTENT_TYPE'] === 'application/json') {
+
+    $raw = file_get_contents("php://input");
+    $data = json_decode($raw, true);
+
+    if ($data['action'] === 'shareRecipe' && !empty($data['recipe'])) {
+        $recipe = $data['recipe'];
+        $userId = $_SESSION['user_id'] ?? null;
+
+        if (!$userId) {
+            echo " Missing user_id";
+            exit;
+        }
+
+        $post = R::dispense('socialpost');
+        $post->user_id = $userId;
+        $now = new DateTime('now', new DateTimeZone('America/New_York'));
+        $post->timestamp = $now->getTimestamp();
+        $post->recipe = json_encode($recipe); 
+        R::store($post);
+
+        echo "✅ Posted to social feed";
+        exit;
+    }
+
+    echo " Invalid data";
+    exit;
+}
+
+
+
+
+function handlePostSubmission($isLoggedIn, $postController) {
     if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['description'], $_FILES['image']) && $isLoggedIn) {
         $description = $_POST['description'];
         $image = $_FILES['image'];
@@ -30,7 +103,7 @@ function handlePostSubmission($isLoggedIn, $postController)
             exit;
         }
 
-        $userId = $_SESSION['user']['id'];
+        $userId = $_SESSION['user']['id']?? null;
         $user = getUserController()->getUserById($userId);
 
         // Handle file upload
@@ -47,8 +120,7 @@ function handlePostSubmission($isLoggedIn, $postController)
 }
 
 // Helper function to handle comment submissions
-function handleCommentSubmission($isLoggedIn, $postController)
-{
+function handleCommentSubmission($isLoggedIn, $postController) {
     if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['comment_body'], $_POST['post_id']) && $isLoggedIn) {
         $commentBody = $_POST['comment_body'];
         $postId = $_POST['post_id'];
@@ -62,8 +134,7 @@ function handleCommentSubmission($isLoggedIn, $postController)
 }
 
 // Helper function to handle like submissions
-function handleLikeAction($isLoggedIn, $postController)
-{
+function handleLikeAction($isLoggedIn, $postController) {
     if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['id']) && $isLoggedIn) {
         $postId = $_POST['id'];
         $userEmail = $_SESSION['user']['email'];
@@ -149,6 +220,83 @@ $posts = $postController->getAllPosts();
     <!-- Social Feed Section -->
     <div id="social-feed" class="w-full">
         <div class="space-y-8">
+        <?php
+$sharedRecipes = R::findAll('socialpost', 'ORDER BY timestamp DESC');
+?>
+
+<?php if (!empty($sharedRecipes)): ?>
+  <h2 class="text-2xl font-bold mt-12 mb-4"> Community Shared Recipes</h2>
+  <div class="flex flex-col gap-6 max-w-4xl mx-auto"> 
+    <?php foreach ($sharedRecipes as $shared): 
+      $r = json_decode($shared->recipe, true);
+    ?>
+      <div class="bg-white border rounded-lg p-4 shadow">
+        <h3 class="text-lg font-bold"><?= htmlspecialchars($r['step1']['meal_name'] ?? 'Untitled') ?></h3>
+        <p class="text-sm text-gray-600"><?= htmlspecialchars($r['step1']['description'] ?? '') ?></p>
+        <?php if (!empty($r['step4']['image'])): ?>
+          <img src="<?= htmlspecialchars($r['step4']['image']) ?>" class="mt-3 w-full rounded">
+          <ul class="mt-2 text-sm text-gray-700">
+     <li><strong>Prep Time:</strong> <?= htmlspecialchars($r['step1']['prep_time'] ?? 'N/A') ?> min</li>
+     <li><strong>Cook Time:</strong> <?= htmlspecialchars($r['step1']['cook_time'] ?? 'N/A') ?> min</li>
+     <li><strong>Difficulty:</strong> <?= htmlspecialchars($r['step1']['difficulty'] ?? 'N/A') ?></li>
+     <li><strong>Servings:</strong> <?= htmlspecialchars($r['step1']['servings'] ?? 'N/A') ?></li>
+     <li><strong>Meal Type:</strong> <?= htmlspecialchars($r['step1']['meal_type'] ?? 'N/A') ?></li>
+ </ul>
+
+
+        <?php endif; ?>
+        <ul class="list-disc pl-5 mt-2 text-sm">
+          <?php foreach ($r['ingredients'] ?? [] as $i): ?>
+            <li><?= $i['qty'] ?> <?= $i['unit'] ?> <?= $i['name'] ?></li>
+          <?php endforeach; ?>
+        </ul>
+        <ol class="list-decimal pl-5 mt-2 text-sm">
+          <?php foreach ($r['instructions'] ?? [] as $step): ?>
+            <li><?= htmlspecialchars($step) ?></li>
+          <?php endforeach; ?>
+        </ol>
+        <p class="mt-2 text-xs text-gray-400">Shared on <?= date('Y-m-d H:i', $shared->timestamp) ?></p>
+        <?php
+    $likeCount = R::count('likes', 'post_id = ?', [$shared->id]);
+    $comments = R::findAll('comment', 'post_id = ?', [$shared->id]);
+?>
+
+
+<form method="POST" class="mt-2">
+    <input type="hidden" name="like_post_id" value="<?= $shared->id ?>">
+    <button type="submit" class="text-sm text-blue-600 hover:underline">👍 <?= $likeCount ?> Like</button>
+</form>
+
+
+<div class="mt-3">
+    <h4 class="font-semibold">Comments:</h4>
+    <?php foreach ($comments as $comment): ?>
+        <?php
+            $user = R::findOne('users', 'id = ?', [$comment->user_id]);
+            $username = $user ? $user->name : 'User ' . $comment->user_id;
+        ?>
+        <p class="text-sm"><strong><?= htmlspecialchars($username) ?>:</strong> <?= htmlspecialchars($comment->comment) ?></p>
+    <?php endforeach; ?>
+</div>
+
+
+<?php if ($isLoggedIn): ?>
+<form method="POST" class="mt-2">
+    <input type="hidden" name="comment_post_id" value="<?= $shared->id ?>">
+    <textarea name="comment_text" rows="2" class="w-full p-2 border border-gray-300 rounded-md text-sm text-black bg-white" placeholder="Add a comment..." required></textarea>
+
+    <button type="submit" class="mt-1 px-3 py-1 bg-green-500 text-white text-sm rounded hover:bg-green-600">Submit Comment</button>
+</form>
+<?php else: ?>
+    <p class="text-sm text-gray-500">Log in to like or comment.</p>
+<?php endif; ?>
+
+
+
+      </div>
+    <?php endforeach; ?>
+  </div>
+<?php endif; ?>
             <?php if (empty($posts)): ?>
                 <div class="bg-white rounded-lg shadow p-8 text-center">
                     <i data-lucide="utensils" class="h-16 w-16 mx-auto text-gray-400 mb-4"></i>
@@ -161,12 +309,19 @@ $posts = $postController->getAllPosts();
                             Log in to share recipes
                         </a>
                     <?php endif; ?>
-                </div>
+            </div>
+
+
+
+
+
+
+
             <?php else: ?>
                 <!-- Loop through the posts and display each one -->
                 <?php foreach ($posts as $post): ?>
                     <div class="bg-green-50 rounded-lg shadow p-4 sm:p-6 md:p-8 mb-8 border border-green-200 max-w-4xl mx-auto">
-                        <div class="flex flex-col md:flex-row">
+                    <div class="flex flex-col md:flex-row md:items-stretch">
                             <!-- Left section: Profile Info, Description, and Likes (1/3 of the width) -->
                             <div class="w-full md:w-1/3 md:pr-8 mb-6 md:mb-0">
                                 <div class="flex items-center mb-6">
@@ -191,12 +346,12 @@ $posts = $postController->getAllPosts();
                                             // Get the logged-in user's email
                                             $userEmail = $_SESSION['user']['email'];
 
-                                        // Get the liked_by field and convert it to an array
-                                        $likedByArray = explode(',', $post['liked_by']);
+                                            // Get the liked_by field and convert it to an array
+                                            $likedByArray = explode(',', $post['liked_by']);
 
-                                        // Check if the user's email is in the liked_by array
-                                        $isLiked = in_array($userEmail, $likedByArray);
-                                        ?>
+                                            // Check if the user's email is in the liked_by array
+                                            $isLiked = in_array($userEmail, $likedByArray);
+                                            ?>
                                             <button type="submit" class="like-button <?= $isLiked ? 'liked' : '' ?>">
                                                 <i data-lucide="thumbs-up" class="h-5 w-5 <?= $isLiked ? 'text-red-500' : 'text-black' ?>"></i>
                                             </button>
@@ -224,12 +379,12 @@ $posts = $postController->getAllPosts();
                         <h3 class="text-3xl font-bold underline mb-3">Comments</h3>
                         <?php
                         $commentsWithUserData = $postController->getCommentsForPost($post['id']);
-                    if ($commentsWithUserData):
-                        foreach ($commentsWithUserData as $commentData):
-                            $comment = $commentData['comment'];
-                            $commentUser = $commentData['user'];
-                            $formattedDate = date('m/d/Y', strtotime($comment['comment_time']));
-                            ?>
+                        if ($commentsWithUserData):
+                            foreach ($commentsWithUserData as $commentData):
+                                $comment = $commentData['comment'];
+                                $commentUser = $commentData['user'];
+                                $formattedDate = date('m/d/Y', strtotime($comment['comment_time']));
+                                ?>
                                 <div class="comment mb-4 flex items-start">
                                     <div class="flex items-center space-x-4">
                                         <!-- Profile Picture of the Commenter -->

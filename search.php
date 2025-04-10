@@ -23,8 +23,7 @@ $maxBudget = isset($_GET['max_budget']) ? (int)$_GET['max_budget'] : 75;
 
 $budgetErrors = validateBudget($minBudget, $maxBudget);
 
-function validateBudget($minBudget, $maxBudget)
-{
+function validateBudget($minBudget, $maxBudget) {
     $errors = [];
 
     if ($minBudget < 0) {
@@ -177,6 +176,10 @@ $recipesCount = count($recipes);
                 <?php if ($isModal): ?>
                     <input type="hidden" name="modal" value="true">
                 <?php endif; ?>
+                <?php if (isset($_GET['day'])): ?>
+                <input type="hidden" name="day" value="<?= htmlspecialchars($_GET['day']) ?>">
+                <?php endif; ?>
+
 
                 <?php if ($search): ?>
                     <input type="hidden" name="search" value="<?= htmlspecialchars($search) ?>">
@@ -292,7 +295,8 @@ $recipesCount = count($recipes);
                         <a href="<?= $isModal ? '#' : 'recipe.php?id=' . htmlspecialchars($recipe['id']) ?>"
                            class="block bg-white rounded-lg shadow overflow-hidden hover:shadow-md transition-shadow duration-200"
                             <?php if ($isModal): ?>
-                                onclick="addRecipeToMealPlan(<?= htmlspecialchars(json_encode($recipe)) ?>)"
+                                onclick='addRecipeToMealPlan(<?= json_encode($recipe, JSON_HEX_TAG | JSON_HEX_APOS | JSON_HEX_QUOT | JSON_HEX_AMP) ?>)'
+
                             <?php endif; ?>>
                             <?php if (!empty($recipe['image'])): ?>
                                 <div class="w-full">
@@ -362,17 +366,36 @@ $recipesCount = count($recipes);
     <script>
         // Function to add recipe to meal plan
         function addRecipeToMealPlan(recipe) {
-            // Get the day from URL parameters
-            const urlParams = new URLSearchParams(window.location.search);
-            const day = urlParams.get('day');
+  const urlParams = new URLSearchParams(window.location.search);
+  const day = urlParams.get('day');
 
-            // Send message to parent window
-            window.parent.postMessage({
-                action: 'addRecipe',
-                day: day,
-                recipe: recipe
-            }, '*');
-        }
+
+  fetch('saveSearchRecipe.php', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ day: day, recipe: recipe })
+  })
+  .then(res => res.json())
+  .then(data => {
+    if (data.success) {
+
+      window.parent.postMessage({
+        action: 'addMeal',
+        day: day,
+        recipe: data.recipe
+      }, '*');
+
+      window.location.href = 'about:blank';
+    } else {
+      alert(" Failed to save: " + data.message);
+    }
+  })
+  .catch(err => {
+    console.error("🔥 Error:", err);
+    alert(" Save failed due to network error.");
+  });
+}
+
     </script>
 <?php endif; ?>
 
