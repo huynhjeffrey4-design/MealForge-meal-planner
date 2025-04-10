@@ -56,7 +56,7 @@ function handleCommentSubmission($isLoggedIn, $recipeController, $recipe_id) : v
         $recipeController->addComment($recipe_id, $userId, $commentBody);
 
         // Redirect always to search.php after comment submission
-        header("Location: search.php");
+        header("Location: " . $_SERVER['HTTP_REFERER']);
         exit;
     }
 }
@@ -78,7 +78,47 @@ function handleLikeAction($isLoggedIn, $recipeController, $recipe_id) : void
         exit;
     }
 }
-// Check if user is logged in
+
+// Handle Edit Comment
+if (isset($_POST['save_comment'], $_POST['comment_id'], $_POST['comment_body'])) {
+    $commentId = $_POST['comment_id'];
+    $newCommentBody = $_POST['comment_body'];
+    $userId = $_SESSION['user']['id'];  // Assuming the user is logged in
+
+    // Call the method to edit the comment
+    $editSuccess = $recipeController->editComment($commentId, $newCommentBody, $userId);
+    if ($editSuccess) {
+        header("Location: recipe.php?id=" . $recipe_id); // Reload page after editing
+        exit;
+    } else {
+        echo "You are not authorized to edit this comment.";
+    }
+}
+
+// Handle Delete Comment Logic (inside recipe.php)
+if (isset($_POST['delete_confirmed']) && isset($_POST['delete_comment_id'])) {
+    $commentId = $_POST['delete_comment_id'];
+    $userId = $_SESSION['user']['id']; // Get the current logged-in user ID
+
+    // Call the deleteComment method from the controller
+    $deleteSuccess = $recipeController->deleteComment($commentId, $userId);
+
+    if ($deleteSuccess) {
+        // Reload the page after deletion
+        header("Location: recipe.php?id=" . $recipe_id); // Redirect to the same page to reflect the changes
+        exit;
+    } else {
+        echo "You are not authorized to delete this comment.";
+    }
+}
+
+// Handle Cancel Delete Logic
+if (isset($_POST['cancel_delete'])) {
+    // Just reload the page if the delete is canceled
+    header("Location: recipe.php?id=" . $recipe_id);
+    exit;
+}
+
 $isLoggedIn = isset($_SESSION['user']['id']);
 handleCommentSubmission($isLoggedIn, $recipeController, $recipe_id);
 handleLikeAction($isLoggedIn, $recipeController, $recipe_id);
@@ -140,7 +180,7 @@ handleLikeAction($isLoggedIn, $recipeController, $recipe_id);
 <body class="bg-gray-100">
 <?php include 'header.php'; ?>
     <div class="container mx-auto max-w-3xl p-4">
-        <!-- To search button -->
+        <!-- Return button -->
         <div class="mb-6 print-hide">
             <a href="search.php" class="flex items-center text-gray-600 hover:text-gray-900">
                 <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="mr-2">
@@ -407,14 +447,38 @@ handleLikeAction($isLoggedIn, $recipeController, $recipe_id);
                         $commentUser = $commentData['user'];
                         $formattedDate = date('m/d/Y', strtotime($comment['comment_time']));
                         ?>
-                        <div class="comment mb-4 flex items-start">
+                        <div class="comment mb-6 flex items-start" id="comment-<?= $comment['id'] ?>"> <!-- Increased the bottom margin -->
                             <div class="flex items-center space-x-4">
                                 <!-- Profile Picture of the Commenter -->
                                 <img src="<?= htmlspecialchars($commentUser->profile_picture ?: 'prof_pics/default_avatar.png') ?>" alt="Profile Picture" class="w-9 h-9 rounded-full object-cover">
 
                                 <div class="flex-1">
-                                    <p><strong><?= htmlspecialchars($commentUser->first_name) . ' ' . htmlspecialchars($commentUser->last_name) ?>:</strong> <?= htmlspecialchars($comment['comment_body']) ?></p>
-                                    <p class="text-sm text-gray-400"><?= $formattedDate ?></p>
+                                    <p><strong><?= htmlspecialchars($commentUser->first_name) . ' ' . htmlspecialchars($commentUser->last_name) ?>:</strong>
+                                        <span class="comment-body"><?= htmlspecialchars($comment['comment_body']) ?></span>
+                                    </p>
+                                    <p class="text-sm text-gray-400"><?= $formattedDate ?>
+                                        <?php if ($isLoggedIn && $commentUser->id === $_SESSION['user']['id']): ?>
+                                        <!-- Edit and Delete buttons -->
+                                    <div class="flex space-x-2 mt-2">
+                                        <button type="button" class="edit-comment py-1 px-2 bg-blue-500 text-white font-semibold rounded-md hover:bg-blue-600 text-xs" data-comment-id="<?= $comment['id'] ?>">Edit</button>
+
+                                        <!-- Delete Button -->
+                                        <form method="POST" action="recipe.php?id=<?= $recipe_id ?>" style="display:inline;">
+                                            <input type="hidden" name="delete_comment_id" value="<?= $comment['id'] ?>">
+                                            <button type="submit" name="delete_confirmed" class="py-1 px-2 bg-red-500 text-white font-semibold rounded-md hover:bg-red-600 text-xs">Delete</button>
+                                        </form>
+                                    </div>
+
+                                    <!-- Edit Form (Initially Hidden) -->
+                                    <div class="edit-comment-form hidden mt-2" id="edit-comment-form-<?= $comment['id'] ?>">
+                                        <form method="POST" action="recipe.php?id=<?= $recipe_id ?>" class="flex flex-col">
+                                            <input type="hidden" name="comment_id" value="<?= $comment['id'] ?>">  <!-- Hidden input for comment_id -->
+                                            <textarea name="comment_body" required rows="4" placeholder="Edit your comment..." class="w-full border border-gray-300 p-2 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"><?= htmlspecialchars($comment['comment_body']) ?></textarea>
+                                            <button type="submit" class="px-4 py-2 bg-blue-500 text-white font-semibold rounded-md hover:bg-blue-600 mt-2 text-xs" name="save_comment">Save Changes</button>  <!-- The button to save -->
+                                        </form>
+                                    </div>
+                                    <?php endif; ?>
+                                    </p>
                                 </div>
                             </div>
                         </div>
@@ -429,16 +493,9 @@ handleLikeAction($isLoggedIn, $recipeController, $recipe_id);
             <?php if ($isLoggedIn): ?>
                 <div class="comment-form mt-4">
                     <form method="POST" action="recipe.php?id=<?= $recipe_id ?>" data-recipe-id="<?= $recipe_id ?>">
-                        <!-- Hidden input for recipe_id -->
                         <input type="hidden" name="recipe_id" value="<?= $recipe_id ?>">
-
-                        <!-- Textarea for the comment body -->
                         <textarea name="comment_body" required rows="4" placeholder="Write your comment here..." class="w-full border border-gray-300 p-2 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"></textarea>
-
-                        <!-- Submit button -->
-                        <button type="submit" class="px-4 py-2 bg-green-500 text-white font-semibold rounded-md hover:bg-green-600 focus:outline-none focus:ring-2 focus:ring-green-500">
-                            Submit Comment
-                        </button>
+                        <button type="submit" class="px-4 py-2 bg-green-500 text-white font-semibold rounded-md hover:bg-green-600 focus:outline-none focus:ring-2 focus:ring-green-500">Submit Comment</button>
                     </form>
                 </div>
             <?php else: ?>
@@ -459,5 +516,17 @@ handleLikeAction($isLoggedIn, $recipeController, $recipe_id);
         });
 	</script>
 
+    <script>
+        document.addEventListener("DOMContentLoaded", function () {
+            // Add event listener for the "Edit" buttons
+            document.querySelectorAll('.edit-comment').forEach(button => {
+                button.addEventListener('click', function () {
+                    const commentId = this.dataset.commentId; // Get the comment ID from the button's data-comment-id attribute
+                    const editForm = document.getElementById('edit-comment-form-' + commentId); // Get the corresponding edit form
+                    editForm.classList.remove('hidden'); // Remove the 'hidden' class to show the form
+                });
+            });
+        });
+    </script>
 </body>
 </html>

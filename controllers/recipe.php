@@ -70,6 +70,14 @@ class RecipeController
         return $this->recipeProvider->getLikedRecipes($userId);
     }
 
+    public function editComment($commentId, $newCommentBody, $userId) {
+        return $this->recipeProvider->editComment($commentId, $newCommentBody, $userId);
+    }
+
+    public function deleteComment($commentId, $userId) {
+        return $this->recipeProvider->deleteComment($commentId, $userId);
+    }
+
     /**
      * Get all recipes without filtering
      *
@@ -836,5 +844,31 @@ class RedbeanRecipeDataProvider implements RecipeDataProvider
         }
 
         return $recipeData;
+    }
+
+    // Edit Recipe Comment Logic
+    public function editComment($commentId, $newCommentBody, $userId) {
+        // Load the comment
+        $comment = R::load('discussion', $commentId);
+
+        // Check if the user is the owner of the comment
+        if ($comment->user_id === $userId) {
+            $comment->comment_body = $newCommentBody;
+            R::store($comment); // Save the updated comment
+            return true;  // Return success
+        }
+
+        return false; // Return failure if user is not the author
+    }
+
+
+    // Delete Comment Logic
+    public function deleteComment($commentId, $userId) {
+        $comment = R::load('discussion', $commentId);
+        if ($comment->user_id === $userId) {
+            R::trash($comment); // Delete the comment
+            return true;  // Return success
+        }
+        return false; // Return failure if user is not the author
     }
 }
