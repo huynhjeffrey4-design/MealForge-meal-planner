@@ -1,9 +1,13 @@
 <?php
 require_once __DIR__ . '/../controllers/recipe.php';
 $recipeController = new RecipeController(null);
-$result = $recipeController->appendAutoTagsToRecipe(1);
+$result = $recipeController->appendAutoTagsToRecipe(3);
+$result2 = $recipeController->appendAutoTagsToRecipe(1);
 
-echo json_encode($result);
+echo json_encode([
+    'result_3' => $result,
+    'result_1' => $result2
+]);
 
 
 /*
