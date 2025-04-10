@@ -46,9 +46,9 @@ if (isset($_SESSION['user']) && isset($_SESSION['user']['id']) && $recipe_id) {
 }
 
 // Added for recipe liking and commenting
-function handleCommentSubmission($isLoggedIn, $recipeController, $recipe_id) : void
+function handleCommentSubmission($recipeController, $recipe_id) : void
 {
-    if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['comment_body']) && $recipe_id != null && $isLoggedIn && !isset($_POST['save_comment'])) {
+    if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['comment_body']) && $recipe_id != null && !isset($_POST['save_comment'])) {
         $commentBody = $_POST['comment_body'];
         $userId = $_SESSION['user']['id'];
 
@@ -63,22 +63,23 @@ function handleCommentSubmission($isLoggedIn, $recipeController, $recipe_id) : v
 
 
 // Helper function to handle like submissions
-function handleLikeAction($isLoggedIn, $recipeController, $recipe_id) : void
+function handleLikeAction($recipeController) : void
 {
-    if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['id']) && $isLoggedIn) {
+    if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_GET['id'])) {
 
         $userId = $_SESSION['user']['id'];  // Get the logged-in user's ID
-
+        $recipeId = (int) $_GET['id'];
         // Call the function to toggle like
-        $recipeController->toggleLike($recipe_id, $userId);
+        $recipeController->toggleLike($recipeId, $userId);
 
         // Optionally, redirect to the recipe page or show updated data with AJAX
-        header("Location: recipe.php?id=" . $recipe_id); // Redirect back to the recipe page
+        header("Location: recipe.php?id=" . $recipeId); // Redirect back to the recipe page
         exit;
     }
 }
 
-function handleEditComment($isLoggedIn, $recipeController, $recipe_id): void {
+
+function handleEditComment($recipeController, $recipe_id): void {
     if (isset($_POST['save_comment'], $_POST['comment_id'], $_POST['comment_body'])) {
         $commentId = $_POST['comment_id'];
         $newCommentBody = $_POST['comment_body'];
@@ -96,8 +97,8 @@ function handleEditComment($isLoggedIn, $recipeController, $recipe_id): void {
 }
 
 
-function handleDeleteComment($isLoggedIn, $recipeController, $recipe_id): void {
-    if ($isLoggedIn && isset($_POST['delete_comment_id'])) {
+function handleDeleteComment($recipeController, $recipe_id): void {
+    if (isset($_POST['delete_comment_id'])) {
         $commentId = $_POST['delete_comment_id'];
         $userId = $_SESSION['user']['id'];
         // Delete the comment from the database
@@ -115,10 +116,12 @@ function handleDeleteComment($isLoggedIn, $recipeController, $recipe_id): void {
 
 
 $isLoggedIn = isset($_SESSION['user']['id']);
-handleCommentSubmission($isLoggedIn, $recipeController, $recipe_id);
-handleLikeAction($isLoggedIn, $recipeController, $recipe_id);
-handleEditComment($isLoggedIn, $recipeController, $recipe_id);
-handleDeleteComment($isLoggedIn, $recipeController, $recipe_id);
+if ($isLoggedIn) {
+    handleCommentSubmission($recipeController, $recipe_id);
+    handleLikeAction($recipeController);
+    handleEditComment($recipeController, $recipe_id);
+    handleDeleteComment($recipeController, $recipe_id);
+}
 ?>
 
 <!DOCTYPE html>
@@ -175,7 +178,6 @@ handleDeleteComment($isLoggedIn, $recipeController, $recipe_id);
     </style>
 </head>
 <body class="bg-gray-100">
-<?php include 'header.php'; ?>
     <div class="container mx-auto max-w-3xl p-4">
         <!-- Back to search button -->
         <div class="mb-6 print-hide">
@@ -355,13 +357,13 @@ handleDeleteComment($isLoggedIn, $recipeController, $recipe_id);
                         $isLiked = $recipeController->isLikedByUser($recipe_id, $userId);
                         ?>
 
-                        <form action="recipe.php" method="POST" class="like-form">
-                            <!-- Hidden input to pass the id -->
-                            <input type="hidden" name="id" value="<?= $recipe_id ?>">  <!-- Use 'id' here -->
+                        <form action="recipe.php?id=<?= $recipe_id ?>" method="POST" class="like-form">
+                            <input type="hidden" name="like" value="<?= $recipe_id?>">
                             <button type="submit" class="like-button <?= $isLiked ? 'liked' : '' ?>">
                                 <i data-lucide="thumbs-up" class="h-5 w-5 <?= $isLiked ? 'text-red-500' : 'text-black' ?>"></i>
                             </button>
                         </form>
+
                     <?php else: ?>
                         <a href="login.php" class="text-primary font-bold no-underline">
                             <i data-lucide="thumbs-up" class="h-5 w-5 text-black"></i>
@@ -376,7 +378,6 @@ handleDeleteComment($isLoggedIn, $recipeController, $recipe_id);
                     <span class="like-count text-black font-bold <?= $isLiked ? 'liked' : '' ?>" id="like-count-<?= $recipe_id ?>"><?= $likeCount ?></span>
                 </div>
             </div>
-
 
             <!-- Ingredients -->
             <div class="mb-8">
