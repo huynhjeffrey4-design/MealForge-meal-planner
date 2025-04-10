@@ -46,7 +46,7 @@ if (isset($_SESSION['user']) && isset($_SESSION['user']['id']) && $recipe_id) {
 }
 
 // Added for recipe liking and commenting
-function handleCommentSubmission($isLoggedIn, $recipeController, $recipe_id)
+function handleCommentSubmission($isLoggedIn, $recipeController, $recipe_id) : void
 {
     if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['comment_body']) && $recipe_id != null && $isLoggedIn) {
         $commentBody = $_POST['comment_body'];
@@ -63,13 +63,18 @@ function handleCommentSubmission($isLoggedIn, $recipeController, $recipe_id)
 
 
 // Helper function to handle like submissions
-function handleLikeAction($isLoggedIn, $recipeController, $recipeId)
+function handleLikeAction($isLoggedIn, $recipeController, $recipe_id) : void
 {
-    if ($_SERVER['REQUEST_METHOD'] === 'POST' && $isLoggedIn) {
-        $userEmail = $_SESSION['user']['email'];
+    if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['id']) && $isLoggedIn) {
+        $recipe_id = $_POST['id'];  // Use 'id' here
 
-        $recipeController->toggleLike($recipeId, $userEmail);
+        $userId = $_SESSION['user']['id'];  // Get the logged-in user's ID
 
+        // Call the function to toggle like
+        $recipeController->toggleLike($recipe_id, $userId);
+
+        // Optionally, redirect to the recipe page or show updated data with AJAX
+        header("Location: recipe.php?id=" . $recipe_id); // Redirect back to the recipe page
         exit;
     }
 }
@@ -137,7 +142,7 @@ handleLikeAction($isLoggedIn, $recipeController, $recipe_id);
     <div class="container mx-auto max-w-3xl p-4">
         <!-- Return button -->
         <div class="mb-6 print-hide">
-            <a href="javascript:history.back()" class="flex items-center text-gray-600 hover:text-gray-900">
+            <a href="search.php" class="flex items-center text-gray-600 hover:text-gray-900">
                 <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="mr-2">
                     <path d="M19 12H5"></path>
                     <path d="M12 19l-7-7 7-7"></path>
@@ -304,19 +309,18 @@ handleLikeAction($isLoggedIn, $recipeController, $recipe_id);
 
                 <!-- Like Button -->
                 <div class="flex items-center space-x-2">
-                    <!-- Like button with dynamic class based on whether user has liked or not -->
                     <?php if ($isLoggedIn): ?>
-                        <form action="recipe.php" method="POST" class="like-form" data-recipe-id="<?= $recipe['likes'] ?>">
-                            <?php
-                            // Get the logged-in user's email
-                            $userEmail = $_SESSION['user']['email'];
+                        <?php
+                        // Get the logged-in user's ID
+                        $userId = $_SESSION['user']['id'];
 
-                            // Get the liked_by field and convert it to an array
-                            $likedByArray = !empty($recipe['liked_by']) ? explode(',', $recipe['liked_by']) : [];
+                        // Check if the recipe is liked by the logged-in user
+                        $isLiked = $recipeController->isLikedByUser($recipe_id, $userId);
+                        ?>
 
-                            // Check if the user's email is in the liked_by array
-                            $isLiked = in_array($userEmail, $likedByArray);
-                            ?>
+                        <form action="recipe.php" method="POST" class="like-form">
+                            <!-- Hidden input to pass the id -->
+                            <input type="hidden" name="id" value="<?= $recipe_id ?>">  <!-- Use 'id' here -->
                             <button type="submit" class="like-button <?= $isLiked ? 'liked' : '' ?>">
                                 <i data-lucide="thumbs-up" class="h-5 w-5 <?= $isLiked ? 'text-red-500' : 'text-black' ?>"></i>
                             </button>
@@ -326,7 +330,13 @@ handleLikeAction($isLoggedIn, $recipeController, $recipe_id);
                             <i data-lucide="thumbs-up" class="h-5 w-5 text-black"></i>
                         </a>
                     <?php endif; ?>
-                    <span class="like-count text-black font-bold <?= isset($isLiked) && $isLiked ? 'liked' : '' ?>"><?= $recipe['likes'] ?></span>
+
+                    <!-- Like Count -->
+                    <?php
+                    // Get the like count for this recipe
+                    $likeCount = $recipeController->getLikeCount($recipe_id);
+                    ?>
+                    <span class="like-count text-black font-bold <?= $isLiked ? 'liked' : '' ?>" id="like-count-<?= $recipe_id ?>"><?= $likeCount ?></span>
                 </div>
             </div>
 
@@ -418,7 +428,7 @@ handleLikeAction($isLoggedIn, $recipeController, $recipe_id);
             <!-- Comment Form (Only for logged-in users) -->
             <?php if ($isLoggedIn): ?>
                 <div class="comment-form mt-4">
-                    <form method="POST" action="recipe.php?id=<?= $recipe_id ?>" class="space-y-4">
+                    <form method="POST" action="recipe.php?id=<?= $recipe_id ?>" data-recipe-id="<?= $recipe_id ?>">
                         <!-- Hidden input for recipe_id -->
                         <input type="hidden" name="recipe_id" value="<?= $recipe_id ?>">
 
@@ -449,57 +459,5 @@ handleLikeAction($isLoggedIn, $recipeController, $recipe_id);
         });
 	</script>
 
-    <!-- Dynamic liking -->
-    <script>
-        document.addEventListener('DOMContentLoaded', function() {
-            const likeButtons = document.querySelectorAll('.like-button');
-
-            likeButtons.forEach(button => {
-                button.addEventListener('click', function(e) {
-                    e.preventDefault();
-
-                    // Only proceed if the user is logged in
-                    if (<?= json_encode($isLoggedIn) ?>) {
-                        const postId = button.closest('form').dataset.postId;
-                        const likeCountElement = button.closest('.flex').querySelector('.like-count');
-                        const icon = button.querySelector('svg'); // Select the SVG element (thumbs-up icon)
-
-                        // Make the AJAX call to like/unlike the post
-                        fetch('social.php', {
-                            method: 'POST',
-                            body: new URLSearchParams({
-                                'id': postId
-                            }),
-                            headers: {
-                                'Content-Type': 'application/x-www-form-urlencoded'
-                            }
-                        })
-                            .then(response => response.json())
-                            .then(response => { // Using response here instead of data
-                                // Update the like count
-                                likeCountElement.textContent = response.likes;
-
-                                // Dynamically toggle the color based on the current like state
-                                if (response.liked) { // Now we check the 'liked' status correctly
-                                    // change like icon to red
-                                    icon.classList.add('text-red-500');
-                                    icon.classList.remove('text-black');
-
-                                } else {
-                                    // change like icon to black
-                                    icon.classList.add('text-black');
-                                    icon.classList.remove('text-red-500');
-                                }
-                            })
-                            .catch(error => {
-                                console.error('Error:', error);
-                            });
-                    } else {
-                        window.location.href = 'login.php';  // Redirect to login page if not logged in
-                    }
-                });
-            });
-        });
-    </script>
 </body>
 </html>

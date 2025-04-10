@@ -50,9 +50,19 @@ class RecipeController
     }
 
     // Toggle like status on a post
-    public function toggleLike($recipeId, $userEmail): void
+    public function toggleLike($recipeId, $userId): void
     {
-        $this->recipeProvider->toggleLike($recipeId, $userEmail);
+        $this->recipeProvider->toggleLike($recipeId, $userId);
+    }
+
+    public function getLikeCount($recipeId) : int
+    {
+        return $this->recipeProvider->getLikeCount($recipeId);
+    }
+
+    public function isLikedByUser($recipeId,$userId): bool
+    {
+        return $this->recipeProvider->isLikedByUser($recipeId, $userId);
     }
 
     /**
@@ -755,35 +765,51 @@ class RedbeanRecipeDataProvider implements RecipeDataProvider
     }
 
     // Toggle like status for a recipe
-    public function toggleLike($recipeId, $userEmail): void
+    public function toggleLike($recipeId, $userId): void
     {
         $recipe = \R::load('recipes', $recipeId);
         if ($recipe->id) {
-            // Get the list of users who liked the post
-            $likedBy = explode(',', $recipe->liked_by);
+            $existingLike = \R::findOne('like', 'recipe_id = ? AND user_id = ?', [$recipeId, $userId]);
 
-            // Toggle like status
-            if (in_array($userEmail, $likedBy)) {
+            if ($existingLike) {
                 // If the user has already liked, remove the like
-                $likedBy = array_diff($likedBy, [$userEmail]);
-                $recipe->likes--;
+                \R::trash($existingLike);  // Delete the like record from the 'likes' table
+                $liked = false;
             } else {
-                // If the user hasn't liked, add the like
-                $likedBy[] = $userEmail;
-                $recipe->likes++;
+                // If the user hasn't liked the recipe, add the like
+                $like = \R::dispense('like');  // Create a new like record
+                $like->recipe_id = $recipeId;
+                $like->user_id = $userId;
+                \R::store($like);  // Save the new like record
+                $liked = true;
             }
 
-            // Update the 'liked_by' field with the new list of users
-            $recipe->liked_by = implode(',', $likedBy);
+            // Count the total number of likes for the recipe by counting rows in the 'likes' table
+            $likeCount = \R::count('like', 'recipe_id = ?', [$recipeId]);
 
-            // Store the updated post object back to the database
-            \R::store($recipe);
-
-            // Return the updated likes count and whether the user has liked the post
+            // Return the updated like count and whether the user has liked the recipe
+        } else {
+            // If the recipe doesn't exist, return an error
             echo json_encode([
-                'likes' => $recipe->likes,
-                'liked' => in_array($userEmail, $likedBy)
+                'error' => 'Recipe not found'
             ]);
         }
     }
+
+    public function getLikeCount($recipe_id)
+    {
+        $likeCount = \R::count('like', 'recipe_id = ?', [$recipe_id]);
+        return $likeCount;
+    }
+
+    public function isLikedByUser($recipe_id, $user_id) : bool
+    {
+
+        // Check if there's a record in the 'like' table with the given user_id and recipe_id
+        $likeExists = \R::count('like', 'recipe_id = ? AND user_id = ?', [$recipe_id, $user_id]);
+
+        return $likeExists > 0; // Returns true if the user has liked the recipe, false otherwise
+    }
+
+
 }
