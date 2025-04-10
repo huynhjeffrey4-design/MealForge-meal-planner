@@ -295,7 +295,7 @@ $recipesCount = count($recipes);
                     <?php foreach ($recipes as $recipe): ?>
                         <?php
                             $hasHealthy = in_array("Healthy", $recipe['tags'] ?? []);
-                            $hasUnhealthy = in_array("Unhealthy", $recipe['tags'] ?? []);
+                        $hasUnhealthy = in_array("Unhealthy", $recipe['tags'] ?? []);
                         ?>
                         <a href="<?= $isModal ? '#' : 'recipe.php?id=' . htmlspecialchars($recipe['id']) ?>"
                            class="relative block bg-white rounded-lg shadow overflow-hidden hover:shadow-md transition-shadow duration-200"

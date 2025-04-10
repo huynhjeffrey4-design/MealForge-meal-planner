@@ -1,4 +1,5 @@
 <?php
+
 require_once __DIR__ . '/../controllers/recipe.php';
 $recipeController = new RecipeController(null);
 $result = $recipeController->appendAutoTagsToRecipe(3);
@@ -33,5 +34,3 @@ echo json_encode([
     'details' => $results
 ], JSON_UNESCAPED_UNICODE | JSON_PRETTY_PRINT);
 */
-
-?>
