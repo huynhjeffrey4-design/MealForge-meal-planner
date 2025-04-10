@@ -631,6 +631,23 @@ class RecipeController
         // 营养标签生成
         $newTags = $this->generateNutrientTags($recipe);
         $mergedTags = array_values(array_unique(array_merge($existingTags, $newTags)));
+
+        $mergedTags = array_filter($mergedTags, fn($t) => $t !== "Healthy" && $t !== "Unhealthy");
+        $mergedTags = array_values($mergedTags);
+        
+        // 判断 Healthy / Unhealthy
+        if (
+            in_array("Low Sugar", $mergedTags) &&
+            !in_array("High Fat", $mergedTags) &&
+            !in_array("High Sugar", $mergedTags) &&
+            !in_array("High Salt", $mergedTags) &&
+            !in_array("High Saturates", $mergedTags) &&
+            !in_array("Treat Only", $mergedTags)
+        ) {
+            $mergedTags[] = "Healthy";
+        } else {
+            $mergedTags[] = "Unhealthy";
+        }
     
         // RedBean 保存标签（获取 bean 对象）
         $bean = \R::load('recipes', $recipeId);
