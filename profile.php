@@ -1,6 +1,7 @@
 <?php
 session_start();
 require_once __DIR__ . '/controllers/user.php';
+require_once __DIR__ . '/controllers/recipe.php';
 
 if (!isset($_SESSION['user']['id'])) {
     header('Location: login.php');
@@ -19,7 +20,9 @@ if (isset($_SESSION['message'])) {
 
 $userId = $_SESSION['user']['id'];
 $userController = getUserController();
+$recipeController = new RecipeController(null);
 $user = $userController->getUserById($userId);
+$likedRecipes = $recipeController->getLikedRecipes($userId);
 
 if (!$user) {
     header('Location: login.php');
@@ -209,7 +212,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['edit_all'])) {
             </div>
         </div>
 
-        <div class="grid md:grid-cols-2 gap-5 mb-8">
+        <div class="grid md:grid-cols-2 gap-5">
             <div class="mb-5 profile-info-section">
                 <div class="bg-primary text-white font-bold p-3 rounded text-center mb-2">Dietary Restrictions</div>
                 <div class="flex flex-wrap gap-2">
@@ -228,6 +231,27 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['edit_all'])) {
                 </div>
             </div>
         </div>
+
+        <!-- Liked Recipes Button  -->
+        <div class="mb-5 col-span-2">
+            <button type="button" id="liked-recipes-button"
+                    class="w-full bg-red-500 text-white font-semibold py-3 px-4 rounded hover:bg-red-600">
+                Liked Recipes
+            </button>
+            <div id="liked-recipes-list" class="mt-4 space-y-2 hidden">
+                <?php foreach ($likedRecipes as $recipe): ?>
+                    <a href="recipe.php?id=<?= htmlspecialchars($recipe['id']) ?>" class="block">
+                        <div class="p-4 bg-white border border-gray-300 rounded shadow-sm hover:bg-gray-50 transition">
+                <span class="text-gray-800 font-medium">
+                    <?= htmlspecialchars($recipe['name']) ?>
+                </span>
+                        </div>
+                    </a>
+                <?php endforeach; ?>
+            </div>
+
+        </div>
+
 
         <div class="mt-8 bg-gray-50 rounded-lg p-5 border-l-4 border-primary profile-info-section">
             <div class="text-xl font-bold mb-4 text-gray-800 flex items-center">
@@ -420,5 +444,42 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['edit_all'])) {
         
         updateTip();
     </script>
+
+    <script>
+        document.getElementById('liked-recipes-button').addEventListener('click', function () {
+            const listContainer = document.getElementById('liked-recipes-list');
+
+            // Toggle visibility
+            listContainer.classList.toggle('hidden');
+
+            // If it's now visible and empty, fetch recipes
+            if (!listContainer.classList.contains('hidden') && listContainer.innerHTML.trim() === '') {
+                fetch('get_liked_recipes.php')
+                    .then(response => response.json())
+                    .then(data => {
+                        if (data.error) {
+                            listContainer.innerHTML = `<div class="text-red-600">${data.error}</div>`;
+                            return;
+                        }
+
+                        if (data.length === 0) {
+                            listContainer.innerHTML = `<div class="text-gray-500">No liked recipes yet.</div>`;
+                            return;
+                        }
+
+                        listContainer.innerHTML = data.map(recipe => `
+                    <div class="p-3 bg-gray-100 rounded shadow-sm">
+                        ${recipe.name}
+                    </div>
+                `).join('');
+                    })
+                    .catch(error => {
+                        console.error('Error fetching liked recipes:', error);
+                        listContainer.innerHTML = `<div class="text-red-600">Failed to load liked recipes.</div>`;
+                    });
+            }
+        });
+    </script>
+
 </body>
 </html>

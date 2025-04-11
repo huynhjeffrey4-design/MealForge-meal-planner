@@ -39,11 +39,48 @@ class RecipeController
         }
     }
 
-    /**
-     * Get all recipes without filtering
-     *
-     * @return array All available recipes
-     */
+    public function getCommentsForRecipe($recipeId): array
+    {
+        return $this->recipeProvider->getCommentsForRecipe($recipeId);
+    }
+
+    // Add a comment to a post
+    public function addComment($recipeId, $userId, $commentBody): void
+    {
+        $this->recipeProvider->addComment($recipeId, $userId, $commentBody);
+    }
+
+    // Toggle like status on a post
+    public function toggleLike($recipeId, $userId): void
+    {
+        $this->recipeProvider->toggleLike($recipeId, $userId);
+    }
+
+    public function getLikeCount($recipeId): int
+    {
+        return $this->recipeProvider->getLikeCount($recipeId);
+    }
+
+    public function isLikedByUser($recipeId, $userId): bool
+    {
+        return $this->recipeProvider->isLikedByUser($recipeId, $userId);
+    }
+
+    public function getLikedRecipes($userId): array
+    {
+        return $this->recipeProvider->getLikedRecipes($userId);
+    }
+
+    public function editComment($commentId, $newCommentBody, $userId)
+    {
+        return $this->recipeProvider->editComment($commentId, $newCommentBody, $userId);
+    }
+
+    public function deleteComment($commentId, $userId)
+    {
+        return $this->recipeProvider->deleteComment($commentId, $userId);
+    }
+
     /**
      * Get all recipes without filtering
      *
@@ -714,5 +751,130 @@ class RedbeanRecipeDataProvider implements RecipeDataProvider
         $randomRecipe = $rand_recipes[$randomIndex];
 
         return $randomRecipe;
+    }
+
+    public function getCommentsForRecipe($recipeId): array
+    {
+        $comments = \R::findAll('discussion', 'WHERE recipe_id = ? ORDER BY comment_time ASC', [$recipeId]);
+
+        $commentsWithUserData = [];
+        foreach ($comments as $comment) {
+            $commentUser = \R::load('user', $comment['user_id']);
+            $commentsWithUserData[] = [
+                'comment' => $comment,
+                'user' => $commentUser
+            ];
+        }
+        return $commentsWithUserData;
+    }
+
+    // Store a comment for a specific recipe
+    public function addComment($recipeId, $userId, $commentBody): void
+    {
+        $comment = \R::dispense('discussion');
+        $comment->recipe_id = $recipeId;
+        $comment->user_id = $userId;
+        $comment->comment_body = $commentBody;
+        $comment->comment_time = date('Y-m-d H:i:s');
+
+        \R::store($comment);
+    }
+
+    // Toggle like status for a recipe
+    public function toggleLike($recipeId, $userId): void
+    {
+        $recipe = \R::load('recipes', $recipeId);
+        if ($recipe->id) {
+            $existingLike = \R::findOne('like', 'recipe_id = ? AND user_id = ?', [$recipeId, $userId]);
+
+            if ($existingLike) {
+                // If the user has already liked, remove the like
+                \R::trash($existingLike);  // Delete the like record from the 'likes' table
+                $liked = false;
+            } else {
+                // If the user hasn't liked the recipe, add the like
+                $like = \R::dispense('like');  // Create a new like record
+                $like->recipe_id = $recipeId;
+                $like->user_id = $userId;
+                \R::store($like);  // Save the new like record
+                $liked = true;
+            }
+
+            // Count the total number of likes for the recipe by counting rows in the 'likes' table
+            $likeCount = \R::count('like', 'recipe_id = ?', [$recipeId]);
+
+            // Return the updated like count and whether the user has liked the recipe
+        } else {
+            // If the recipe doesn't exist, return an error
+            echo json_encode([
+                'error' => 'Recipe not found'
+            ]);
+        }
+    }
+
+    public function getLikeCount($recipe_id)
+    {
+        $likeCount = \R::count('like', 'recipe_id = ?', [$recipe_id]);
+        return $likeCount;
+    }
+
+    public function isLikedByUser($recipe_id, $user_id): bool
+    {
+
+        // Check if there's a record in the 'like' table with the given user_id and recipe_id
+        $likeExists = \R::count('like', 'recipe_id = ? AND user_id = ?', [$recipe_id, $user_id]);
+
+        return $likeExists > 0; // Returns true if the user has liked the recipe, false otherwise
+    }
+
+    // Function to get liked recipes by user
+    public function getLikedRecipes($user_id)
+    {
+        $likedRecipes = R::findAll('like', 'user_id = ?', [$user_id]);
+
+        // Array to store recipe data
+        $recipeData = [];
+
+        // Loop through each liked recipe and fetch full recipe details
+        foreach ($likedRecipes as $like) {
+            $recipe = R::load('recipes', $like->recipe_id); // Assuming recipe_id is the foreign key in the 'like' table
+            if ($recipe) {
+                // Add recipe data to the array
+                $recipeData[] = [
+                    'id' => $recipe->id,
+                    'name' => $recipe->recipe
+                ];
+            }
+        }
+
+        return $recipeData;
+    }
+
+    // Edit Recipe Comment Logic
+    public function editComment($commentId, $newCommentBody, $userId)
+    {
+        // Load the comment
+        $comment = R::load('discussion', $commentId);
+
+        // Check if the user is the owner of the comment
+        if ($comment->user_id === $userId) {
+            $comment->comment_body = $newCommentBody;
+            R::store($comment); // Save the updated comment
+            return true;  // Return success
+        }
+
+        return false; // Return failure if user is not the author
+    }
+
+
+    // Delete Comment Logic
+    public function deleteComment($commentId, $userId)
+    {
+        $comment = R::load('discussion', $commentId);
+        if ($comment->user_id === $userId) {
+            R::trash($comment); // Delete the comment
+            return true;  // Return success
+        }
+        return false; // Return failure if user is not the author
     }
 }

@@ -1,13 +1,13 @@
 <?php
 require_once __DIR__ . '/controllers/recipe.php';
 require_once __DIR__ . '/controllers/bookmark.php';
+require_once __DIR__ . '/controllers/user.php';
 
 session_start();
 
 $recipeController = new RecipeController(null);
 
 $recipe_id = isset($_GET['id']) ? intval($_GET['id']) : null;
-
 $recipe = null;
 if ($recipe_id) {
     $recipe = $recipeController->getRecipeById($recipe_id);
@@ -45,6 +45,82 @@ if (isset($_SESSION['user']) && isset($_SESSION['user']['id']) && $recipe_id) {
     $isBookmarked = $bookmarkController->isBookmarked($recipe_id);
 }
 
+// Added for recipe liking and commenting
+function handleCommentSubmission($isLoggedIn, $recipeController, $recipe_id): void
+{
+    if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['comment_body']) && $recipe_id != null && $isLoggedIn && !isset($_POST['save_comment'])) {
+        $commentBody = $_POST['comment_body'];
+        $userId = $_SESSION['user']['id'];
+
+        // Add the comment
+        $recipeController->addComment($recipe_id, $userId, $commentBody);
+
+        // Redirect always to search.php after comment submission
+        header("Location: " . $_SERVER['HTTP_REFERER']);
+        exit;
+    }
+}
+
+
+// Helper function to handle like submissions
+function handleLikeAction($isLoggedIn, $recipeController, $recipe_id): void
+{
+    if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['id']) && $isLoggedIn) {
+
+        $userId = $_SESSION['user']['id'];  // Get the logged-in user's ID
+
+        // Call the function to toggle like
+        $recipeController->toggleLike($recipe_id, $userId);
+
+        // Optionally, redirect to the recipe page or show updated data with AJAX
+        header("Location: recipe.php?id=" . $recipe_id); // Redirect back to the recipe page
+        exit;
+    }
+}
+
+function handleEditComment($isLoggedIn, $recipeController, $recipe_id): void
+{
+    if (isset($_POST['save_comment'], $_POST['comment_id'], $_POST['comment_body'])) {
+        $commentId = $_POST['comment_id'];
+        $newCommentBody = $_POST['comment_body'];
+        $userId = $_SESSION['user']['id'];  // Assuming the user is logged in
+
+        // Call the method to edit the comment
+        $editSuccess = $recipeController->editComment($commentId, $newCommentBody, $userId);
+        if ($editSuccess) {
+            header("Location: recipe.php?id=" . $recipe_id); // Reload page after editing
+            exit;
+        } else {
+            echo "You are not authorized to edit this comment.";
+        }
+    }
+}
+
+
+function handleDeleteComment($isLoggedIn, $recipeController, $recipe_id): void
+{
+    if ($isLoggedIn && isset($_POST['delete_comment_id'])) {
+        $commentId = $_POST['delete_comment_id'];
+        $userId = $_SESSION['user']['id'];
+        // Delete the comment from the database
+        $deleteSuccess = $recipeController->deleteComment($commentId, $userId);
+        if ($deleteSuccess) {
+            // Optionally: Set a success message or redirect
+            header("Location: recipe.php?id=" . $recipe_id);
+            exit;
+        } else {
+            // Handle deletion failure (e.g., log the error, show a message)
+            echo "Failed to delete the comment.";
+        }
+    }
+}
+
+
+$isLoggedIn = isset($_SESSION['user']['id']);
+handleCommentSubmission($isLoggedIn, $recipeController, $recipe_id);
+handleLikeAction($isLoggedIn, $recipeController, $recipe_id);
+handleEditComment($isLoggedIn, $recipeController, $recipe_id);
+handleDeleteComment($isLoggedIn, $recipeController, $recipe_id);
 ?>
 
 <!DOCTYPE html>
@@ -102,14 +178,14 @@ if (isset($_SESSION['user']) && isset($_SESSION['user']['id']) && $recipe_id) {
 </head>
 <body class="bg-gray-100">
     <div class="container mx-auto max-w-3xl p-4">
-        <!-- Back to Search Button -->
+        <!-- Back to search button -->
         <div class="mb-6 print-hide">
-            <a href="javascript:history.back()" class="flex items-center text-gray-600 hover:text-gray-900">
+            <a href="search.php" class="flex items-center text-gray-600 hover:text-gray-900">
                 <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="mr-2">
                     <path d="M19 12H5"></path>
                     <path d="M12 19l-7-7 7-7"></path>
                 </svg>
-                Return
+                To Search
             </a>
         </div>
 
@@ -123,7 +199,7 @@ if (isset($_SESSION['user']) && isset($_SESSION['user']['id']) && $recipe_id) {
             </svg>
             <h2 class="text-2xl font-bold text-gray-800 mb-2">Recipe Not Found</h2>
             <p class="text-gray-600 mb-6">The recipe you're looking for doesn't exist or was not specified.</p>
-            <a href="recipes.php" class="inline-flex items-center px-4 py-2 bg-green-600 text-white font-medium rounded-lg hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-green-500">
+            <a href="recipe.php" class="inline-flex items-center px-4 py-2 bg-green-600 text-white font-medium rounded-lg hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-green-500">
                 Browse All Recipes
                 <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="ml-2">
                     <path d="M9 18l6-6-6-6"></path>
@@ -153,7 +229,7 @@ if (isset($_SESSION['user']) && isset($_SESSION['user']['id']) && $recipe_id) {
         <div class="bg-white rounded-lg shadow-md p-6">
             <!-- Recipe Header -->
             <div class="flex justify-between items-start mb-4">
-                <h1 class="text-3xl font-bold text-gray-800"><?= htmlspecialchars($recipe['recipe']) ?></h1>
+                <h1 class="text-3xl font-bold text-gray-800 mr-3"><?= htmlspecialchars($recipe['recipe']) ?></h1>
                 <div class="flex space-x-4">
                     <!-- Print Icon -->
                     <button id="print-button" class="text-gray-500 hover:text-gray-700">
@@ -258,14 +334,50 @@ if (isset($_SESSION['user']) && isset($_SESSION['user']['id']) && $recipe_id) {
                 </div>
             </div>
 
-            <!-- Tags -->
-            <?php if (!empty($tagsList)): ?>
-            <div class="flex flex-wrap gap-2 mb-4">
-                <?php foreach ($tagsList as $tag): ?>
-                    <span class="px-3 py-1 bg-green-100 text-green-800 rounded-full text-sm"><?= htmlspecialchars(trim($tag)) ?></span>
-                <?php endforeach; ?>
+            <!-- Tags and Like Button in the same row -->
+            <div class="flex justify-between items-center mb-4">
+                <!-- Tags -->
+                <?php if (!empty($tagsList)): ?>
+                    <div class="flex flex-wrap gap-2">
+                        <?php foreach ($tagsList as $tag): ?>
+                            <span class="px-3 py-1 bg-green-100 text-green-800 rounded-full text-sm"><?= htmlspecialchars(trim($tag)) ?></span>
+                        <?php endforeach; ?>
+                    </div>
+                <?php endif; ?>
+
+                <!-- Like Button -->
+                <div class="flex items-center space-x-2">
+                    <?php if ($isLoggedIn): ?>
+                        <?php
+                        // Get the logged-in user's ID
+                        $userId = $_SESSION['user']['id'];
+
+                        // Check if the recipe is liked by the logged-in user.
+                        $isLiked = $recipeController->isLikedByUser($recipe_id, $userId);
+                        ?>
+
+                        <form method="POST" action="recipe.php?id=<?= $recipe_id ?>" class="like-form">
+                            <!-- Hidden input to pass the id -->
+                            <input type="hidden" name="id" value="<?= $recipe_id ?>">  <!-- Use 'id' here -->
+                            <button type="submit" class="like-button <?= $isLiked ? 'liked' : '' ?>">
+                                <i data-lucide="thumbs-up" class="h-5 w-5 <?= $isLiked ? 'text-red-500' : 'text-black' ?>"></i>
+                            </button>
+                        </form>
+
+                    <?php else: ?>
+                        <a href="login.php" class="text-primary font-bold no-underline">
+                            <i data-lucide="thumbs-up" class="h-5 w-5 text-black"></i>
+                        </a>
+                    <?php endif; ?>
+
+                    <!-- Like Count -->
+                    <?php
+                    // Get the like count for this recipe
+                    $likeCount = $recipeController->getLikeCount($recipe_id);
+?>
+                    <span class="like-count text-black font-bold <?= $isLiked ? 'liked' : '' ?>" id="like-count-<?= $recipe_id ?>"><?= $likeCount ?></span>
+                </div>
             </div>
-            <?php endif; ?>
 
             <!-- Ingredients -->
             <div class="mb-8">
@@ -300,8 +412,8 @@ if (isset($_SESSION['user']) && isset($_SESSION['user']['id']) && $recipe_id) {
                         <?php
 // NOTE: in a perfect world steps and ingredients would be in their own tables
 // and we wouldn't do this
-                        // Extract the step number and instruction text
-                        preg_match('/^(\d+)\.?\s*(.+)$/', $instruction, $matches);
+    // Extract the step number and instruction text
+    preg_match('/^(\d+)\.?\s*(.+)$/', $instruction, $matches);
                         if (count($matches) >= 3) {
                             $stepNumber = $matches[1];
                             $instructionText = $matches[2];
@@ -321,6 +433,73 @@ if (isset($_SESSION['user']) && isset($_SESSION['user']['id']) && $recipe_id) {
                     <?php endforeach; ?>
                 </ol>
             </div>
+
+            <!-- Display Comments for this recipe -->
+            <div class="comments mt-6">
+                <h3 class="text-3xl font-bold underline mb-3">Comments</h3>
+                <?php
+                $commentsWithUserData = $recipeController->getCommentsForRecipe($recipe['id']);
+if ($commentsWithUserData):
+    foreach ($commentsWithUserData as $commentData):
+        $comment = $commentData['comment'];
+        $commentUser = $commentData['user'];
+        $formattedDate = date('m/d/Y', strtotime($comment['comment_time']));
+        ?>
+                        <div class="comment mb-6 flex items-start" id="comment-<?= $comment['id'] ?>"> <!-- Increased the bottom margin -->
+                            <div class="flex items-center space-x-4">
+                                <!-- Profile Picture of the Commenter -->
+                                <img src="<?= htmlspecialchars($commentUser->profile_picture ?: 'prof_pics/default_avatar.png') ?>" alt="Profile Picture" class="w-9 h-9 rounded-full object-cover">
+
+                                <div class="flex-1">
+                                    <p><strong><?= htmlspecialchars($commentUser->first_name) . ' ' . htmlspecialchars($commentUser->last_name) ?>:</strong>
+                                        <span class="comment-body"><?= htmlspecialchars($comment['comment_body']) ?></span>
+                                    </p>
+                                    <p class="text-sm text-gray-400"><?= $formattedDate ?>
+                                        <?php if ($isLoggedIn && $commentUser->id === $_SESSION['user']['id']): ?>
+                                        <!-- Edit and Delete buttons -->
+                                    <div class="flex space-x-2 mt-2">
+                                        <button type="button" class="edit-comment py-1 px-2 bg-blue-500 text-white font-semibold rounded-md hover:bg-blue-600 text-xs" data-comment-id="<?= $comment['id'] ?>">Edit</button>
+
+                                        <!-- Delete Button -->
+                                        <form method="POST" action="recipe.php?id=<?= $recipe_id ?>" style="display:inline;">
+                                            <input type="hidden" name="delete_comment_id" value="<?= $comment['id'] ?>">
+                                            <button type="submit" name="delete_confirmed" class="py-1 px-2 bg-red-500 text-white font-semibold rounded-md hover:bg-red-600 text-xs">Delete</button>
+                                        </form>
+                                    </div>
+
+                                    <!-- Edit Form (Initially Hidden) -->
+                                    <div class="edit-comment-form hidden mt-2" id="edit-comment-form-<?= $comment['id'] ?>">
+                                        <form method="POST" action="recipe.php?id=<?= $recipe_id ?>" class="flex flex-col">
+                                            <input type="hidden" name="comment_id" value="<?= $comment['id'] ?>">  <!-- Hidden input for comment_id -->
+                                            <textarea name="comment_body" required rows="4" placeholder="Edit your comment..." class="w-full border border-gray-300 p-2 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"><?= htmlspecialchars($comment['comment_body']) ?></textarea>
+                                            <button type="submit" class="px-4 py-2 bg-blue-500 text-white font-semibold rounded-md hover:bg-blue-600 mt-2 text-xs" name="save_comment">Save Changes</button>  <!-- The button to save -->
+                                        </form>
+                                    </div>
+                                    <?php endif; ?>
+                                    </p>
+                                </div>
+                            </div>
+                        </div>
+                    <?php endforeach; ?>
+                <?php else: ?>
+                    <p>No comments yet. Be the first to comment!</p>
+                <?php endif; ?>
+            </div>
+
+
+            <!-- Comment Form (Only for logged-in users) -->
+            <?php if ($isLoggedIn): ?>
+                <div class="comment-form mt-4">
+                    <form method="POST" action="recipe.php?id=<?= $recipe_id ?>" data-recipe-id="<?= $recipe_id ?>">
+                        <input type="hidden" name="recipe_id" value="<?= $recipe_id ?>">
+                        <textarea name="comment_body" required rows="4" placeholder="Write your comment here..." class="w-full border border-gray-300 p-2 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"></textarea>
+                        <button type="submit" class="px-4 py-2 bg-green-500 text-white font-semibold rounded-md hover:bg-green-600 focus:outline-none focus:ring-2 focus:ring-green-500">Submit Comment</button>
+                    </form>
+                </div>
+            <?php else: ?>
+                <p class="mt-4 text-sm text-gray-600">Please <a href="login.php" class="text-primary">log in</a> to comment.</p>
+            <?php endif; ?>
+
         </div>
         <?php endif; ?>
     </div>
@@ -334,5 +513,18 @@ if (isset($_SESSION['user']) && isset($_SESSION['user']['id']) && $recipe_id) {
             window.print();
         });
 	</script>
+
+    <script>
+        document.addEventListener("DOMContentLoaded", function () {
+            // Add event listener for the "Edit" buttons
+            document.querySelectorAll('.edit-comment').forEach(button => {
+                button.addEventListener('click', function () {
+                    const commentId = this.dataset.commentId; // Get the comment ID from the button's data-comment-id attribute
+                    const editForm = document.getElementById('edit-comment-form-' + commentId); // Get the corresponding edit form
+                    editForm.classList.remove('hidden'); // Remove the 'hidden' class to show the form
+                });
+            });
+        });
+    </script>
 </body>
 </html>
