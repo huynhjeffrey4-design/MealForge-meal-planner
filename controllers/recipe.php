@@ -39,7 +39,8 @@ class RecipeController
         }
     }
 
-    public function getCommentsForRecipe($recipeId): array{
+    public function getCommentsForRecipe($recipeId): array
+    {
         return $this->recipeProvider->getCommentsForRecipe($recipeId);
     }
 
@@ -55,12 +56,12 @@ class RecipeController
         $this->recipeProvider->toggleLike($recipeId, $userId);
     }
 
-    public function getLikeCount($recipeId) : int
+    public function getLikeCount($recipeId): int
     {
         return $this->recipeProvider->getLikeCount($recipeId);
     }
 
-    public function isLikedByUser($recipeId,$userId): bool
+    public function isLikedByUser($recipeId, $userId): bool
     {
         return $this->recipeProvider->isLikedByUser($recipeId, $userId);
     }
@@ -70,11 +71,13 @@ class RecipeController
         return $this->recipeProvider->getLikedRecipes($userId);
     }
 
-    public function editComment($commentId, $newCommentBody, $userId) {
+    public function editComment($commentId, $newCommentBody, $userId)
+    {
         return $this->recipeProvider->editComment($commentId, $newCommentBody, $userId);
     }
 
-    public function deleteComment($commentId, $userId) {
+    public function deleteComment($commentId, $userId)
+    {
         return $this->recipeProvider->deleteComment($commentId, $userId);
     }
 
@@ -815,7 +818,7 @@ class RedbeanRecipeDataProvider implements RecipeDataProvider
         return $likeCount;
     }
 
-    public function isLikedByUser($recipe_id, $user_id) : bool
+    public function isLikedByUser($recipe_id, $user_id): bool
     {
 
         // Check if there's a record in the 'like' table with the given user_id and recipe_id
@@ -825,7 +828,8 @@ class RedbeanRecipeDataProvider implements RecipeDataProvider
     }
 
     // Function to get liked recipes by user
-    function getLikedRecipes($user_id) {
+    public function getLikedRecipes($user_id)
+    {
         $likedRecipes = R::findAll('like', 'user_id = ?', [$user_id]);
 
         // Array to store recipe data
@@ -847,7 +851,8 @@ class RedbeanRecipeDataProvider implements RecipeDataProvider
     }
 
     // Edit Recipe Comment Logic
-    public function editComment($commentId, $newCommentBody, $userId) {
+    public function editComment($commentId, $newCommentBody, $userId)
+    {
         // Load the comment
         $comment = R::load('discussion', $commentId);
 
@@ -863,7 +868,8 @@ class RedbeanRecipeDataProvider implements RecipeDataProvider
 
 
     // Delete Comment Logic
-    public function deleteComment($commentId, $userId) {
+    public function deleteComment($commentId, $userId)
+    {
         $comment = R::load('discussion', $commentId);
         if ($comment->user_id === $userId) {
             R::trash($comment); // Delete the comment

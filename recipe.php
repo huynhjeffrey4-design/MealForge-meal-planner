@@ -46,7 +46,7 @@ if (isset($_SESSION['user']) && isset($_SESSION['user']['id']) && $recipe_id) {
 }
 
 // Added for recipe liking and commenting
-function handleCommentSubmission($isLoggedIn, $recipeController, $recipe_id) : void
+function handleCommentSubmission($isLoggedIn, $recipeController, $recipe_id): void
 {
     if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['comment_body']) && $recipe_id != null && $isLoggedIn && !isset($_POST['save_comment'])) {
         $commentBody = $_POST['comment_body'];
@@ -63,7 +63,7 @@ function handleCommentSubmission($isLoggedIn, $recipeController, $recipe_id) : v
 
 
 // Helper function to handle like submissions
-function handleLikeAction($isLoggedIn, $recipeController, $recipe_id) : void
+function handleLikeAction($isLoggedIn, $recipeController, $recipe_id): void
 {
     if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['id']) && $isLoggedIn) {
 
@@ -78,7 +78,8 @@ function handleLikeAction($isLoggedIn, $recipeController, $recipe_id) : void
     }
 }
 
-function handleEditComment($isLoggedIn, $recipeController, $recipe_id): void {
+function handleEditComment($isLoggedIn, $recipeController, $recipe_id): void
+{
     if (isset($_POST['save_comment'], $_POST['comment_id'], $_POST['comment_body'])) {
         $commentId = $_POST['comment_id'];
         $newCommentBody = $_POST['comment_body'];
@@ -96,7 +97,8 @@ function handleEditComment($isLoggedIn, $recipeController, $recipe_id): void {
 }
 
 
-function handleDeleteComment($isLoggedIn, $recipeController, $recipe_id): void {
+function handleDeleteComment($isLoggedIn, $recipeController, $recipe_id): void
+{
     if ($isLoggedIn && isset($_POST['delete_comment_id'])) {
         $commentId = $_POST['delete_comment_id'];
         $userId = $_SESSION['user']['id'];
@@ -372,7 +374,7 @@ handleDeleteComment($isLoggedIn, $recipeController, $recipe_id);
                     <?php
                     // Get the like count for this recipe
                     $likeCount = $recipeController->getLikeCount($recipe_id);
-                    ?>
+?>
                     <span class="like-count text-black font-bold <?= $isLiked ? 'liked' : '' ?>" id="like-count-<?= $recipe_id ?>"><?= $likeCount ?></span>
                 </div>
             </div>
@@ -410,8 +412,8 @@ handleDeleteComment($isLoggedIn, $recipeController, $recipe_id);
                         <?php
 // NOTE: in a perfect world steps and ingredients would be in their own tables
 // and we wouldn't do this
-                        // Extract the step number and instruction text
-                        preg_match('/^(\d+)\.?\s*(.+)$/', $instruction, $matches);
+    // Extract the step number and instruction text
+    preg_match('/^(\d+)\.?\s*(.+)$/', $instruction, $matches);
                         if (count($matches) >= 3) {
                             $stepNumber = $matches[1];
                             $instructionText = $matches[2];
@@ -437,12 +439,12 @@ handleDeleteComment($isLoggedIn, $recipeController, $recipe_id);
                 <h3 class="text-3xl font-bold underline mb-3">Comments</h3>
                 <?php
                 $commentsWithUserData = $recipeController->getCommentsForRecipe($recipe['id']);
-                if ($commentsWithUserData):
-                    foreach ($commentsWithUserData as $commentData):
-                        $comment = $commentData['comment'];
-                        $commentUser = $commentData['user'];
-                        $formattedDate = date('m/d/Y', strtotime($comment['comment_time']));
-                        ?>
+if ($commentsWithUserData):
+    foreach ($commentsWithUserData as $commentData):
+        $comment = $commentData['comment'];
+        $commentUser = $commentData['user'];
+        $formattedDate = date('m/d/Y', strtotime($comment['comment_time']));
+        ?>
                         <div class="comment mb-6 flex items-start" id="comment-<?= $comment['id'] ?>"> <!-- Increased the bottom margin -->
                             <div class="flex items-center space-x-4">
                                 <!-- Profile Picture of the Commenter -->
