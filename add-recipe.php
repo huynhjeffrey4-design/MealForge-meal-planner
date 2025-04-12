@@ -6,10 +6,10 @@ session_start();
 $day = $_GET['day'] ?? ($_POST['day'] ?? '');
 $recipe = $_SESSION['submitted_recipe'] ?? null;
 if (!isset($_SESSION['draft_recipe'])) {
-  $_SESSION['draft_recipe'] = [
-    'ingredients' => [],
-    'instructions' => []
-  ];
+    $_SESSION['draft_recipe'] = [
+      'ingredients' => [],
+      'instructions' => []
+    ];
 }
 
 
@@ -17,125 +17,133 @@ $step = $_GET['step'] ?? 1;
 
 // Step 1
 if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['submit_step1'])) {
-  $_SESSION['draft_recipe']['step1'] = [
-    'meal_name' => $_POST['meal_name'],
-    'description' => $_POST['description'],
-    'prep_time' => $_POST['prep_time'],
-    'cook_time' => $_POST['cook_time'],
-    'difficulty' => $_POST['difficulty'],
-    'servings' => $_POST['servings'],
-    'meal_type' => $_POST['meal_type']
-  ];
-  header("Location: ?step=2&day=" . urlencode($day)); exit;
+    $_SESSION['draft_recipe']['step1'] = [
+      'meal_name' => $_POST['meal_name'],
+      'description' => $_POST['description'],
+      'prep_time' => $_POST['prep_time'],
+      'cook_time' => $_POST['cook_time'],
+      'difficulty' => $_POST['difficulty'],
+      'servings' => $_POST['servings'],
+      'meal_type' => $_POST['meal_type']
+    ];
+    header("Location: ?step=2&day=" . urlencode($day));
+    exit;
 }
 
 // Step 2 - Ingredients
 if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['submit_step2'])) {
-  if (empty($_SESSION['draft_recipe']['ingredients'])) {
-    $_SESSION['step2_error'] = "Please add at least one ingredient before continuing.";
-    header("Location: ?step=2&day=" . urlencode($day));
-    exit;
-  }
+    if (empty($_SESSION['draft_recipe']['ingredients'])) {
+        $_SESSION['step2_error'] = "Please add at least one ingredient before continuing.";
+        header("Location: ?step=2&day=" . urlencode($day));
+        exit;
+    }
 }
 if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['submit_step2'])) {
-  $_SESSION['draft_recipe']['ingredients'][] = [
-    'name' => $_POST['ingredient_name'],
-    'qty' => $_POST['ingredient_qty'],
-    'unit' => $_POST['ingredient_unit']
-  ];
-  header("Location: ?step=3&day=$day"); exit;
+    $_SESSION['draft_recipe']['ingredients'][] = [
+      'name' => $_POST['ingredient_name'],
+      'qty' => $_POST['ingredient_qty'],
+      'unit' => $_POST['ingredient_unit']
+    ];
+    header("Location: ?step=3&day=$day");
+    exit;
 }
 if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['add_ingredient'])) {
-  $_SESSION['draft_recipe']['ingredients'][] = [
-    'name' => $_POST['ingredient_name'],
-    'qty' => $_POST['ingredient_qty'],
-    'unit' => $_POST['ingredient_unit']
-  ];
-  header("Location: ?step=2&day=$day"); exit;
+    $_SESSION['draft_recipe']['ingredients'][] = [
+      'name' => $_POST['ingredient_name'],
+      'qty' => $_POST['ingredient_qty'],
+      'unit' => $_POST['ingredient_unit']
+    ];
+    header("Location: ?step=2&day=$day");
+    exit;
 }
 if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['delete_ingredient'])) {
-  unset($_SESSION['draft_recipe']['ingredients'][$_POST['delete_ingredient']]);
-  $_SESSION['draft_recipe']['ingredients'] = array_values($_SESSION['draft_recipe']['ingredients']);
-  header("Location: ?step=2&day=$day"); exit;
+    unset($_SESSION['draft_recipe']['ingredients'][$_POST['delete_ingredient']]);
+    $_SESSION['draft_recipe']['ingredients'] = array_values($_SESSION['draft_recipe']['ingredients']);
+    header("Location: ?step=2&day=$day");
+    exit;
 }
 
 // Step 3 - Instructions
 if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['add_instruction'])) {
-  $_SESSION['draft_recipe']['instructions'][] = $_POST['instruction_text'];
-  header("Location: ?step=3&day=$day"); exit;
+    $_SESSION['draft_recipe']['instructions'][] = $_POST['instruction_text'];
+    header("Location: ?step=3&day=$day");
+    exit;
 }
 if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['delete_instruction'])) {
-  unset($_SESSION['draft_recipe']['instructions'][$_POST['delete_instruction']]);
-  $_SESSION['draft_recipe']['instructions'] = array_values($_SESSION['draft_recipe']['instructions']);
-  header("Location: ?step=3&day=" . urlencode($day));
+    unset($_SESSION['draft_recipe']['instructions'][$_POST['delete_instruction']]);
+    $_SESSION['draft_recipe']['instructions'] = array_values($_SESSION['draft_recipe']['instructions']);
+    header("Location: ?step=3&day=" . urlencode($day));
 }
 
 // Step 4 - Tags + Optional Image + Nutrition
 if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['submit_step4'])) {
-  $_SESSION['draft_recipe']['step4'] = [
-    'tags' => explode(',', $_POST['tags']),
-    'calories' => $_POST['calories'],
-    'protein' => $_POST['protein'],
-    'carbs' => $_POST['carbs'],
-    'fat' => $_POST['fat']
-  ];
+    $_SESSION['draft_recipe']['step4'] = [
+      'tags' => explode(',', $_POST['tags']),
+      'calories' => $_POST['calories'],
+      'protein' => $_POST['protein'],
+      'carbs' => $_POST['carbs'],
+      'fat' => $_POST['fat']
+    ];
 
-  if (!is_dir('uploads')) mkdir('uploads', 0777, true);
-
-  if (isset($_FILES['image']) && is_uploaded_file($_FILES['image']['tmp_name'])) {
-    if ($_FILES['image']['error'] === 0) {
-      $img = 'uploads/' . uniqid() . '_' . basename($_FILES['image']['name']);
-      if (move_uploaded_file($_FILES['image']['tmp_name'], $img)) {
-        $_SESSION['draft_recipe']['step4']['image'] = $img;
-      }
+    if (!is_dir('uploads')) {
+        mkdir('uploads', 0777, true);
     }
-  }
-  header("Location: ?step=5&day=" . urlencode($day)); exit;
+
+    if (isset($_FILES['image']) && is_uploaded_file($_FILES['image']['tmp_name'])) {
+        if ($_FILES['image']['error'] === 0) {
+            $img = 'uploads/' . uniqid() . '_' . basename($_FILES['image']['name']);
+            if (move_uploaded_file($_FILES['image']['tmp_name'], $img)) {
+                $_SESSION['draft_recipe']['step4']['image'] = $img;
+            }
+        }
+    }
+    header("Location: ?step=5&day=" . urlencode($day));
+    exit;
 }
 
 
 
 // Step 5 - Submit
 if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['submit_recipe'])) {
-   // ✅ 加在这里！调试后端收到的 POST 数据
-   error_log("🔥 后端收到的 POST: " . print_r($_POST, true));
-  $userId = $_POST['user_id'] ?? null;  // ✅ 从 POST 拿，而不是 SESSION
-  if (!$userId) {
-    die("❌ 请先登录再添加菜谱！");
-  }
-  $_SESSION['user_id'] = $userId; // ✅ 如果你想在 session 里也存一份（可选）
-  $draft = $_SESSION['draft_recipe'];
+    // ✅ 加在这里！调试后端收到的 POST 数据
+    error_log("🔥 后端收到的 POST: " . print_r($_POST, true));
+    $userId = $_POST['user_id'] ?? null;  // ✅ 从 POST 拿，而不是 SESSION
+    if (!$userId) {
+        die("❌ 请先登录再添加菜谱！");
+    }
+    $_SESSION['user_id'] = $userId; // ✅ 如果你想在 session 里也存一份（可选）
+    $draft = $_SESSION['draft_recipe'];
 
-  $recipe = R::dispense('mealplan');  // 存到 meal_plan 表
+    $recipe = R::dispense('mealplan');  // 存到 meal_plan 表
 
-  $recipe->user_id = $userId; // 👈 就放在这里！先放 user id
+    $recipe->user_id = $userId; // 👈 就放在这里！先放 user id
 
-  $recipe->day = $day;  // 你可以记录是星期几的 meal plan
-  $recipe->recipe = $draft['step1']['meal_name'];
-  $recipe->description = $draft['step1']['description'];
-  $recipe->prep_time = $draft['step1']['prep_time'];
-  $recipe->cook_time = $draft['step1']['cook_time'];
-  $recipe->difficulty = $draft['step1']['difficulty'];
-  $recipe->serves = $draft['step1']['servings'];
-  $recipe->meal_type = $draft['step1']['meal_type'];
-  $recipe->image = $draft['step4']['image'] ?? '';
-  $recipe->calories = $draft['step4']['calories'];
-  $recipe->protein  = $draft['step4']['protein'];
-  $recipe->carbs    = $draft['step4']['carbs'];
-  $recipe->fat      = $draft['step4']['fat'];
-  $recipe->instructions =  implode("\n", $draft['instructions']);
-  $recipe->ingredients = implode(', ', array_map(function($i) {
-    return "{$i['qty']} {$i['unit']} {$i['name']}";
-  }, $draft['ingredients']));
-  $recipe->tags = json_encode($draft['step4']['tags']);
+    $recipe->day = $day;  // 你可以记录是星期几的 meal plan
+    $recipe->recipe = $draft['step1']['meal_name'];
+    $recipe->description = $draft['step1']['description'];
+    $recipe->prep_time = $draft['step1']['prep_time'];
+    $recipe->cook_time = $draft['step1']['cook_time'];
+    $recipe->difficulty = $draft['step1']['difficulty'];
+    $recipe->serves = $draft['step1']['servings'];
+    $recipe->meal_type = $draft['step1']['meal_type'];
+    $recipe->image = $draft['step4']['image'] ?? '';
+    $recipe->calories = $draft['step4']['calories'];
+    $recipe->protein  = $draft['step4']['protein'];
+    $recipe->carbs    = $draft['step4']['carbs'];
+    $recipe->fat      = $draft['step4']['fat'];
+    $recipe->instructions =  implode("\n", $draft['instructions']);
+    $recipe->ingredients = implode(', ', array_map(function ($i) {
+        return "{$i['qty']} {$i['unit']} {$i['name']}";
+    }, $draft['ingredients']));
+    $recipe->tags = json_encode($draft['step4']['tags']);
 
-  $id = R::store($recipe);
+    $id = R::store($recipe);
 
-  $draft['id'] = $id;
-  $_SESSION['submitted_recipe'] = $recipe;
-  unset($_SESSION['draft_recipe']);
-  header("Location: ?step=6&day=" . urlencode($day));
-  exit;
+    $draft['id'] = $id;
+    $_SESSION['submitted_recipe'] = $recipe;
+    unset($_SESSION['draft_recipe']);
+    header("Location: ?step=6&day=" . urlencode($day));
+    exit;
 }
 ?>
 <!DOCTYPE html>

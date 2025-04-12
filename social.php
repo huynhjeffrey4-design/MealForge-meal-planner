@@ -12,7 +12,7 @@ $socialPosts = R::findAll('socialpost', 'ORDER BY timestamp DESC');
 
 // Check if user is logged in
 $isLoggedIn = isset($_SESSION['user']['id']);
-//   Step 1: 
+//   Step 1:
 if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['like_post_id'])) {
     $postId = $_POST['like_post_id'];
     $userId = $_SESSION['user']['id'] ?? null;
@@ -30,7 +30,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['like_post_id'])) {
     header('Location: social.php');
     exit;
 }
-//  Step 2: 
+//  Step 2:
 if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['comment_post_id'])) {
     $postId = $_POST['comment_post_id'];
     $commentText = trim($_POST['comment_text'] ?? '');
@@ -58,7 +58,7 @@ if (isset($_GET['logout'])) {
     exit;
 }
 
-if ($_SERVER['REQUEST_METHOD'] === 'POST' && 
+if ($_SERVER['REQUEST_METHOD'] === 'POST' &&
     $_SERVER['CONTENT_TYPE'] === 'application/json') {
 
     $raw = file_get_contents("php://input");
@@ -77,7 +77,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' &&
         $post->user_id = $userId;
         $now = new DateTime('now', new DateTimeZone('America/New_York'));
         $post->timestamp = $now->getTimestamp();
-        $post->recipe = json_encode($recipe); 
+        $post->recipe = json_encode($recipe);
         R::store($post);
 
         echo "✅ Posted to social feed";
@@ -91,7 +91,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' &&
 
 
 
-function handlePostSubmission($isLoggedIn, $postController) {
+function handlePostSubmission($isLoggedIn, $postController)
+{
     if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['description'], $_FILES['image']) && $isLoggedIn) {
         $description = $_POST['description'];
         $image = $_FILES['image'];
@@ -103,7 +104,7 @@ function handlePostSubmission($isLoggedIn, $postController) {
             exit;
         }
 
-        $userId = $_SESSION['user']['id']?? null;
+        $userId = $_SESSION['user']['id'] ?? null;
         $user = getUserController()->getUserById($userId);
 
         // Handle file upload
@@ -120,7 +121,8 @@ function handlePostSubmission($isLoggedIn, $postController) {
 }
 
 // Helper function to handle comment submissions
-function handleCommentSubmission($isLoggedIn, $postController) {
+function handleCommentSubmission($isLoggedIn, $postController)
+{
     if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['comment_body'], $_POST['post_id']) && $isLoggedIn) {
         $commentBody = $_POST['comment_body'];
         $postId = $_POST['post_id'];
@@ -134,7 +136,8 @@ function handleCommentSubmission($isLoggedIn, $postController) {
 }
 
 // Helper function to handle like submissions
-function handleLikeAction($isLoggedIn, $postController) {
+function handleLikeAction($isLoggedIn, $postController)
+{
     if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['id']) && $isLoggedIn) {
         $postId = $_POST['id'];
         $userEmail = $_SESSION['user']['email'];
@@ -211,7 +214,7 @@ $posts = $postController->getAllPosts();
         <div class="mb-8 bg-green-50 p-6 rounded-lg border border-green-200">
             <p class="text-gray-700">
                 <a href="login.php" class="text-green-600 font-semibold">Log in</a> or 
-                <a href="registration.php" class="text-green-600 font-semibold">sign up</a>
+                <a href="signup.php" class="text-green-600 font-semibold">sign up</a> 
                 to share your own recipes and like posts!
             </p>
         </div>
@@ -227,9 +230,9 @@ $sharedRecipes = R::findAll('socialpost', 'ORDER BY timestamp DESC');
 <?php if (!empty($sharedRecipes)): ?>
   <h2 class="text-2xl font-bold mt-12 mb-4"> Community Shared Recipes</h2>
   <div class="flex flex-col gap-6 max-w-4xl mx-auto"> 
-    <?php foreach ($sharedRecipes as $shared): 
-      $r = json_decode($shared->recipe, true);
-    ?>
+    <?php foreach ($sharedRecipes as $shared):
+        $r = json_decode($shared->recipe, true);
+        ?>
       <div class="bg-white border rounded-lg p-4 shadow">
         <h3 class="text-lg font-bold"><?= htmlspecialchars($r['step1']['meal_name'] ?? 'Untitled') ?></h3>
         <p class="text-sm text-gray-600"><?= htmlspecialchars($r['step1']['description'] ?? '') ?></p>
@@ -257,9 +260,9 @@ $sharedRecipes = R::findAll('socialpost', 'ORDER BY timestamp DESC');
         </ol>
         <p class="mt-2 text-xs text-gray-400">Shared on <?= date('Y-m-d H:i', $shared->timestamp) ?></p>
         <?php
-    $likeCount = R::count('likes', 'post_id = ?', [$shared->id]);
-    $comments = R::findAll('comment', 'post_id = ?', [$shared->id]);
-?>
+        $likeCount = R::count('likes', 'post_id = ?', [$shared->id]);
+        $comments = R::findAll('comment', 'post_id = ?', [$shared->id]);
+        ?>
 
 
 <form method="POST" class="mt-2">
@@ -272,8 +275,8 @@ $sharedRecipes = R::findAll('socialpost', 'ORDER BY timestamp DESC');
     <h4 class="font-semibold">Comments:</h4>
     <?php foreach ($comments as $comment): ?>
         <?php
-            $user = R::findOne('users', 'id = ?', [$comment->user_id]);
-            $username = $user ? $user->name : 'User ' . $comment->user_id;
+                    $user = R::findOne('users', 'id = ?', [$comment->user_id]);
+        $username = $user ? $user->name : 'User ' . $comment->user_id;
         ?>
         <p class="text-sm"><strong><?= htmlspecialchars($username) ?>:</strong> <?= htmlspecialchars($comment->comment) ?></p>
     <?php endforeach; ?>
@@ -346,12 +349,12 @@ $sharedRecipes = R::findAll('socialpost', 'ORDER BY timestamp DESC');
                                             // Get the logged-in user's email
                                             $userEmail = $_SESSION['user']['email'];
 
-                                            // Get the liked_by field and convert it to an array
-                                            $likedByArray = explode(',', $post['liked_by']);
+                                        // Get the liked_by field and convert it to an array
+                                        $likedByArray = explode(',', $post['liked_by']);
 
-                                            // Check if the user's email is in the liked_by array
-                                            $isLiked = in_array($userEmail, $likedByArray);
-                                            ?>
+                                        // Check if the user's email is in the liked_by array
+                                        $isLiked = in_array($userEmail, $likedByArray);
+                                        ?>
                                             <button type="submit" class="like-button <?= $isLiked ? 'liked' : '' ?>">
                                                 <i data-lucide="thumbs-up" class="h-5 w-5 <?= $isLiked ? 'text-red-500' : 'text-black' ?>"></i>
                                             </button>
@@ -379,12 +382,12 @@ $sharedRecipes = R::findAll('socialpost', 'ORDER BY timestamp DESC');
                         <h3 class="text-3xl font-bold underline mb-3">Comments</h3>
                         <?php
                         $commentsWithUserData = $postController->getCommentsForPost($post['id']);
-                        if ($commentsWithUserData):
-                            foreach ($commentsWithUserData as $commentData):
-                                $comment = $commentData['comment'];
-                                $commentUser = $commentData['user'];
-                                $formattedDate = date('m/d/Y', strtotime($comment['comment_time']));
-                                ?>
+                    if ($commentsWithUserData):
+                        foreach ($commentsWithUserData as $commentData):
+                            $comment = $commentData['comment'];
+                            $commentUser = $commentData['user'];
+                            $formattedDate = date('m/d/Y', strtotime($comment['comment_time']));
+                            ?>
                                 <div class="comment mb-4 flex items-start">
                                     <div class="flex items-center space-x-4">
                                         <!-- Profile Picture of the Commenter -->

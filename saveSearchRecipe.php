@@ -1,4 +1,5 @@
 <?php
+
 ini_set('display_errors', 1);
 ini_set('display_startup_errors', 1);
 error_reporting(E_ALL);
@@ -44,7 +45,7 @@ $recipe['image']     = $recipe['image'] ?? $recipe['imageURL'] ?? 'assets/defaul
 $bean = R::dispense('mealplan');
 $bean->user_id     = $userId;
 $bean->day         = $day;
-$bean->recipe      = $recipe['name'];  
+$bean->recipe      = $recipe['name'];
 $bean->description = $recipe['description'] ?? '';
 $bean->prep_time   = $recipe['prep_time'];
 
@@ -58,23 +59,23 @@ $bean->protein     = $recipe['protein'] ?? 0;
 $bean->carbs       = $recipe['carbs'] ?? 0;
 $bean->fat         = $recipe['fat'] ?? 0;
 
-// instructions and ingredients 
-//$bean->instructions = is_array($recipe['instructions']) 
-  //  ? implode("\n", $recipe['instructions']) 
-    //: $recipe['instructions'] ?? '';
-    $bean->instructions = json_encode(
-        is_array($recipe['instructions']) 
-        ? $recipe['instructions'] 
-        : explode("\n", $recipe['instructions'])
-    );
-    
+// instructions and ingredients
+//$bean->instructions = is_array($recipe['instructions'])
+//  ? implode("\n", $recipe['instructions'])
+//: $recipe['instructions'] ?? '';
+$bean->instructions = json_encode(
+    is_array($recipe['instructions'])
+    ? $recipe['instructions']
+    : explode("\n", $recipe['instructions'])
+);
+
 
 $bean->ingredients = json_encode(is_array($recipe['ingredients']) ? $recipe['ingredients'] : explode(',', $recipe['ingredients']));
 
 
-//$bean->ingredients = is_array($recipe['ingredients']) 
-  //  ? implode(', ', $recipe['ingredients']) 
-    //: $recipe['ingredients'] ?? '';
+//$bean->ingredients = is_array($recipe['ingredients'])
+//  ? implode(', ', $recipe['ingredients'])
+//: $recipe['ingredients'] ?? '';
 
 $bean->tags = json_encode($recipe['tags'] ?? []);
 
@@ -86,7 +87,7 @@ $recipe['prepTime'] = $bean->prep_time;
 $recipe['cookTime'] = $bean->cook_time;
 $recipe['mealType'] = $bean->meal_type;
 $recipe['servings'] = $bean->serves;
-$recipe['recipe'] = $bean->recipe; 
+$recipe['recipe'] = $bean->recipe;
 
 
 echo json_encode(['success' => true, 'recipe' => $recipe]);

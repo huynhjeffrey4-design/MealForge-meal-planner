@@ -1,4 +1,4 @@
-<?php 
+<?php
 session_start();
 if (!isset($_SESSION['user'])) {
     header('Location: login.php');
@@ -51,40 +51,40 @@ $meals = [
 ];
 
 
-    // Add recipe directly to meal plan
-    if (isset($_POST['add_day']) && isset($_POST['add_meal_data'])) {
-        $day = $_POST['add_day'];
-        $mealData = json_decode($_POST['add_meal_data'], true);
-        
-        if ($mealData) {
-            $_SESSION['meal_plan'][$day][] = $mealData;
-            echo json_encode(['success' => true]);
-        } else {
-            echo json_encode(['success' => false, 'message' => 'Invalid meal data']);
-        }
-        exit;
-    }
-    if (isset($_POST['add_day']) && isset($_POST['add_recipe_id'])) {
-        $day = $_POST['add_day'];
-        $recipeId = (int)$_POST['add_recipe_id'];
+// Add recipe directly to meal plan
+if (isset($_POST['add_day']) && isset($_POST['add_meal_data'])) {
+    $day = $_POST['add_day'];
+    $mealData = json_decode($_POST['add_meal_data'], true);
 
-        if ($recipeId > 0) {
-            $_SESSION['meal_plan'][$day][] = $recipeId;
-            echo json_encode(['success' => true]);
-        } else {
-            echo json_encode(['success' => false, 'message' => 'Invalid recipe ID']);
-        }
-        exit;
+    if ($mealData) {
+        $_SESSION['meal_plan'][$day][] = $mealData;
+        echo json_encode(['success' => true]);
+    } else {
+        echo json_encode(['success' => false, 'message' => 'Invalid meal data']);
     }
-    // Simplified approach for handling meal plan updates
+    exit;
+}
+if (isset($_POST['add_day']) && isset($_POST['add_recipe_id'])) {
+    $day = $_POST['add_day'];
+    $recipeId = (int)$_POST['add_recipe_id'];
+
+    if ($recipeId > 0) {
+        $_SESSION['meal_plan'][$day][] = $recipeId;
+        echo json_encode(['success' => true]);
+    } else {
+        echo json_encode(['success' => false, 'message' => 'Invalid recipe ID']);
+    }
+    exit;
+}
+// Simplified approach for handling meal plan updates
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     header('Content-Type: application/json');
-    
+
     // Add meal to plan
     if (isset($_POST['add_day']) && isset($_POST['add_meal_id'])) {
         $day = $_POST['add_day'];
         $mealId = (int)$_POST['add_meal_id'];
-        
+
         // Find the meal by ID
         $mealToAdd = null;
         foreach ($meals as $meal) {
@@ -93,7 +93,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 break;
             }
         }
-        
+
 
         if ($mealToAdd) {
             $_SESSION['meal_plan'][$day][] = $mealToAdd;
@@ -103,12 +103,12 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         }
         exit;
     }
-    
+
     // Remove meal from plan
     if (isset($_POST['remove_day']) && isset($_POST['remove_index'])) {
         $day = $_POST['remove_day'];
         $index = (int)$_POST['remove_index'];
-        
+
         if (isset($_SESSION['meal_plan'][$day][$index])) {
             array_splice($_SESSION['meal_plan'][$day], $index, 1);
             echo json_encode(['success' => true]);
@@ -191,13 +191,13 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             
             <!-- Meal Plan Grid - Top Row -->
             <div class="grid grid-cols-1 md:grid-cols-3 gap-5 mb-5">
-                <?php foreach(['Monday', 'Tuesday', 'Wednesday'] as $day): ?>
+                <?php foreach (['Monday', 'Tuesday', 'Wednesday'] as $day): ?>
                 <div class="bg-white rounded-lg shadow-sm p-4 flex flex-col">
                     <h2 class="text-lg font-bold text-center mb-4"><?php echo $day; ?></h2>
                     
                     <div class="flex-1 flex flex-col" id="meals-<?php echo strtolower($day); ?>">
-                        <?php if(isset($_SESSION['meal_plan'][$day]) && !empty($_SESSION['meal_plan'][$day])): ?>
-                            <?php foreach($_SESSION['meal_plan'][$day] as $index => $meal): ?>
+                        <?php if (isset($_SESSION['meal_plan'][$day]) && !empty($_SESSION['meal_plan'][$day])): ?>
+                            <?php foreach ($_SESSION['meal_plan'][$day] as $index => $meal): ?>
                                 <div class="mb-3 relative meal-card">
                                 <a href="#" class="meal-details" data-meal='<?= htmlspecialchars(json_encode($meal), ENT_QUOTES, 'UTF-8') ?>'>
                                 <img
@@ -239,13 +239,13 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             
             <!-- Meal Plan Grid - Middle Row -->
             <div class="grid grid-cols-1 md:grid-cols-3 gap-5 mb-5">
-                <?php foreach(['Thursday', 'Friday', 'Saturday'] as $day): ?>
+                <?php foreach (['Thursday', 'Friday', 'Saturday'] as $day): ?>
                 <div class="bg-white rounded-lg shadow-sm p-4 flex flex-col">
                     <h2 class="text-lg font-bold text-center mb-4"><?php echo $day; ?></h2>
                     
                     <div class="flex-1 flex flex-col" id="meals-<?php echo strtolower($day); ?>">
-                        <?php if(isset($_SESSION['meal_plan'][$day]) && !empty($_SESSION['meal_plan'][$day])): ?>
-                            <?php foreach($_SESSION['meal_plan'][$day] as $index => $meal): ?>
+                        <?php if (isset($_SESSION['meal_plan'][$day]) && !empty($_SESSION['meal_plan'][$day])): ?>
+                            <?php foreach ($_SESSION['meal_plan'][$day] as $index => $meal): ?>
                                 <div class="mb-3 relative meal-card">
                                 <a href="#" class="meal-details" data-meal='<?php echo htmlspecialchars(json_encode($meal), ENT_QUOTES, 'UTF-8'); ?>'>                                        <img src="<?php echo $meal['image']; ?>" alt="<?php echo htmlspecialchars($meal['name']); ?>" class="w-full h-40 object-cover rounded-lg">
                                         <div class="bg-black bg-opacity-60 text-white text-sm p-2 absolute bottom-0 left-0 right-0 rounded-b-lg">
@@ -284,8 +284,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                     <h2 class="text-lg font-bold text-center mb-4">Sunday</h2>
                     
                     <div class="flex-1 flex flex-col" id="meals-sunday">
-                        <?php if(isset($_SESSION['meal_plan']['Sunday']) && !empty($_SESSION['meal_plan']['Sunday'])): ?>
-                            <?php foreach($_SESSION['meal_plan']['Sunday'] as $index => $meal): ?>
+                        <?php if (isset($_SESSION['meal_plan']['Sunday']) && !empty($_SESSION['meal_plan']['Sunday'])): ?>
+                            <?php foreach ($_SESSION['meal_plan']['Sunday'] as $index => $meal): ?>
                                 <div class="mb-3 relative meal-card">
                                 <a href="#" class="meal-details" data-meal='<?= htmlspecialchars(json_encode($meal), ENT_QUOTES, 'UTF-8') ?>'>
 

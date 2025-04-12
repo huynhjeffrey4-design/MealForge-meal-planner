@@ -23,7 +23,8 @@ $maxBudget = isset($_GET['max_budget']) ? (int)$_GET['max_budget'] : 75;
 
 $budgetErrors = validateBudget($minBudget, $maxBudget);
 
-function validateBudget($minBudget, $maxBudget) {
+function validateBudget($minBudget, $maxBudget)
+{
     $errors = [];
 
     if ($minBudget < 0) {
