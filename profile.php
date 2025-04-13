@@ -475,7 +475,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['edit_all'])) {
                     })
                     .catch(error => {
                         console.error('Error fetching liked recipes:', error);
-                        listContainer.innerHTML = `<div class="text-red-600">Failed to load liked recipes.</div>`;
+                        listContainer.innerHTML = `<div class="text-red-600">You have not liked any recipes.</div>`;
                     });
             }
         });

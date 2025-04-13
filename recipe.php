@@ -114,9 +114,14 @@ function handleDeleteComment($isLoggedIn, $recipeController, $recipe_id): void
         }
     }
 }
-
-
+# For autofilling to social page
+$userFirstName = "Not Logged In";
 $isLoggedIn = isset($_SESSION['user']['id']);
+if ($isLoggedIn){
+    $userId = $_SESSION['user']['id'];
+    $user = getUserController()->getUserById($userId);
+    $userFirstName = $user['first_name'];
+}
 handleCommentSubmission($isLoggedIn, $recipeController, $recipe_id);
 handleLikeAction($isLoggedIn, $recipeController, $recipe_id);
 handleEditComment($isLoggedIn, $recipeController, $recipe_id);
@@ -240,7 +245,10 @@ handleDeleteComment($isLoggedIn, $recipeController, $recipe_id);
                         </svg>
                     </button>
                     <!-- Share Icon -->
-                    <button class="text-gray-500 hover:text-gray-700">
+                    <button class="text-gray-500 hover:text-gray-700" id="share-button"
+                            data-recipe-id="<?= $recipe['id'] ?>"
+                            data-recipe-name="<?= htmlspecialchars($recipe['recipe']) ?>"
+                            data-user-firstname="<?= htmlspecialchars($userFirstName) ?>">
                         <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
                             <circle cx="18" cy="5" r="3"></circle>
                             <circle cx="6" cy="12" r="3"></circle>
@@ -249,7 +257,8 @@ handleDeleteComment($isLoggedIn, $recipeController, $recipe_id);
                             <line x1="15.41" y1="6.51" x2="8.59" y2="10.49"></line>
                         </svg>
                     </button>
-<!-- Bookmark Form -->
+
+                    <!-- Bookmark Form -->
 <form action="actions/bookmark.php" method="POST" id="bookmark_form">
     <input type="hidden" name="recipe_id" value="<?= $recipe_id ?>">
     <button type="submit" class="<?= $isBookmarked ? 'text-green-600' : 'text-gray-500' ?> hover:text-gray-700" id="bookmark_button">
@@ -524,6 +533,23 @@ if ($commentsWithUserData):
                     editForm.classList.remove('hidden'); // Remove the 'hidden' class to show the form
                 });
             });
+        });
+    </script>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            const shareButton = document.getElementById('share-button');
+
+            if (shareButton) {
+                shareButton.addEventListener('click', function() {
+                    const recipeId = shareButton.getAttribute('data-recipe-id');
+                    const recipeName = shareButton.getAttribute('data-recipe-name');
+                    const userFirstName = shareButton.getAttribute('data-user-firstname');
+
+                    // Redirect to the social page with the query parameters
+                    window.location.href = `social.php?recipe_id=${recipeId}&recipe_name=${encodeURIComponent(recipeName)}&user_firstname=${encodeURIComponent(userFirstName)}`;
+                });
+            }
         });
     </script>
 </body>

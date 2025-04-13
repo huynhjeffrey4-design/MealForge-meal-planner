@@ -89,6 +89,18 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' &&
 }
 
 
+// For autofilling from recipe details page
+if (isset($_GET['recipe_id'], $_GET['recipe_name'], $_GET['user_firstname'])) {
+    $recipeId = $_GET['recipe_id'];
+    $recipeName = $_GET['recipe_name'];
+    $userFirstName = $_GET['user_firstname'];
+
+    // Create the post message dynamically
+    $postMessage = "{$userFirstName} just made {$recipeName}!";
+} else {
+    // Default message if no parameters are passed
+    $postMessage = "";
+}
 
 
 function handlePostSubmission($isLoggedIn, $postController)
@@ -189,7 +201,7 @@ $posts = $postController->getAllPosts();
 
     <!-- Upload Section (Only Visible to Logged-In Users) -->
     <?php if ($isLoggedIn): ?>
-        <div class="mb-8 bg-white p-4 rounded-lg shadow"> <!-- Reduced top padding -->
+        <div class="mb-8 bg-white p-4 rounded-lg shadow">
             <form action="social.php" method="POST" enctype="multipart/form-data">
                 <div class="flex items-center space-x-2 mb-4">
                     <h2 class="text-xl font-semibold">Share your meal:</h2>
@@ -198,12 +210,13 @@ $posts = $postController->getAllPosts();
                 </div>
                 <div class="flex space-x-4">
                     <!-- Post Description (Takes 2/3 of the width) -->
-                    <div class="flex-2 w-2/3"> <!-- 2/3 width for description -->
+                    <div class="flex-2 w-2/3">
                         <label for="description" class="block text-sm font-medium text-gray-700">Post Description</label>
-                        <textarea id="description" name="description" rows="2" class="w-full p-3 border border-gray-300 rounded-md" required></textarea> <!-- Doubled height -->
+                        <!-- Pre-fill the textarea with the dynamically created message -->
+                        <textarea id="description" name="description" rows="2" class="w-full p-3 border border-gray-300 rounded-md" required><?= htmlspecialchars($postMessage) ?></textarea>
                     </div>
                     <!-- Image File Upload (Takes 1/3 of the width) -->
-                    <div class="flex-1 w-1/3"> <!-- 1/3 width for image file input -->
+                    <div class="flex-1 w-1/3">
                         <label for="image" class="block text-sm font-medium text-gray-700">Upload Image</label>
                         <input type="file" id="image" name="image" accept="image/jpeg, image/png, image/gif" class="w-full p-2 border border-gray-300 rounded-md" required>
                     </div>
@@ -214,7 +227,7 @@ $posts = $postController->getAllPosts();
         <div class="mb-8 bg-green-50 p-6 rounded-lg border border-green-200">
             <p class="text-gray-700">
                 <a href="login.php" class="text-green-600 font-semibold">Log in</a> or 
-                <a href="signup.php" class="text-green-600 font-semibold">sign up</a> 
+                <a href="registration.php" class="text-green-600 font-semibold">sign up</a>
                 to share your own recipes and like posts!
             </p>
         </div>
