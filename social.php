@@ -96,7 +96,7 @@ if (isset($_GET['recipe_id'], $_GET['recipe_name'], $_GET['user_firstname'])) {
     $userFirstName = $_GET['user_firstname'];
 
     // Create the post message dynamically
-    $postMessage = "{$userFirstName} just made {$recipeName}!";
+    $postMessage = "I just made {$recipeName}!";
 } else {
     // Default message if no parameters are passed
     $postMessage = "";
@@ -193,7 +193,7 @@ $posts = $postController->getAllPosts();
             <?php if (!$isLoggedIn): ?>
                 <div>
                     <a href="login.php" class="bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded-md text-sm font-medium mr-2">Log in</a>
-                    <a href="signup.php" class="border border-green-600 text-green-600 hover:bg-green-50 px-4 py-2 rounded-md text-sm font-medium">Sign up</a>
+                    <a href="registration.php" class="border border-green-600 text-green-600 hover:bg-green-50 px-4 py-2 rounded-md text-sm font-medium">Sign up</a>
                 </div>
             <?php endif; ?>
         </div>

@@ -463,7 +463,7 @@ if ($commentsWithUserData):
                                     <p><strong><?= htmlspecialchars($commentUser->first_name) . ' ' . htmlspecialchars($commentUser->last_name) ?>:</strong>
                                         <span class="comment-body"><?= htmlspecialchars($comment['comment_body']) ?></span>
                                     </p>
-                                    <p class="text-sm text-gray-400"><?= $formattedDate ?>
+                                    <p> class="text-sm text-gray-400"><?= $formattedDate ?>
                                         <?php if ($isLoggedIn && $commentUser->id === $_SESSION['user']['id']): ?>
                                         <!-- Edit and Delete buttons -->
                                     <div class="flex space-x-2 mt-2">
