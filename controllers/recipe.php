@@ -39,6 +39,80 @@ class RecipeController
         }
     }
 
+    /**
+     * Get similar recipes based on embedding vector similarity
+     *
+     * @param int $recipeId ID of the recipe to find similar recipes for
+     * @param int $limit Maximum number of similar recipes to return
+     * @return array List of similar recipes sorted by similarity score
+     */
+    public function getSimilarRecipesByEmbedding($recipeId, $limit = 5): array
+    {
+        $recipeId = (int)$recipeId;
+        $limit = (int)$limit;
+
+        $similarRecipes = $this->recipeProvider->getSimilarRecipesByEmbedding($recipeId, $limit);
+
+        foreach ($similarRecipes as $key => $recipe) {
+            if (isset($recipe['tags'])) {
+                if (is_string($recipe['tags'])) {
+                    $tags = json_decode($recipe['tags'], true);
+
+                    if (json_last_error() === JSON_ERROR_NONE && is_array($tags)) {
+                        $indexedTags = array_values($tags);
+
+                        $associativeTags = array();
+                        foreach ($indexedTags as $tag) {
+                            $associativeTags[$tag] = true;
+                        }
+                        $similarRecipes[$key]['tags'] = $associativeTags;
+                    } else {
+                        $similarRecipes[$key]['tags'] = array();
+                    }
+                } elseif (is_array($recipe['tags'])) {
+                    if (isset($recipe['tags'][0])) {
+                        $associativeTags = array();
+                        foreach ($recipe['tags'] as $tag) {
+                            $associativeTags[$tag] = true;
+                        }
+                        $similarRecipes[$key]['tags'] = $associativeTags;
+                    }
+                } else {
+                    $similarRecipes[$key]['tags'] = array();
+                }
+            } else {
+                $similarRecipes[$key]['tags'] = array();
+            }
+
+            if (isset($recipe['recipe'])) {
+                $similarRecipes[$key]['recipe'] = sanitizeOutput($recipe['recipe']);
+            }
+            if (isset($recipe['description'])) {
+                $similarRecipes[$key]['description'] = sanitizeOutput($recipe['description']);
+            }
+            if (isset($recipe['dish_type'])) {
+                $similarRecipes[$key]['dish_type'] = sanitizeOutput($recipe['dish_type']);
+            }
+            if (isset($recipe['ingredients'])) {
+                $similarRecipes[$key]['ingredients'] = sanitizeOutput($recipe['ingredients']);
+            }
+            if (isset($recipe['instructions'])) {
+                $similarRecipes[$key]['instructions'] = sanitizeOutput($recipe['instructions']);
+            }
+            if (isset($recipe['difficulty'])) {
+                $similarRecipes[$key]['difficulty'] = sanitizeOutput($recipe['difficulty']);
+            }
+            if (isset($recipe['subcategory'])) {
+                $similarRecipes[$key]['subcategory'] = sanitizeOutput($recipe['subcategory']);
+            }
+            if (isset($recipe['meal_type'])) {
+                $similarRecipes[$key]['meal_type'] = sanitizeOutput($recipe['meal_type']);
+            }
+        }
+
+        return $similarRecipes;
+    }
+
     public function getCommentsForRecipe($recipeId): array
     {
         return $this->recipeProvider->getCommentsForRecipe($recipeId);
@@ -558,6 +632,15 @@ interface RecipeDataProvider
      */
     public function getAllRecipes(): array;
     public function getRecipeById($recipeId): array|null;
+
+    /**
+     * Get similar recipes based on embedding vector similarity using cosine similarity
+     *
+     * @param int $recipeId ID of the recipe to find similar recipes for
+     * @param int $limit Maximum number of similar recipes to return
+     * @return array List of similar recipes sorted by similarity score
+     */
+    public function getSimilarRecipesByEmbedding($recipeId, $limit = 5): array;
 }
 
 /**
@@ -587,6 +670,37 @@ class MockRecipeDataProvider implements RecipeDataProvider
         };
         $result = array_filter($this->recipes, $filterf);
         return $result ? reset($result) : null;
+    }
+
+    /**
+     * Mock implementation of getSimilarRecipesByEmbedding
+     * Since this is a mock provider, we'll just return random recipes
+     */
+    public function getSimilarRecipesByEmbedding($recipeId, $limit = 5): array
+    {
+        // Cast to integer to prevent SQL injection
+        $recipeId = (int)$recipeId;
+        $limit = (int)$limit;
+
+        // Get the recipe we're finding similar recipes for
+        $targetRecipe = $this->getRecipeById($recipeId);
+        if (!$targetRecipe) {
+            return [];
+        }
+
+        // Filter out the target recipe from the list
+        $otherRecipes = array_filter($this->recipes, function ($recipe) use ($recipeId) {
+            return $recipe['id'] != $recipeId;
+        });
+
+        // If we have fewer recipes than the limit, return all of them
+        if (count($otherRecipes) <= $limit) {
+            return array_values($otherRecipes);
+        }
+
+        // Otherwise, return a random selection
+        shuffle($otherRecipes);
+        return array_slice($otherRecipes, 0, $limit);
     }
 
     /**
@@ -716,6 +830,27 @@ class RedbeanRecipeDataProvider implements RecipeDataProvider
     {
         $dbConnection = DatabaseConnection::getInstance();
         $dbConnection->setup($config);
+    }
+
+    /**
+     * Get similar recipes based on embedding vector similarity using cosine similarity
+     *
+     * @param int $recipeId ID of the recipe to find similar recipes for
+     * @param int $limit Maximum number of similar recipes to return
+     * @return array List of similar recipes sorted by similarity score
+     */
+    public function getSimilarRecipesByEmbedding($recipeId, $limit = 5): array
+    {
+        $recipeId = (int)$recipeId;
+        $limit = (int)$limit;
+
+        $recipe = \R::load('recipes', $recipeId);
+
+        $query = generateCosineSimilarityQuery(json_decode($recipe['embedding']), $limit);
+
+        $similarRecipes = \R::getAll($query);
+
+        return $similarRecipes;
     }
 
     public function getAllRecipes(): array
@@ -877,4 +1012,48 @@ class RedbeanRecipeDataProvider implements RecipeDataProvider
         }
         return false; // Return failure if user is not the author
     }
+}
+
+/**
+ * Generate a MySQL query to find similar recipes by cosine similarity
+ *
+ * @param array $queryVector The query vector to compare against
+ * @param int $limit The number of similar recipes to return
+ * @return string The generated SQL query
+ */
+function generateCosineSimilarityQuery(array $queryVector, int $limit = 10): string
+{
+    $queryMagnitude = sqrt(array_sum(array_map(function ($x) {
+        return $x * $x;
+    }, $queryVector)));
+
+    $dotProductTerms = [];
+    foreach ($queryVector as $index => $value) {
+        if ($value != 0) { // Skip zeros for efficiency
+            $dotProductTerms[] = "JSON_EXTRACT(embedding, '$[$index]') * " . number_format($value, 8, '.', '');
+        }
+    }
+    $dotProductSQL = implode(' + ', $dotProductTerms);
+
+    $magnitudeTerms = [];
+    for ($i = 0; $i < count($queryVector); $i++) {
+        $magnitudeTerms[] = "POW(JSON_EXTRACT(embedding, '$[$i]'), 2)";
+    }
+    $magnitudeSQL = "SQRT(" . implode(' + ', $magnitudeTerms) . ")";
+
+    $query = "
+    SELECT 
+        id, 
+        (
+            ($dotProductSQL) / 
+            ($queryMagnitude * $magnitudeSQL)
+        ) AS similarity_score
+    FROM 
+        recipes
+    ORDER BY 
+        similarity_score DESC
+    LIMIT $limit;
+    ";
+
+    return $query;
 }
