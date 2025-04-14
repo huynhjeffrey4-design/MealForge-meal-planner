@@ -480,7 +480,7 @@ class RecipeController
         }
 
         // Retrieve all filtered recipes (without pagination)
-        $recipes = \R::getAll('SELECT * FROM recipes ' . $query, $params);
+        $recipes = \R::getAll('SELECT `id`, `meal_type`, `subcategory`, `recipe`, `description`, `dish_type`, `prep_time`, `cook_time`, `difficulty`, `ingredients`, `instructions`, `serves`, `total_time`, `tags`, `budget`, `imageURL`, `calories`, `protein` FROM recipes ' . $query, $params);
 
         // Remove duplicates from the entire list
         $recipes = $this->removeDuplicateRecipes($recipes);
