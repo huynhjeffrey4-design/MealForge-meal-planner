@@ -605,65 +605,6 @@ class RecipeController
 
         return $recipe;
     }
-
-    public function appendAutoTagsToRecipe($recipeId)
-    {
-        // 用 Provider 获取原始数据（array）
-        $recipe = $this->recipeProvider->getRecipeById($recipeId);
-
-        if ($recipe === null) {
-            return ['success' => false, 'message' => "Recipe ID $recipeId not found"];
-        }
-
-        // 原有标签处理（JSON 字符串或数组）
-        $existingTags = [];
-        if (!empty($recipe['tags'])) {
-            if (is_string($recipe['tags'])) {
-                $decoded = json_decode($recipe['tags'], true);
-                if (json_last_error() === JSON_ERROR_NONE && is_array($decoded)) {
-                    $existingTags = $decoded;
-                }
-            } elseif (is_array($recipe['tags'])) {
-                $existingTags = $recipe['tags'];
-            }
-        }
-
-        // 删除旧的健康标签
-        $mergedTags = array_filter(
-            $existingTags,
-            fn ($t) =>
-            $t !== "Healthy" &&
-            $t !== "Unhealthy" &&
-            !str_starts_with($t, "Calories:") &&
-            !str_starts_with($t, "Protein:")
-        );
-        $mergedTags = array_values($mergedTags);
-
-        // 基于 calories 和 protein的健康判断逻辑
-        $calories = (int)($recipe['calories'] ?? 0);
-        $protein = (int)($recipe['protein'] ?? 0);
-
-        // 添加数值标签
-        $mergedTags[] = "Calories: {$calories}";
-        $mergedTags[] = "Protein: {$protein}g";
-
-        if ($calories <= 500 && $protein >= 15) {
-            $mergedTags[] = "Healthy";
-        } else {
-            $mergedTags[] = "Unhealthy";
-        }
-
-        // RedBean 保存标签（获取 bean 对象）
-        $bean = \R::load('recipes', $recipeId);
-        $bean->tags = json_encode($mergedTags, JSON_UNESCAPED_UNICODE);
-        \R::store($bean);
-
-        return [
-            'success' => true,
-            'message' => "Updated recipe ID $recipeId",
-            'tags' => $mergedTags
-        ];
-    }
 }
 
 /**
