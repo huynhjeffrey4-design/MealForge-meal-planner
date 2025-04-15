@@ -107,8 +107,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['submit_step4'])) {
 if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['submit_recipe'])) {
     //  加在这里！调试后端收到的 POST 数据
     error_log("🔥 后端收到的 POST: " . print_r($_POST, true));
-   // $userId = $_POST['user_id'] ?? null;  //  从 POST 拿，而不是 SESSION
-   $userId = $_SESSION['user']['id'];
+    // $userId = $_POST['user_id'] ?? null;  //  从 POST 拿，而不是 SESSION
+    $userId = $_SESSION['user']['id'];
     if (!$userId) {
         die("❌ Please log in before adding a recipe!");
     }
