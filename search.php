@@ -2,6 +2,8 @@
 session_start();
 // Include the controller
 require_once __DIR__ .  '/controllers/recipe.php';
+$fromDashboard = isset($_GET['from']) && $_GET['from'] === 'dashboard';
+
 //
 // Get current page and perPage from the query parameters (default to 1 and 10 if not set)
 $page = isset($_GET['page']) ? (int)$_GET['page'] : 1;
@@ -140,6 +142,32 @@ $recipesCount = count($recipes);
             <?php if ($isModal): ?>
                 <input type="hidden" name="modal" value="true">
             <?php endif; ?>
+
+  
+            <?php if ($fromDashboard): ?>
+  <div class="flex justify-end mb-2">
+    <a href="add-recipe.php?from=search&day=<?= urlencode($_GET['day'] ?? '') ?>"
+       class="bg-green-500 hover:bg-green-600 text-white font-semibold py-2 px-4 rounded whitespace-nowrap">
+      + Create Your Own Recipe
+    </a>
+  </div>
+<?php endif; ?>
+        
+     <div class="relative mb-6">
+          <form action="" method="GET" id="search-form" class="relative">
+            <?php if ($isModal): ?>
+             <input type="hidden" name="modal" value="true">
+              <?php endif; ?>
+   
+
+
+    
+           <div class="absolute inset-y-0 left-0 flex items-center pl-3 pointer-events-none">
+              <i data-lucide="search" class="w-4 h-4 text-gray-400"></i>
+               </div>
+
+
+
 
             <input type="text" name="search" value="<?= htmlspecialchars($search ?? '') ?>"
                    class="bg-white text-gray-700 border-2 border rounded-lg pl-10 p-2.5 w-full"

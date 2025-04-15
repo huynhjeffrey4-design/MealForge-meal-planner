@@ -541,7 +541,11 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     button.addEventListener('click', function () {
         const day = this.dataset.day;
         currentDay = day;
-        openChooseModal(day);
+        const searchIframe = document.getElementById('search-iframe');
+   // searchIframe.src = `search.php?modal=true&day=${encodeURIComponent(day)}`;
+   searchIframe.src = `search.php?modal=true&day=${encodeURIComponent(currentDay)}&from=dashboard`;
+
+    document.getElementById('meal-modal').classList.remove('hidden');
     });
 });
 
@@ -822,31 +826,16 @@ safeInstructions.forEach(step => {
         });
 
         
-        function openChooseModal(day) {
-            currentDay = day;
-            document.getElementById("chooseAddMethodModal").classList.remove("hidden");
-        }
-
-        function closeChooseModal() {
-            document.getElementById("chooseAddMethodModal").classList.add("hidden");
-        }
+  
+    
 
         document.addEventListener("DOMContentLoaded", function() {
-    const chooseSearchBtn = document.getElementById("chooseSearchBtn");
-    const chooseCreateBtn = document.getElementById("chooseCreateBtn");
-    const mealModal = document.getElementById("meal-modal");
-    const searchIframe = document.getElementById("search-iframe");
-    const chooseAddMethodModal = document.getElementById("chooseAddMethodModal");
-
+      const chooseSearchBtn = document.getElementById("chooseSearchBtn");
+     const chooseCreateBtn = document.getElementById("chooseCreateBtn");
   
-    chooseSearchBtn.addEventListener("click", function () {
-        chooseAddMethodModal.classList.add("hidden");  
-        searchIframe.src = `search.php?modal=true&day=${encodeURIComponent(currentDay)}`;  
-        mealModal.classList.remove("hidden");  
-    });
 
-    chooseCreateBtn.addEventListener("click", function () {
-    chooseAddMethodModal.classList.add("hidden"); // 
+     chooseCreateBtn.addEventListener("click", function () {
+      chooseAddMethodModal.classList.add("hidden"); // 
     
     
     const iframe = document.getElementById("createRecipeIframe");
@@ -871,19 +860,15 @@ safeInstructions.forEach(step => {
 });
 
 
+  
+
+
 
 
     </script> 
+  
     
-   <!-- Choose Add Method Modal -->
-<div id="chooseAddMethodModal" class="fixed inset-0 bg-black bg-opacity-50 hidden z-50 flex items-center justify-center">
-  <div class="bg-white rounded-lg p-6 text-center shadow-xl w-80">
-    <h2 class="text-xl font-bold mb-4">How do you want to add a recipe?</h2>
-    <button id="chooseSearchBtn" class="bg-green-500 text-white w-full py-2 rounded mb-3">Search Recipes</button>
-    <button id="chooseCreateBtn" class="bg-blue-500 text-white w-full py-2 rounded">Create Your Own</button>
-    <button onclick="closeChooseModal()" class="text-gray-500 mt-3 text-sm underline">Cancel</button>
-  </div>
-</div> 
+
 <!-- Create Recipe Modal -->
 <div id="createRecipeModal" class="fixed inset-0 bg-black bg-opacity-50 hidden z-50 flex items-center justify-center p-4">
   <div class="bg-white rounded-lg w-full max-w-md h-[80vh] flex flex-col">
@@ -896,6 +881,35 @@ safeInstructions.forEach(step => {
     <iframe id="createRecipeIframe" class="w-full flex-1 border-0" src=""></iframe>
   </div>
 </div>
+<script>
+window.addEventListener('message', function (event) {
+  const data = event.data;
+  if (data.action === 'addMealSuccess') {
+    const day = data.day;
+    const recipe = data.recipe;
+
+    const card = document.querySelector(`[data-day="${day}"]`);
+    if (card) {
+      const image = card.querySelector('.meal-image');
+      const name = card.querySelector('.meal-name');
+      const icon = card.querySelector('.meal-icon');
+
+      if (image) image.src = recipe.image || 'static/images/default-recipe.jpg';
+      if (name) name.textContent = recipe.name || 'Unnamed Recipe';
+      if (icon) {
+        icon.textContent = '✔️';
+        icon.classList.remove('text-red-500');
+        icon.classList.add('text-green-500');
+      }
+
+      card.classList.add('meal-added');
+    }
+
+    const mealModal = document.getElementById('mealModal');
+    if (mealModal) mealModal.classList.add('hidden');
+  }
+});
+</script>
 
 
 </body>
