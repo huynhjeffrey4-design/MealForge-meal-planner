@@ -293,12 +293,20 @@ $recipesCount = count($recipes);
                     </div>
                 <?php else: ?>
                     <?php foreach ($recipes as $recipe): ?>
+                        <?php
+                            $hasHealthy = in_array("Healthy", $recipe['tags'] ?? []);
+                        $hasUnhealthy = in_array("Unhealthy", $recipe['tags'] ?? []);
+                        ?>
                         <a href="<?= $isModal ? '#' : 'recipe.php?id=' . htmlspecialchars($recipe['id']) ?>"
-                           class="block bg-white rounded-lg shadow overflow-hidden hover:shadow-md transition-shadow duration-200"
+                           class="relative block bg-white rounded-lg shadow overflow-hidden hover:shadow-md transition-shadow duration-200"
                             <?php if ($isModal): ?>
                                 onclick='addRecipeToMealPlan(<?= json_encode($recipe, JSON_HEX_TAG | JSON_HEX_APOS | JSON_HEX_QUOT | JSON_HEX_AMP) ?>)'
 
                             <?php endif; ?>>
+                            <!-- 健康标记圆圈 -->
+                            <?php if ($hasHealthy || $hasUnhealthy): ?>
+                                <div class="absolute top-2 right-2 w-4 h-4 rounded-full <?= $hasHealthy ? 'bg-green-500' : 'bg-red-500' ?>"></div>
+                            <?php endif; ?>
                             <?php if (!empty($recipe['image'])): ?>
                                 <div class="w-full">
                                     <img src="<?= htmlspecialchars($recipe['image']) ?>" alt="<?= htmlspecialchars($recipe['recipe']) ?>" class="w-full h-48 object-cover">
