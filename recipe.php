@@ -117,7 +117,7 @@ function handleDeleteComment($isLoggedIn, $recipeController, $recipe_id): void
 # For autofilling to social page
 $userFirstName = "Not Logged In";
 $isLoggedIn = isset($_SESSION['user']['id']);
-if ($isLoggedIn){
+if ($isLoggedIn) {
     $userId = $_SESSION['user']['id'];
     $user = getUserController()->getUserById($userId);
     $userFirstName = $user['first_name'];
