@@ -830,22 +830,29 @@ safeInstructions.forEach(step => {
     
 
         document.addEventListener("DOMContentLoaded", function() {
-      const chooseSearchBtn = document.getElementById("chooseSearchBtn");
-     const chooseCreateBtn = document.getElementById("chooseCreateBtn");
+        const chooseSearchBtn = document.getElementById("chooseSearchBtn");
+        const chooseCreateBtn = document.getElementById("chooseCreateBtn");
+        const mealModal = document.getElementById("meal-modal");
+        const searchIframe = document.getElementById("search-iframe");
+       // const chooseAddMethodModal = document.getElementById("chooseAddMethodModal");
+
   
 
      chooseCreateBtn.addEventListener("click", function () {
-      chooseAddMethodModal.classList.add("hidden"); // 
+    //  chooseAddMethodModal.classList.add("hidden"); // 
     
     
     const iframe = document.getElementById("createRecipeIframe");
     iframe.src = `add-recipe.php?from=dashboard&day=${encodeURIComponent(currentDay)}`;
      iframe.onload = () => {
         const userId = <?= json_encode($_SESSION['user']['id']) ?>;
+        setTimeout(() => {
         iframe.contentWindow.postMessage({
             type: "USER_ID",
             userId: userId
         }, "*");
+    }, 100);
+      
     };
 
     

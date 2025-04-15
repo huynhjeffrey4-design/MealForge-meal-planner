@@ -105,18 +105,18 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['submit_step4'])) {
 
 // Step 5 - Submit
 if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['submit_recipe'])) {
-    // ✅ 加在这里！调试后端收到的 POST 数据
+    //  加在这里！调试后端收到的 POST 数据
     error_log("🔥 后端收到的 POST: " . print_r($_POST, true));
-    $userId = $_POST['user_id'] ?? null;  // ✅ 从 POST 拿，而不是 SESSION
+    $userId = $_POST['user_id'] ?? null;  //  从 POST 拿，而不是 SESSION
     if (!$userId) {
-        die("❌ 请先登录再添加菜谱！");
+        die("❌ Please log in before adding a recipe!");
     }
-    $_SESSION['user_id'] = $userId; // ✅ 如果你想在 session 里也存一份（可选）
+    $_SESSION['user_id'] = $userId; //   如果你想在 session 里也存一份（可选）
     $draft = $_SESSION['draft_recipe'];
 
     $recipe = R::dispense('mealplan');  // 存到 meal_plan 表
 
-    $recipe->user_id = $userId; // 👈 就放在这里！先放 user id
+    $recipe->user_id = $userId; //  就放在这里！先放 user id
 
     $recipe->day = $day;  // 你可以记录是星期几的 meal plan
     $recipe->recipe = $draft['step1']['meal_name'];
@@ -338,7 +338,8 @@ window.addEventListener("message", (event) => {
         <img src="<?= $r['step4']['image'] ?>" alt="Preview of submitted recipe image" class="w-48 mt-4 rounded">
       <?php endif; ?>
 
-      <form method="POST" id="finalForm">
+      <form method="POST" id="finalForm" onsubmit="return injectUserId()">
+
         <input type="hidden" name="day" value="<?= htmlspecialchars($day) ?>">
         <input type="hidden" name="user_id" id="user_id_field"> 
         <button name="submit_recipe" class="bg-green-600 text-white px-4 py-2 rounded mt-4">Submit Recipe</button>
@@ -346,6 +347,22 @@ window.addEventListener("message", (event) => {
       <!--  Share Recipe Button -->
 <button id="shareButton" class="bg-yellow-500 text-white px-4 py-2 rounded mt-4 ml-2"> Share to the MealForge Community Feed</button>
 <span id="shareMessage" aria-live="polite" aria-live="polite" class="ml-4 text-green-600 hidden"> Shared successfully!</span>
+
+<script>
+function injectUserId() {
+  const uidInput = document.getElementById("user_id_field");
+  const userId = sessionStorage.getItem("user_id");
+
+  if (uidInput && userId) {
+    uidInput.value = userId;
+    return true; // 
+  } else {
+    alert("Please log in before submitting your recipe");
+    return false; // 
+  }
+}
+</script>
+
 
       <script>
   let shared = false;
