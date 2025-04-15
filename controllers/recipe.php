@@ -628,22 +628,15 @@ class RecipeController
             }
         }
 
-        // 营养标签生成
-        $newTags = $this->generateNutrientTags($recipe);
-        $mergedTags = array_values(array_unique(array_merge($existingTags, $newTags)));
-
-        $mergedTags = array_filter($mergedTags, fn ($t) => $t !== "Healthy" && $t !== "Unhealthy");
+        // 删除旧的健康标签
+        $mergedTags = array_filter($existingTags, fn ($t) => $t !== "Healthy" && $t !== "Unhealthy");
         $mergedTags = array_values($mergedTags);
 
-        // 判断 Healthy / Unhealthy
-        if (
-            in_array("Low Sugar", $mergedTags) &&
-            !in_array("High Fat", $mergedTags) &&
-            !in_array("High Sugar", $mergedTags) &&
-            !in_array("High Salt", $mergedTags) &&
-            !in_array("High Saturates", $mergedTags) &&
-            !in_array("Treat Only", $mergedTags)
-        ) {
+        // 基于 calories 和 protein的健康判断逻辑
+        $calories = (int)($recipe['calories'] ?? 0);
+        $protein = (int)($recipe['protein'] ?? 0);
+
+        if ($calories <= 500 && $protein >= 15) {
             $mergedTags[] = "Healthy";
         } else {
             $mergedTags[] = "Unhealthy";
@@ -660,55 +653,6 @@ class RecipeController
             'tags' => $mergedTags
         ];
     }
-
-    // 工具函数：生成标签
-    private function generateNutrientTags($r)
-    {
-        $tags = [];
-
-        $sugar = $this->parseNutrient($r['nutrients_sugars'] ?? '');
-        $fat = $this->parseNutrient($r['nutrients_fat'] ?? '');
-        $saturates = $this->parseNutrient($r['nutrients_saturates'] ?? '');
-        $salt = $this->parseNutrient($r['nutrients_salt'] ?? '');
-        $protein = $this->parseNutrient($r['nutrients_protein'] ?? '');
-        $fibre = $this->parseNutrient($r['nutrients_fibre'] ?? '');
-        $kcal = $this->parseNutrient($r['nutrients_kcal'] ?? '');
-
-        if ($sugar > 22) {
-            $tags[] = "High Sugar";
-        } elseif ($sugar > 0 && $sugar < 8) {
-            $tags[] = "Low Sugar";
-        }
-
-        if ($fat > 17) {
-            $tags[] = "High Fat";
-        }
-        if ($saturates > 5) {
-            $tags[] = "High Saturates";
-        }
-        if ($salt > 1.5) {
-            $tags[] = "High Salt";
-        }
-
-        if ($protein > 10) {
-            $tags[] = "High Protein";
-        }
-        if ($fibre > 5) {
-            $tags[] = "High Fiber";
-        }
-        if ($kcal > 700) {
-            $tags[] = "Treat Only";
-        }
-
-        return $tags;
-    }
-
-    // 工具函数：字符串去单位转数字
-    private function parseNutrient($value)
-    {
-        return is_numeric($value) ? floatval($value) : floatval(preg_replace('/[^0-9.]/', '', $value));
-    }
-
 }
 
 /**
