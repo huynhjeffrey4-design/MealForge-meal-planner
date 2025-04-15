@@ -12,6 +12,7 @@ echo json_encode([
 
 
 /*
+// function to Modify all recipes
 <?php
 require_once __DIR__ . '/../controllers/recipe.php';
 

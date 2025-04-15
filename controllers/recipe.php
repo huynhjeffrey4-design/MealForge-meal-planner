@@ -629,7 +629,9 @@ class RecipeController
         }
 
         // 删除旧的健康标签
-        $mergedTags = array_filter($existingTags, fn ($t) =>
+        $mergedTags = array_filter(
+            $existingTags,
+            fn ($t) =>
             $t !== "Healthy" &&
             $t !== "Unhealthy" &&
             !str_starts_with($t, "Calories:") &&
