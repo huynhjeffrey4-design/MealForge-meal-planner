@@ -114,8 +114,8 @@ $commonIngredients = [
         <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
             <?php foreach ($recipes as $recipe): ?>
                 <div class="bg-white rounded-lg shadow-md overflow-hidden">
-                    <?php if (!empty($recipe->imageURL)): ?>
-                        <img src="<?= htmlspecialchars($recipe->imageURL) ?>" alt="<?= htmlspecialchars($recipe->recipe) ?>" class="w-full h-48 object-cover">
+                    <?php if (!empty($recipe['imageURL'])): ?>
+                        <img src="<?= htmlspecialchars($recipe['imageURL']) ?>" alt="<?= htmlspecialchars($recipe['recipe']) ?>" class="w-full h-48 object-cover">
                     <?php else: ?>
                         <div class="w-full h-48 bg-gray-200 flex items-center justify-center">
                             <i data-lucide="utensils" class="w-12 h-12 text-gray-400"></i>
@@ -124,26 +124,26 @@ $commonIngredients = [
                     
                     <div class="p-4">
                         <div class="flex justify-between items-start mb-2">
-                            <h3 class="text-xl font-bold text-gray-800"><?= htmlspecialchars($recipe->recipe) ?></h3>
+                            <h3 class="text-xl font-bold text-gray-800"><?= htmlspecialchars($recipe['recipe']) ?></h3>
                             <span class="px-2 py-1 bg-green-100 text-green-800 rounded-full text-sm font-medium">
-                                <?= $matchPercentages[$recipe->id] ?>% match
+                                <?= $matchPercentages[$recipe['id']] ?>% match
                             </span>
                         </div>
                         
-                        <p class="text-gray-600 mb-4 line-clamp-3"><?= htmlspecialchars($recipe->description) ?></p>
+                        <p class="text-gray-600 mb-4 line-clamp-3"><?= htmlspecialchars($recipe['description']) ?></p>
                         
                         <div class="flex justify-between items-center mb-4">
                             <div class="flex items-center">
                                 <i data-lucide="clock" class="w-4 h-4 text-gray-500 mr-1"></i>
-                                <span class="text-sm text-gray-500"><?= $recipe->total_time ?> mins</span>
+                                <span class="text-sm text-gray-500"><?= $recipe['total_time'] ?> mins</span>
                             </div>
                             <div class="flex items-center">
                                 <i data-lucide="gauge" class="w-4 h-4 text-gray-500 mr-1"></i>
-                                <span class="text-sm text-gray-500"><?= htmlspecialchars($recipe->difficulty) ?></span>
+                                <span class="text-sm text-gray-500"><?= htmlspecialchars($recipe['difficulty']) ?></span>
                             </div>
                         </div>
                         
-                        <a href="recipe.php?id=<?= $recipe->id ?>" class="block w-full text-center px-4 py-2 bg-green-600 text-white font-medium rounded-lg hover:bg-green-700 transition-colors">
+                        <a href="recipe.php?id=<?= $recipe['id'] ?>" class="block w-full text-center px-4 py-2 bg-green-600 text-white font-medium rounded-lg hover:bg-green-700 transition-colors">
                             View Recipe
                         </a>
                     </div>
