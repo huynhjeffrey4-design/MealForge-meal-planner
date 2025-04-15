@@ -245,10 +245,8 @@ handleDeleteComment($isLoggedIn, $recipeController, $recipe_id);
                         </svg>
                     </button>
                     <!-- Share Icon -->
-                    <button class="text-gray-500 hover:text-gray-700" id="share-button"
-                            data-recipe-id="<?= $recipe['id'] ?>"
-                            data-recipe-name="<?= htmlspecialchars($recipe['recipe']) ?>"
-                            data-user-firstname="<?= htmlspecialchars($userFirstName) ?>">
+                    <a href="social.php?recipe_id=<?= $recipe['id'] ?>&recipe_name=<?= urlencode($recipe['recipe']) ?>&user_firstname=<?= urlencode($userFirstName) ?>"
+                       class="text-gray-500 hover:text-gray-700">
                         <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
                             <circle cx="18" cy="5" r="3"></circle>
                             <circle cx="6" cy="12" r="3"></circle>
@@ -256,7 +254,7 @@ handleDeleteComment($isLoggedIn, $recipeController, $recipe_id);
                             <line x1="8.59" y1="13.51" x2="15.42" y2="17.49"></line>
                             <line x1="15.41" y1="6.51" x2="8.59" y2="10.49"></line>
                         </svg>
-                    </button>
+                    </a>
 
                     <!-- Bookmark Form -->
 <form action="actions/bookmark.php" method="POST" id="bookmark_form">
@@ -536,21 +534,5 @@ if ($commentsWithUserData):
         });
     </script>
 
-    <script>
-        document.addEventListener('DOMContentLoaded', function() {
-            const shareButton = document.getElementById('share-button');
-
-            if (shareButton) {
-                shareButton.addEventListener('click', function() {
-                    const recipeId = shareButton.getAttribute('data-recipe-id');
-                    const recipeName = shareButton.getAttribute('data-recipe-name');
-                    const userFirstName = shareButton.getAttribute('data-user-firstname');
-
-                    // Redirect to the social page with the query parameters
-                    window.location.href = `social.php?recipe_id=${recipeId}&recipe_name=${encodeURIComponent(recipeName)}&user_firstname=${encodeURIComponent(userFirstName)}`;
-                });
-            }
-        });
-    </script>
 </body>
 </html>
