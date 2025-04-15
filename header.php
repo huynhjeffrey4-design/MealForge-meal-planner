@@ -57,6 +57,10 @@ if (!defined('HEADER_SCRIPT_RUN')) {
                         <i data-lucide="search" class="w-5 h-5 mr-1"></i>
                         Search Recipes
                     </a>
+                    <a href="<?= $basePath ?>ingredients.php" class="flex items-center text-gray-700 hover:text-green-600 transition-colors <?= $currentPage === 'ingredients.php' ? 'text-green-600 font-semibold' : '' ?>">
+    <i data-lucide="cube" class="w-5 h-5 mr-1"></i>
+    My Ingredients
+</a>
                     <a href="<?= $basePath ?>match.php" class="flex items-center text-gray-700 hover:text-green-600 transition-colors <?= $currentPage === 'match.php' ? 'text-green-600 font-semibold' : '' ?>">
                         <i data-lucide="heart-handshake" class="w-5 h-5 mr-1"></i>
                         Recipe Swiper
@@ -138,6 +142,10 @@ if (!defined('HEADER_SCRIPT_RUN')) {
                     <a href="<?= $basePath ?>search.php" class="block px-3 py-2 rounded-md <?= $currentPage === 'search.php' ? 'bg-green-100 text-green-600 font-medium' : 'text-gray-700 hover:bg-gray-100' ?>">
                         Search Recipes
                     </a>
+                    <a href="<?= $basePath ?>ingredients.php" class="flex items-center text-gray-700 hover:text-green-600 transition-colors <?= $currentPage === 'ingredients.php' ? 'text-green-600 font-semibold' : '' ?>">
+    <i data-lucide="cube" class="w-5 h-5 mr-1"></i>
+    My Ingredients
+</a>
                     <a href="<?= $basePath ?>match.php" class="block px-3 py-2 rounded-md <?= $currentPage === 'match.php' ? 'bg-green-100 text-green-600 font-medium' : 'text-gray-700 hover:bg-gray-100' ?>">
                         Recipe Swiper
                     </a>
