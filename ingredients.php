@@ -18,7 +18,7 @@ $matchPercentages = [];
 // Process form submission
 if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['ingredients']) && !empty($_POST['ingredients'])) {
     $selectedIngredients = $_POST['ingredients'];
-    
+
     // Get matching recipes
     $result = $recipeController->findRecipesByIngredients($selectedIngredients);
     $recipes = $result['recipes'];

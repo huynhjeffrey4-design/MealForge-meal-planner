@@ -38,51 +38,51 @@ class RecipeController
             $this->recipeProvider = $env == 'mock' ? new MockRecipeDataProvider() : new RedbeanRecipeDataProvider();
         }
     }
-public function findRecipesByIngredients(array $ingredientNames): array
-{
-    // Convert ingredient names to lowercase for case-insensitive matching
-    $ingredientNames = array_map('strtolower', $ingredientNames);
-    
-    // Get all recipes with their ingredients
-    $recipes = \R::findAll('recipes');
-    $matchingRecipes = [];
-    $matchPercentages = [];
-    
-    foreach ($recipes as $recipe) {
-        $recipeIngredients = array_map('trim', array_map('strtolower', explode(',', $recipe->ingredients)));
-        $matchCount = 0;
-        
-        // Count how many selected ingredients match this recipe
-        foreach ($ingredientNames as $ingredient) {
-            foreach ($recipeIngredients as $recipeIngredient) {
-                if (strpos($recipeIngredient, $ingredient) !== false) {
-                    $matchCount++;
-                    break; // Count each ingredient only once
+    public function findRecipesByIngredients(array $ingredientNames): array
+    {
+        // Convert ingredient names to lowercase for case-insensitive matching
+        $ingredientNames = array_map('strtolower', $ingredientNames);
+
+        // Get all recipes with their ingredients
+        $recipes = \R::findAll('recipes');
+        $matchingRecipes = [];
+        $matchPercentages = [];
+
+        foreach ($recipes as $recipe) {
+            $recipeIngredients = array_map('trim', array_map('strtolower', explode(',', $recipe->ingredients)));
+            $matchCount = 0;
+
+            // Count how many selected ingredients match this recipe
+            foreach ($ingredientNames as $ingredient) {
+                foreach ($recipeIngredients as $recipeIngredient) {
+                    if (strpos($recipeIngredient, $ingredient) !== false) {
+                        $matchCount++;
+                        break; // Count each ingredient only once
+                    }
                 }
             }
+
+            if ($matchCount > 0) {
+                // Calculate match percentage
+                $totalIngredientCount = count($recipeIngredients);
+                $percentage = round(($matchCount / $totalIngredientCount) * 100);
+
+                // Store the recipe and its match percentage
+                $matchingRecipes[] = $recipe;
+                $matchPercentages[$recipe->id] = $percentage;
+            }
         }
-        
-        if ($matchCount > 0) {
-            // Calculate match percentage
-            $totalIngredientCount = count($recipeIngredients);
-            $percentage = round(($matchCount / $totalIngredientCount) * 100);
-            
-            // Store the recipe and its match percentage
-            $matchingRecipes[] = $recipe;
-            $matchPercentages[$recipe->id] = $percentage;
-        }
+
+        // Sort by match percentage descending
+        usort($matchingRecipes, function ($a, $b) use ($matchPercentages) {
+            return $matchPercentages[$b->id] - $matchPercentages[$a->id];
+        });
+
+        return [
+            'recipes' => $matchingRecipes,
+            'matchPercentages' => $matchPercentages
+        ];
     }
-    
-    // Sort by match percentage descending
-    usort($matchingRecipes, function($a, $b) use ($matchPercentages) {
-        return $matchPercentages[$b->id] - $matchPercentages[$a->id];
-    });
-    
-    return [
-        'recipes' => $matchingRecipes,
-        'matchPercentages' => $matchPercentages
-    ];
-}
 
     /**
      * Get similar recipes based on embedding vector similarity
