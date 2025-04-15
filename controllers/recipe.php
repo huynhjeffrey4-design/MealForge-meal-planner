@@ -43,13 +43,15 @@ class RecipeController
         // Convert ingredient names to lowercase for case-insensitive matching
         $ingredientNames = array_map('strtolower', $ingredientNames);
 
-        // Get all recipes with their ingredients
-        $recipes = \R::findAll('recipes');
+        // Get all recipes with their ingredients, excluding the 'embedding' column
+        $recipes = \R::getAll('SELECT id, meal_type, subcategory, recipe, description, dish_type, prep_time, cook_time, difficulty, ingredients, instructions, serves, total_time, tags, budget, imageURL, calories, protein FROM recipes');
         $matchingRecipes = [];
         $matchPercentages = [];
 
         foreach ($recipes as $recipe) {
-            $recipeIngredients = array_map('trim', array_map('strtolower', explode(',', $recipe->ingredients)));
+            // Ensure ingredients is treated as a string before exploding
+            $ingredientsString = is_string($recipe['ingredients']) ? $recipe['ingredients'] : '';
+            $recipeIngredients = array_map('trim', array_map('strtolower', explode(',', $ingredientsString)));
             $matchCount = 0;
 
             // Count how many selected ingredients match this recipe
@@ -68,14 +70,15 @@ class RecipeController
                 $percentage = round(($matchCount / $totalIngredientCount) * 100);
 
                 // Store the recipe and its match percentage
-                $matchingRecipes[] = $recipe;
-                $matchPercentages[$recipe->id] = $percentage;
+                $matchingRecipes[] = $recipe; // Store the associative array
+                $matchPercentages[$recipe['id']] = $percentage;
             }
         }
 
         // Sort by match percentage descending
         usort($matchingRecipes, function ($a, $b) use ($matchPercentages) {
-            return $matchPercentages[$b->id] - $matchPercentages[$a->id];
+            // Use array access since $a and $b are arrays now
+            return $matchPercentages[$b['id']] - $matchPercentages[$a['id']];
         });
 
         return [
