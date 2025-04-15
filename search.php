@@ -172,7 +172,7 @@ $recipesCount = count($recipes);
                 </div>
                 <a href="?<?= $isModal ? 'modal=true' : '' ?>" class="text-sm text-red-500">Reset All</a>
             </div>
-
+            <a href="search.php?difficulty=Easy" class="hover:text-primary">Easy Recipes</a>
             <form action="" method="GET" class="space-y-6" id="filter-form">
                 <?php if ($isModal): ?>
                     <input type="hidden" name="modal" value="true">
