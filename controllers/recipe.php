@@ -1048,9 +1048,11 @@ function generateCosineSimilarityQuery(array $queryVector, int $limit = 10): str
             ($dotProductSQL) / 
             ($queryMagnitude * $magnitudeSQL)
         ) AS similarity_score
-    FROM 
+    FROM
         recipes
-    ORDER BY 
+    WHERE
+        embedding IS NOT NULL 
+    ORDER BY
         similarity_score DESC
     LIMIT $limit;
     ";

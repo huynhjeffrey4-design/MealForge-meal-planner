@@ -2,8 +2,10 @@
 
 DB_HOST="127.0.0.1"
 DUMP_FILE="tests/Support/Data/dump.sql"
+DB_DATABASE="cse442_2025_spring_team_v_db"
+DB_USERNAME="root"
+DB_PASSWORD="password"
 
-source .env
 
 echo "Resetting database..."
 
