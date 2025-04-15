@@ -629,12 +629,21 @@ class RecipeController
         }
 
         // 删除旧的健康标签
-        $mergedTags = array_filter($existingTags, fn ($t) => $t !== "Healthy" && $t !== "Unhealthy");
+        $mergedTags = array_filter($existingTags, fn ($t) =>
+            $t !== "Healthy" &&
+            $t !== "Unhealthy" &&
+            !str_starts_with($t, "Calories:") &&
+            !str_starts_with($t, "Protein:")
+        );
         $mergedTags = array_values($mergedTags);
 
         // 基于 calories 和 protein的健康判断逻辑
         $calories = (int)($recipe['calories'] ?? 0);
         $protein = (int)($recipe['protein'] ?? 0);
+
+        // 添加数值标签
+        $mergedTags[] = "Calories: {$calories}";
+        $mergedTags[] = "Protein: {$protein}g";
 
         if ($calories <= 500 && $protein >= 15) {
             $mergedTags[] = "Healthy";
