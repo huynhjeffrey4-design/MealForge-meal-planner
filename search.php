@@ -172,16 +172,20 @@ $recipesCount = count($recipes);
                 </div>
                 <a href="?<?= $isModal ? 'modal=true' : '' ?>" class="text-sm text-red-500">Reset All</a>
             </div>
-
+            <a href="search.php?difficulty=Easy" class="hover:text-primary">Easy Recipes</a>
             <form action="" method="GET" class="space-y-6" id="filter-form">
                 <?php if ($isModal): ?>
                     <input type="hidden" name="modal" value="true">
                 <?php endif; ?>
+                <?php if (isset($_GET['day'])): ?>
+                <input type="hidden" name="day" value="<?= htmlspecialchars($_GET['day']) ?>">
+                <?php endif; ?>
+
 
                 <?php if ($search): ?>
                     <input type="hidden" name="search" value="<?= htmlspecialchars($search) ?>">
                 <?php endif; ?>
-                <a href="search.php?difficulty=Easy" class="hover:text-primary">Easy Recipes</a>
+
                 <!-- Dietary Preferences -->
                 <div class="border-b pb-4">
                     <div class="flex justify-between items-center mb-2 cursor-pointer" onclick="toggleSection('dietary')">
@@ -289,11 +293,20 @@ $recipesCount = count($recipes);
                     </div>
                 <?php else: ?>
                     <?php foreach ($recipes as $recipe): ?>
+                        <?php
+                            $hasHealthy = in_array("Healthy", $recipe['tags'] ?? []);
+                        $hasUnhealthy = in_array("Unhealthy", $recipe['tags'] ?? []);
+                        ?>
                         <a href="<?= $isModal ? '#' : 'recipe.php?id=' . htmlspecialchars($recipe['id']) ?>"
-                           class="block bg-white rounded-lg shadow overflow-hidden hover:shadow-md transition-shadow duration-200"
+                           class="relative block bg-white rounded-lg shadow overflow-hidden hover:shadow-md transition-shadow duration-200"
                             <?php if ($isModal): ?>
-                                onclick="addRecipeToMealPlan(<?= htmlspecialchars(json_encode($recipe)) ?>)"
+                                onclick='addRecipeToMealPlan(<?= json_encode($recipe, JSON_HEX_TAG | JSON_HEX_APOS | JSON_HEX_QUOT | JSON_HEX_AMP) ?>)'
+
                             <?php endif; ?>>
+                            <!-- 健康标记圆圈 -->
+                            <?php if ($hasHealthy || $hasUnhealthy): ?>
+                                <div class="absolute top-2 right-2 w-4 h-4 rounded-full <?= $hasHealthy ? 'bg-green-500' : 'bg-red-500' ?>"></div>
+                            <?php endif; ?>
                             <?php if (!empty($recipe['image'])): ?>
                                 <div class="w-full">
                                     <img src="<?= htmlspecialchars($recipe['image']) ?>" alt="<?= htmlspecialchars($recipe['recipe']) ?>" class="w-full h-48 object-cover">
@@ -362,17 +375,36 @@ $recipesCount = count($recipes);
     <script>
         // Function to add recipe to meal plan
         function addRecipeToMealPlan(recipe) {
-            // Get the day from URL parameters
-            const urlParams = new URLSearchParams(window.location.search);
-            const day = urlParams.get('day');
+  const urlParams = new URLSearchParams(window.location.search);
+  const day = urlParams.get('day');
 
-            // Send message to parent window
-            window.parent.postMessage({
-                action: 'addRecipe',
-                day: day,
-                recipe: recipe
-            }, '*');
-        }
+
+  fetch('saveSearchRecipe.php', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ day: day, recipe: recipe })
+  })
+  .then(res => res.json())
+  .then(data => {
+    if (data.success) {
+
+      window.parent.postMessage({
+        action: 'addMeal',
+        day: day,
+        recipe: data.recipe
+      }, '*');
+
+      window.location.href = 'about:blank';
+    } else {
+      alert(" Failed to save: " + data.message);
+    }
+  })
+  .catch(err => {
+    console.error("🔥 Error:", err);
+    alert(" Save failed due to network error.");
+  });
+}
+
     </script>
 <?php endif; ?>
 
