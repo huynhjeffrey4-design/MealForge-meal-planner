@@ -38,6 +38,54 @@ class RecipeController
             $this->recipeProvider = $env == 'mock' ? new MockRecipeDataProvider() : new RedbeanRecipeDataProvider();
         }
     }
+    public function findRecipesByIngredients(array $ingredientNames): array
+    {
+        // Convert ingredient names to lowercase for case-insensitive matching
+        $ingredientNames = array_map('strtolower', $ingredientNames);
+
+        // Get all recipes with their ingredients, excluding the 'embedding' column
+        $recipes = \R::getAll('SELECT id, meal_type, subcategory, recipe, description, dish_type, prep_time, cook_time, difficulty, ingredients, instructions, serves, total_time, tags, budget, imageURL, calories, protein FROM recipes');
+        $matchingRecipes = [];
+        $matchPercentages = [];
+
+        foreach ($recipes as $recipe) {
+            // Ensure ingredients is treated as a string before exploding
+            $ingredientsString = is_string($recipe['ingredients']) ? $recipe['ingredients'] : '';
+            $recipeIngredients = array_map('trim', array_map('strtolower', explode(',', $ingredientsString)));
+            $matchCount = 0;
+
+            // Count how many selected ingredients match this recipe
+            foreach ($ingredientNames as $ingredient) {
+                foreach ($recipeIngredients as $recipeIngredient) {
+                    if (strpos($recipeIngredient, $ingredient) !== false) {
+                        $matchCount++;
+                        break; // Count each ingredient only once
+                    }
+                }
+            }
+
+            if ($matchCount > 0) {
+                // Calculate match percentage
+                $totalIngredientCount = count($recipeIngredients);
+                $percentage = round(($matchCount / $totalIngredientCount) * 100);
+
+                // Store the recipe and its match percentage
+                $matchingRecipes[] = $recipe; // Store the associative array
+                $matchPercentages[$recipe['id']] = $percentage;
+            }
+        }
+
+        // Sort by match percentage descending
+        usort($matchingRecipes, function ($a, $b) use ($matchPercentages) {
+            // Use array access since $a and $b are arrays now
+            return $matchPercentages[$b['id']] - $matchPercentages[$a['id']];
+        });
+
+        return [
+            'recipes' => $matchingRecipes,
+            'matchPercentages' => $matchPercentages
+        ];
+    }
 
     /**
      * Get similar recipes based on embedding vector similarity
