@@ -64,6 +64,12 @@ final class RecipeCest
         $I->see("I just made Panuozzo sandwich!");
     }
 
+    public function recipeShowsRecommendations(AcceptanceTester $I)
+    {
+        $I->amOnPage('/recipe.php?id=1');
+        $I->see('More like this');
+    }
+
     /**
      * Test that a non-existent recipe shows a "Recipe Not Found" message
      */

@@ -98,13 +98,36 @@ class RecipeController
     {
         $recipeId = (int)$recipeId;
         $limit = (int)$limit;
+        $fetchLimit = $limit * 3;
 
-        $similarRecipes = $this->recipeProvider->getSimilarRecipesByEmbedding($recipeId, $limit);
+        $rawSimilarRecipes = $this->recipeProvider->getSimilarRecipesByEmbedding($recipeId, $fetchLimit);
 
-        foreach ($similarRecipes as $key => $recipe) {
-            if (isset($recipe['tags'])) {
-                if (is_string($recipe['tags'])) {
-                    $tags = json_decode($recipe['tags'], true);
+        $filteredRecipes = [];
+        $seenIds = [];
+        foreach ($rawSimilarRecipes as $recipe) {
+            if (isset($recipe['id'])) {
+                $currentRecipeId = $recipe['id'];
+                if ($currentRecipeId != $recipeId && !isset($seenIds[$currentRecipeId])) {
+                    $filteredRecipes[] = $recipe;
+                    $seenIds[$currentRecipeId] = true;
+                }
+            }
+        }
+
+        if (count($filteredRecipes) > $limit) {
+            shuffle($filteredRecipes);
+            $finalRecipeSelection = array_slice($filteredRecipes, 0, $limit); // Take the first $limit recipes
+        } else {
+            $finalRecipeSelection = $filteredRecipes;
+        }
+
+        $processedRecipes = [];
+        foreach ($finalRecipeSelection as $recipe) {
+            $processedRecipe = $recipe;
+
+            if (isset($processedRecipe['tags'])) {
+                if (is_string($processedRecipe['tags'])) {
+                    $tags = json_decode($processedRecipe['tags'], true);
 
                     if (json_last_error() === JSON_ERROR_NONE && is_array($tags)) {
                         $indexedTags = array_values($tags);
@@ -113,52 +136,54 @@ class RecipeController
                         foreach ($indexedTags as $tag) {
                             $associativeTags[$tag] = true;
                         }
-                        $similarRecipes[$key]['tags'] = $associativeTags;
+                        $processedRecipe['tags'] = $associativeTags;
                     } else {
-                        $similarRecipes[$key]['tags'] = array();
+                        $processedRecipe['tags'] = $tags;
                     }
-                } elseif (is_array($recipe['tags'])) {
-                    if (isset($recipe['tags'][0])) {
+                } elseif (is_array($processedRecipe['tags'])) {
+                    if (isset($processedRecipe['tags'][0])) { // Check if indexed
                         $associativeTags = array();
-                        foreach ($recipe['tags'] as $tag) {
+                        foreach ($processedRecipe['tags'] as $tag) {
                             $associativeTags[$tag] = true;
                         }
-                        $similarRecipes[$key]['tags'] = $associativeTags;
+                        $processedRecipe['tags'] = $associativeTags;
                     }
                 } else {
-                    $similarRecipes[$key]['tags'] = array();
+                    $processedRecipe['tags'] = array();
                 }
             } else {
-                $similarRecipes[$key]['tags'] = array();
+                $processedRecipe['tags'] = array();
             }
 
-            if (isset($recipe['recipe'])) {
-                $similarRecipes[$key]['recipe'] = sanitizeOutput($recipe['recipe']);
+            if (isset($processedRecipe['recipe'])) {
+                $processedRecipe['recipe'] = sanitizeOutput($processedRecipe['recipe']);
             }
-            if (isset($recipe['description'])) {
-                $similarRecipes[$key]['description'] = sanitizeOutput($recipe['description']);
+            if (isset($processedRecipe['description'])) {
+                $processedRecipe['description'] = sanitizeOutput($processedRecipe['description']);
             }
-            if (isset($recipe['dish_type'])) {
-                $similarRecipes[$key]['dish_type'] = sanitizeOutput($recipe['dish_type']);
+            if (isset($processedRecipe['dish_type'])) {
+                $processedRecipe['dish_type'] = sanitizeOutput($processedRecipe['dish_type']);
             }
-            if (isset($recipe['ingredients'])) {
-                $similarRecipes[$key]['ingredients'] = sanitizeOutput($recipe['ingredients']);
+            if (isset($processedRecipe['ingredients'])) {
+                $processedRecipe['ingredients'] = sanitizeOutput($processedRecipe['ingredients']);
             }
-            if (isset($recipe['instructions'])) {
-                $similarRecipes[$key]['instructions'] = sanitizeOutput($recipe['instructions']);
+            if (isset($processedRecipe['instructions'])) {
+                $processedRecipe['instructions'] = sanitizeOutput($processedRecipe['instructions']);
             }
-            if (isset($recipe['difficulty'])) {
-                $similarRecipes[$key]['difficulty'] = sanitizeOutput($recipe['difficulty']);
+            if (isset($processedRecipe['difficulty'])) {
+                $processedRecipe['difficulty'] = sanitizeOutput($processedRecipe['difficulty']);
             }
-            if (isset($recipe['subcategory'])) {
-                $similarRecipes[$key]['subcategory'] = sanitizeOutput($recipe['subcategory']);
+            if (isset($processedRecipe['subcategory'])) {
+                $processedRecipe['subcategory'] = sanitizeOutput($processedRecipe['subcategory']);
             }
-            if (isset($recipe['meal_type'])) {
-                $similarRecipes[$key]['meal_type'] = sanitizeOutput($recipe['meal_type']);
+            if (isset($processedRecipe['meal_type'])) {
+                $processedRecipe['meal_type'] = sanitizeOutput($processedRecipe['meal_type']);
             }
+
+            $processedRecipes[] = $processedRecipe;
         }
 
-        return $similarRecipes;
+        return $processedRecipes;
     }
 
     public function getCommentsForRecipe($recipeId): array
