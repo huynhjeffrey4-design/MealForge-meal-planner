@@ -147,10 +147,10 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['submit_recipe'])) {
 }
 ?>
 <!DOCTYPE html>
-<html lang="en">
+<html lang="en" lang="en" lang="en">
 <head>
   <meta charset="UTF-8">
-  <title>Add Recipe</title>
+  <title>Add a New Recipe - MealForge</title>
   <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
 </head>
 <body class="bg-green-50 p-6">
@@ -160,19 +160,33 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['submit_recipe'])) {
       <form method="POST">
         <input type="hidden" name="day" value="<?= htmlspecialchars($day) ?>">
         <input type="hidden" name="user_id" id="user_id_field"> <!-- ✅ 加在这里！ -->
-        <input name="meal_name" placeholder="Meal Name" class="w-full border p-2 mb-2" required>
-        <textarea name="description" placeholder="Description" class="w-full border p-2 mb-2" required></textarea>
-        <input name="prep_time" type="number" placeholder="Prep Time (min)" class="w-full border p-2 mb-2" required>
-        <input name="cook_time" type="number" placeholder="Cook Time (min)" class="w-full border p-2 mb-2" required>
-        <select name="difficulty" class="w-full border p-2 mb-2" required>
+        <label for="meal_name" class="sr-only">Meal Name</label>
+<label for="meal_name" class="sr-only">Meal Name</label>
+<input id="meal_name" id="meal_name" name="meal_name" placeholder="Meal Name" class="w-full border p-2 mb-2" required>
+        <label for="description" class="sr-only">Description</label>
+<label for="description" class="sr-only">Description</label>
+<textarea id="description" id="description" name="description" placeholder="Description" class="w-full border p-2 mb-2" required></textarea>
+        <label for="prep_time" class="sr-only">Prep Time</label>
+<label for="prep_time" class="sr-only">Prep Time</label>
+<input id="prep_time" id="prep_time" name="prep_time" type="number" placeholder="Prep Time (min)" class="w-full border p-2 mb-2" required>
+        <label for="cook_time" class="sr-only">Cook Time</label>
+<label for="cook_time" class="sr-only">Cook Time</label>
+<input id="cook_time" id="cook_time" name="cook_time" type="number" placeholder="Cook Time (min)" class="w-full border p-2 mb-2" required>
+        <label for="difficulty" class="sr-only">Difficulty</label>
+<label for="difficulty" class="sr-only">Difficulty</label>
+<select id="difficulty" id="difficulty" name="difficulty" class="w-full border p-2 mb-2" required>
           <option>Easy</option><option>Medium</option><option>Hard</option>
         </select>
-        <input name="servings" type="number" placeholder="Servings" class="w-full border p-2 mb-2" required>
-        <select name="meal_type" class="w-full border p-2 mb-4" required>
+        <label for="servings" class="sr-only">Servings</label>
+<label for="servings" class="sr-only">Servings</label>
+<input id="servings" id="servings" name="servings" type="number" placeholder="Servings" class="w-full border p-2 mb-2" required>
+        <label for="meal_type" class="sr-only">Meal Type</label>
+<label for="meal_type" class="sr-only">Meal Type</label>
+<select id="meal_type" id="meal_type" name="meal_type" class="w-full border p-2 mb-4" required>
           <option>Breakfast</option><option>Lunch</option><option>Dinner</option><option>Snack</option><option>Dessert</option>
         </select>
         <div class="flex justify-end">
-  <button name="submit_step1" class="bg-blue-600 text-white px-4 py-2 rounded">Next -></button>
+  <button name="submit_step1" class="bg-blue-600 text-white px-4 py-2 rounded">Next Step</button>
 </div>
       </form>
       <script>
@@ -206,21 +220,27 @@ window.addEventListener("message", (event) => {
     <?php elseif ($step == 2): ?>
 
       <h2 class="text-2xl font-bold mb-4">Step 2: Ingredients</h2>
-      <a href="?step=1&day=<?= urlencode($day) ?>" class="text-sm text-blue-500 hover:underline mb-4 inline-block"><- Back</a>
+      <a href="?step=1&day=<?= urlencode($day) ?>" class="text-sm text-blue-500 hover:underline mb-4 inline-block">Previous Step</a>
   <form method="POST" class="space-y-4">
     <input type="hidden" name="day" value="<?= htmlspecialchars($day) ?>">
 
     <div class="grid grid-cols-3 gap-2">
-      <input name="ingredient_name" placeholder="Name" class="border p-2 rounded w-full" required>
-      <input name="ingredient_qty" type="number" placeholder="Qty" class="border p-2 rounded w-full" required>
-      <input name="ingredient_unit" placeholder="Unit" class="border p-2 rounded w-full" required>
+      <label for="ingredient_name" class="sr-only">Ingredient Name</label>
+<label for="ingredient_name" class="sr-only">Ingredient Name</label>
+<input id="ingredient_name" id="ingredient_name" name="ingredient_name" placeholder="Name" class="border p-2 rounded w-full" required>
+      <label for="ingredient_qty" class="sr-only">Quantity</label>
+<label for="ingredient_qty" class="sr-only">Quantity</label>
+<input id="ingredient_qty" id="ingredient_qty" name="ingredient_qty" type="number" placeholder="Qty" class="border p-2 rounded w-full" required>
+      <label for="ingredient_unit" class="sr-only">Unit</label>
+<label for="ingredient_unit" class="sr-only">Unit</label>
+<input id="ingredient_unit" id="ingredient_unit" name="ingredient_unit" placeholder="Unit" class="border p-2 rounded w-full" required>
     </div>
 
 
 <div class="grid grid-cols-2 gap-2">
   <button name="add_ingredient" class="bg-green-600 text-white px-4 py-2 rounded w-full">+ Add Ingredient</button>
 
-  <a href="?step=3&day=<?= urlencode($day) ?>" class="w-full bg-blue-600 text-white px-4 py-2 rounded text-center flex items-center justify-center">Next -></a>
+  <a href="?step=3&day=<?= urlencode($day) ?>" class="w-full bg-blue-600 text-white px-4 py-2 rounded text-center flex items-center justify-center">Next Step</a>
 </div>
 
 
@@ -237,7 +257,7 @@ window.addEventListener("message", (event) => {
 
         <form method="POST" class="inline ml-2">
           <input type="hidden" name="delete_ingredient" value="<?= $i ?>">
-          <button class="text-red-500 hover:text-red-700">❌</button>
+          <button aria-label="Delete item">❌</button>
         </form>
       </li>
         <?php endforeach; ?>
@@ -246,14 +266,16 @@ window.addEventListener("message", (event) => {
 
       <?php elseif ($step == 3): ?>
       <h2 class="text-2xl font-bold mb-4">Step 3: Instructions</h2>
-<a href="?step=2&day=<?= urlencode($day) ?>" class="text-sm text-blue-500 hover:underline mb-4 inline-block"> <- Back</a>
+<a href="?step=2&day=<?= urlencode($day) ?>" class="text-sm text-blue-500 hover:underline mb-4 inline-block"> Previous Step</a>
 <form method="POST" class="mb-4">
   <input type="hidden" name="day" value="<?= htmlspecialchars($day) ?>">
-  <textarea name="instruction_text" class="w-full border p-2 mb-2" required></textarea>
+  <label for="instruction_text" class="sr-only">Instruction Text</label>
+<label for="instruction_text" class="sr-only">Instruction Text</label>
+<textarea id="instruction_text" id="instruction_text" name="instruction_text" class="w-full border p-2 mb-2" required></textarea>
   
   <div class="flex gap-2">
     <button name="add_instruction" class="w-1/2 bg-green-600 text-white px-4 py-2 rounded text-center">+ Add Step</button>
-    <a href="?step=4&day=<?= urlencode($day) ?>" class="w-1/2 bg-blue-600 text-white px-4 py-2 rounded text-center flex items-center justify-center">Next -></a>
+    <a href="?step=4&day=<?= urlencode($day) ?>" class="w-1/2 bg-blue-600 text-white px-4 py-2 rounded text-center flex items-center justify-center">Next Step</a>
   </div>
 </form>
       <ol class="list-decimal list-inside mb-4">
@@ -261,7 +283,7 @@ window.addEventListener("message", (event) => {
           <li><?= htmlspecialchars($inst) ?>
             <form method="POST" class="inline">
               <input type="hidden" name="delete_instruction" value="<?= $i ?>">
-              <button class="text-red-500  hover:text-red-700">❌</button>
+              <button aria-label="Delete item">❌</button>
             </form>
           </li>
         <?php endforeach; ?>
@@ -270,17 +292,27 @@ window.addEventListener("message", (event) => {
 
     <?php elseif ($step == 4): ?>
       <h2 class="text-2xl font-bold mb-4">Step 4: Tags, Image & Nutrition</h2>
-      <a href="?step=3&day=<?= urlencode($day) ?>" class="text-sm text-blue-500 hover:underline mb-4 inline-block"><- Back</a>
+      <a href="?step=3&day=<?= urlencode($day) ?>" class="text-sm text-blue-500 hover:underline mb-4 inline-block">Previous Step</a>
       <form method="POST" enctype="multipart/form-data">
         <input type="hidden" name="day" value="<?= htmlspecialchars($day) ?>">
-        <input name="tags" placeholder="Tags (comma separated)" class="w-full border p-2 mb-2" required>
+        <label for="tags" class="sr-only">Tags</label>
+<label for="tags" class="sr-only">Tags</label>
+<input id="tags" id="tags" name="tags" placeholder="Tags (comma separated)" class="w-full border p-2 mb-2" required>
         <input type="file" name="image" accept="image/*" class="mb-2">
-        <input name="calories" type="number" placeholder="Calories" class="w-full border p-2 mb-2">
-        <input name="protein" type="number" placeholder="Protein" class="w-full border p-2 mb-2">
-        <input name="carbs" type="number" placeholder="Carbs" class="w-full border p-2 mb-2">
-        <input name="fat" type="number" placeholder="Fat" class="w-full border p-2 mb-4">
+        <label for="calories" class="sr-only">Calories</label>
+<label for="calories" class="sr-only">Calories</label>
+<input id="calories" id="calories" name="calories" type="number" placeholder="Calories" class="w-full border p-2 mb-2">
+        <label for="protein" class="sr-only">Protein</label>
+<label for="protein" class="sr-only">Protein</label>
+<input id="protein" id="protein" name="protein" type="number" placeholder="Protein" class="w-full border p-2 mb-2">
+        <label for="carbs" class="sr-only">Carbohydrates</label>
+<label for="carbs" class="sr-only">Carbohydrates</label>
+<input id="carbs" id="carbs" name="carbs" type="number" placeholder="Carbs" class="w-full border p-2 mb-2">
+        <label for="fat" class="sr-only">Fat</label>
+<label for="fat" class="sr-only">Fat</label>
+<input id="fat" id="fat" name="fat" type="number" placeholder="Fat" class="w-full border p-2 mb-4">
         <div class="flex justify-end">
-         <button name="submit_step4" class="bg-blue-600 text-white px-4 py-2 rounded">Next -></button>
+         <button name="submit_step4" class="bg-blue-600 text-white px-4 py-2 rounded">Next Step</button>
        </div>
       </form>
 
@@ -303,7 +335,7 @@ window.addEventListener("message", (event) => {
       <p>Tags: <?= implode(', ', $r['step4']['tags']) ?></p>
       <p>Nutrition: <?= $r['step4']['calories'] ?> cal, <?= $r['step4']['protein'] ?>g protein, <?= $r['step4']['carbs'] ?>g carbs, <?= $r['step4']['fat'] ?>g fat</p>
       <?php if (!empty($r['step4']['image'])): ?>
-        <img src="<?= $r['step4']['image'] ?>" class="w-48 mt-4 rounded">
+        <img src="<?= $r['step4']['image'] ?>" alt="Preview of submitted recipe image" class="w-48 mt-4 rounded">
       <?php endif; ?>
 
       <form method="POST" id="finalForm">
@@ -313,7 +345,7 @@ window.addEventListener("message", (event) => {
       </form>
       <!--  Share Recipe Button -->
 <button id="shareButton" class="bg-yellow-500 text-white px-4 py-2 rounded mt-4 ml-2"> Share to the MealForge Community Feed</button>
-<span id="shareMessage" class="ml-4 text-green-600 hidden"> Shared successfully!</span>
+<span id="shareMessage" aria-live="polite" aria-live="polite" class="ml-4 text-green-600 hidden"> Shared successfully!</span>
 
       <script>
   let shared = false;
