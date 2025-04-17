@@ -114,6 +114,10 @@ class RecipeController
             }
         }
 
+        foreach ($filteredRecipes as $key => $recipe) {
+            $filteredRecipes[$key] = $this->getRecipeById($filteredRecipes[$key]["id"]);
+        }
+
         if (count($filteredRecipes) > $limit) {
             shuffle($filteredRecipes);
             $finalRecipeSelection = array_slice($filteredRecipes, 0, $limit); // Take the first $limit recipes
