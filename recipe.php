@@ -35,6 +35,12 @@ if (!$recipeNotFound) {
     }
 
     $ratingInfo = generateRating();
+
+    // Fetch similar recipes
+    $similarRecipes = [];
+    if ($recipe_id) {
+        $similarRecipes = $recipeController->getSimilarRecipesByEmbedding($recipe_id, 5); // Get up to 5 similar recipes
+    }
 }
 
 
@@ -454,9 +460,41 @@ handleDeleteComment($isLoggedIn, $recipeController, $recipe_id);
                 </ol>
             </div>
 
+            <!-- Similar Recipes Section -->
+            <?php if (!empty($similarRecipes)): ?>
+            <div class="mt-8 pt-6 border-t border-gray-200 print-hide">
+                <h2 class="text-2xl font-bold mb-4">Similar Recipes You Might Like</h2>
+                <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                    <?php foreach ($similarRecipes as $similarRecipe): ?>
+                        <a href="recipe.php?id=<?= htmlspecialchars($similarRecipe['id']) ?>" class="block bg-white rounded-lg shadow overflow-hidden hover:shadow-md transition-shadow duration-200">
+                            <?php if (!empty($similarRecipe['imageURL'])): ?>
+                                <img src="<?= htmlspecialchars($similarRecipe['imageURL']) ?>" alt="<?= htmlspecialchars($similarRecipe['recipe']) ?>" class="w-full h-32 object-cover">
+                            <?php else: ?>
+                                <div class="w-full h-32 bg-gray-200 flex items-center justify-center text-gray-400">
+                                    <i data-lucide="image-off" class="w-10 h-10"></i>
+                                </div>
+                            <?php endif; ?>
+                            <div class="p-3">
+                                <h3 class="font-semibold text-md mb-1 truncate"><?= htmlspecialchars($similarRecipe['recipe']) ?></h3>
+                                <?php if (!empty($similarRecipe['description'])): ?>
+                                    <p class="text-gray-600 text-sm mb-2 line-clamp-2"><?= htmlspecialchars($similarRecipe['description']) ?></p>
+                                <?php endif; ?>
+                                <div class="flex items-center text-xs text-gray-500">
+                                    <i data-lucide="clock" class="h-4 w-4 mr-1"></i> <?= $similarRecipe['total_time'] ?? 'N/A' ?> mins
+                                    <span class="mx-2">|</span>
+                                    <i data-lucide="gauge" class="h-4 w-4 mr-1"></i> <?= htmlspecialchars($similarRecipe['difficulty'] ?? 'N/A') ?>
+                                </div>
+                            </div>
+                        </a>
+                    <?php endforeach; ?>
+                </div>
+            </div>
+            <?php endif; ?>
+
+
             <!-- Display Comments for this recipe -->
-            <div class="comments mt-6">
-                <h3 class="text-3xl font-bold underline mb-3">Comments</h3>
+            <div class="comments mt-8 pt-6 border-t border-gray-200 print-hide">
+                <h3 class="text-2xl font-bold mb-4">Comments</h3>
                 <?php
                 $commentsWithUserData = $recipeController->getCommentsForRecipe($recipe['id']);
 if ($commentsWithUserData):
@@ -525,6 +563,18 @@ if ($commentsWithUserData):
     </div>
 
 	<script>
+        // Add line-clamp utility if not using a plugin
+        const style = document.createElement('style');
+        style.innerHTML = `
+            .line-clamp-2 {
+                overflow: hidden;
+                display: -webkit-box;
+                -webkit-box-orient: vertical;
+                -webkit-line-clamp: 2;
+            }
+        `;
+        document.head.appendChild(style);
+
 		// Initialize Lucide icons
 		lucide.createIcons();
 
