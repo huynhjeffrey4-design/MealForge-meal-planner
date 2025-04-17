@@ -45,7 +45,7 @@
       <a href="index.php" class="text-2xl font-bold text-green-700">MealForge</a>
       <div class="space-x-6">
         <a href="login.php">
-          <button class="bg-green-600 text-white px-4 py-2 rounded-lg hover:bg-green-700">
+          <button class="bg-green-700 text-white px-4 py-2 rounded-lg hover:bg-green-700">
             Get Started
           </button>
         </a>
@@ -64,7 +64,7 @@
     </div>
 
     <!-- Highlight -->
-    <div class="bg-gray-300 text-white font-bold px-6 py-4 rounded mb-6">
+    <div class="bg-gray-700 text-white font-bold px-6 py-4 rounded mb-6">
       Your meal planner, powered by your needs.
     </div>
 
@@ -95,9 +95,9 @@
       <p>Join thousands of users already enjoying stress-free meals. Sign up today—it's free!</p>
 
       <a href="login.php">
-				<button class="bg-white text-green-600 px-8 py-4 rounded-lg text-lg font-semibold hover:bg-green-50 flex items-center gap-2 mx-auto">
-					Get Started Now<span class="sr-only"> and create your meal plan</span>
-					<i data-lucide="arrow-right" aria-hidden="true" class="w-5 h-5"></i>
+				<button class="bg-white text-green-700 px-8 py-4 rounded-lg text-lg font-semibold hover:bg-green-50 flex items-center gap-2 mx-auto">
+					Get Started Now
+					<i data-lucide="arrow-right" class="w-5 h-5"></i>
 				</button>
 			</a>
     </div>
