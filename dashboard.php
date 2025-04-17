@@ -214,12 +214,12 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                                     <div class="absolute top-2 right-2 meal-options">
                                         <div class="relative inline-block">
                                             <button class="bg-white bg-opacity-80 rounded-full w-8 h-8 flex items-center justify-center text-gray-700 hover:bg-opacity-100 meal-menu-button">
-                                                <i class="fa fa-ellipsis-h"></i>
+                                                <i class="fa fa-ellipsis-h" aria-hidden="true"></i>
                                             </button>
                                             <div class="hidden absolute right-0 mt-2 w-48 bg-white rounded-md shadow-lg z-10 meal-menu">
                                                 <div class="py-1">
                                                     <button class="w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 remove-meal" data-day="<?php echo $day; ?>" data-index="<?php echo $index; ?>">
-                                                        <i class="fa fa-trash mr-2 text-red-500"></i> Remove
+                                                        <i class="fa fa-trash mr-2 text-red-500" aria-hidden="true"></i> Remove
                                                     </button>
                                                 </div>
                                             </div>
@@ -230,7 +230,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                         <?php endif; ?>
                         
                         <button class="add-meal mt-2 w-10 h-10 rounded-full bg-primary text-white flex items-center justify-center mx-auto hover:bg-primary-dark" data-day="<?php echo $day; ?>">
-                            <i class="fa fa-plus"></i>
+                            <i class="fa fa-plus" aria-hidden="true"></i>
                         </button>
                     </div>
                 </div>
@@ -255,12 +255,12 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                                     <div class="absolute top-2 right-2 meal-options">
                                         <div class="relative inline-block">
                                             <button class="bg-white bg-opacity-80 rounded-full w-8 h-8 flex items-center justify-center text-gray-700 hover:bg-opacity-100 meal-menu-button">
-                                                <i class="fa fa-ellipsis-h"></i>
+                                                <i class="fa fa-ellipsis-h" aria-hidden="true"></i>
                                             </button>
                                             <div class="hidden absolute right-0 mt-2 w-48 bg-white rounded-md shadow-lg z-10 meal-menu">
                                                 <div class="py-1">
                                                     <button class="w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 remove-meal" data-day="<?php echo $day; ?>" data-index="<?php echo $index; ?>">
-                                                        <i class="fa fa-trash mr-2 text-red-500"></i> Remove
+                                                        <i class="fa fa-trash mr-2 text-red-500" aria-hidden="true"></i> Remove
                                                     </button>
                                                 </div>
                                             </div>
@@ -271,7 +271,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                         <?php endif; ?>
                         
                         <button class="add-meal mt-2 w-10 h-10 rounded-full bg-primary text-white flex items-center justify-center mx-auto hover:bg-primary-dark" data-day="<?php echo $day; ?>">
-                            <i class="fa fa-plus"></i>
+                            <i class="fa fa-plus" aria-hidden="true"></i>
                         </button>
                     </div>
                 </div>
@@ -297,12 +297,12 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                                     <div class="absolute top-2 right-2 meal-options">
                                         <div class="relative inline-block">
                                             <button class="bg-white bg-opacity-80 rounded-full w-8 h-8 flex items-center justify-center text-gray-700 hover:bg-opacity-100 meal-menu-button">
-                                                <i class="fa fa-ellipsis-h"></i>
+                                                <i class="fa fa-ellipsis-h" aria-hidden="true"></i>
                                             </button>
                                             <div class="hidden absolute right-0 mt-2 w-48 bg-white rounded-md shadow-lg z-10 meal-menu">
                                                 <div class="py-1">
                                                     <button class="w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 remove-meal" data-day="Sunday" data-index="<?php echo $index; ?>">
-                                                        <i class="fa fa-trash mr-2 text-red-500"></i> Remove
+                                                        <i class="fa fa-trash mr-2 text-red-500" aria-hidden="true"></i> Remove
                                                     </button>
                                                 </div>
                                             </div>
@@ -314,7 +314,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                     <?php endif; ?>
                     
                     <button class="add-meal mt-2 w-10 h-10 rounded-full bg-primary text-white flex items-center justify-center mx-auto hover:bg-primary-dark" data-day="Sunday">
-                        <i class="fa fa-plus"></i>
+                        <i class="fa fa-plus" aria-hidden="true"></i>
                     </button>
                 </div>
             </div>
@@ -428,12 +428,12 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     
     
     <!-- Meal Selection Modal -->
-    <div id="meal-modal" class="fixed inset-0 bg-black bg-opacity-50 hidden z-50 flex items-center justify-center p-4">
+    <div id="meal-modal" class="fixed inset-0 bg-black bg-opacity-50 hidden z-50 flex items-center justify-center p-4" role="dialog" aria-label="Add Meal Modal">
     <div class="bg-white rounded-lg w-full max-w-6xl h-[90vh] flex flex-col">
         <div class="p-4 border-b flex justify-between items-center">
             <h2 class="text-xl font-bold">Add Meal</h2>
             <button id="close-modal" class="text-gray-500 hover:text-gray-700">
-                <i class="fa fa-times"></i>
+                <i class="fa fa-times" aria-hidden="true"></i><span class="sr-only">Close</span>
             </button>
         </div>
         <iframe id="search-iframe" class="w-full h-full border-0"></iframe>
@@ -442,7 +442,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 </div>
             
     <!-- Recipe Details Modal -->
-    <div id="recipe-modal" class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center hidden z-50 p-2 sm:p-4">
+    <div id="recipe-modal" class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center hidden z-50 p-2 sm:p-4" role="dialog" aria-label="Recipe Details Modal">
       
        <div class="bg-white rounded-lg w-full max-w-2xl mx-auto p-6 max-h-[90vh] overflow-y-auto">
 
@@ -452,17 +452,17 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             <div class="p-4 border-b border-gray-200 flex justify-between items-center">
                 <div class="flex items-center">
                     <button id="back-to-meal-plan" class="text-gray-500 hover:text-gray-700 mr-2">
-                        <i class="fa fa-arrow-left"></i>
+                        <i class="fa fa-arrow-left" aria-hidden="true"></i><span class="sr-only">Back to recipe list</span>
                     </button>
                     <h2 class="text-xl font-bold" id="recipe-title">Recipe Details</h2>
                 </div>
                 <button id="close-recipe" class="text-gray-500 hover:text-gray-700">
-                    <i class="fa fa-times"></i>
+                    <i class="fa fa-times" aria-hidden="true"></i><span class="sr-only">Close</span>
                 </button>
             </div>
             
             <div class="p-0">
-                <img id="recipe-image" src="" alt="Recipe" class="w-full h-64 object-cover rounded-lg mb-4">
+                <img id="recipe-image" src="" alt="Preview of selected recipe" class="w-full h-64 object-cover rounded-lg mb-4">
                 
                 <p id="recipe-description" class="list-disc pl-5 space-y-1"></p>
               
@@ -502,7 +502,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         </div>
     </div>
     <!-- Confirmation Modal -->
-    <div id="confirm-modal" class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center hidden z-50 p-2 sm:p-4">
+    <div id="confirm-modal" class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center hidden z-50 p-2 sm:p-4" role="dialog" aria-label="Confirmation Modal">
         <div class="bg-white rounded-lg w-[95%] max-w-md p-4 sm:p-6">
             <h3 class="text-lg font-bold mb-4" id="confirm-title">Remove this meal?</h3>
             <p class="text-gray-700 mb-6" id="confirm-message">Are you sure you want to remove this meal?</p>
@@ -890,7 +890,7 @@ safeInstructions.forEach(step => {
     <div class="p-4 border-b flex justify-between items-center">
       <h2 class="text-xl font-bold">Create Your Own Recipe</h2>
       <button id="close-createRecipeModal" class="text-gray-500 hover:text-gray-700">
-          <i class="fa fa-times"></i>
+          <i class="fa fa-times" aria-hidden="true"></i><span class="sr-only">Close</span>
       </button>
     </div>
     <iframe id="createRecipeIframe" class="w-full flex-1 border-0" src=""></iframe>

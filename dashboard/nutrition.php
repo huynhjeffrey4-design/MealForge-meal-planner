@@ -221,7 +221,7 @@ $rdi = [
 							<div class="py-8 text-center text-gray-500">
 								<p>No meals planned for this day</p>
 								<a href="../dashboard.php" class="text-primary hover:text-primary-dark mt-2 inline-block">
-									<i class="fa fa-plus mr-1"></i> Add meals
+									<i class="fa fa-plus mr-1" aria-hidden="true"></i> Add meals <span class="sr-only">to this day's meal plan</span>
 								</a>
 							</div>
 						<?php endif; ?>
@@ -231,7 +231,7 @@ $rdi = [
 
 			<div class="mt-8 text-center">
 				<a href="../dashboard.php" class="px-4 py-2 bg-primary text-white rounded hover:bg-primary-dark inline-block">
-					<i class="fa fa-arrow-left mr-2"></i> Back to Meal Plan
+					<i class="fa fa-arrow-left mr-2" aria-hidden="true"></i> Back to Meal Plan <span class="sr-only">dashboard</span>
 				</a>
 			</div>
 		</div>

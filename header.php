@@ -50,72 +50,72 @@ if (!defined('HEADER_SCRIPT_RUN')) {
             <div class="hidden xl:flex space-x-8 items-center">
                 <?php if ($isLoggedIn): ?>
                     <a href="<?= $basePath ?>map.php" class="flex items-center text-gray-700 hover:text-green-600 transition-colors <?= $currentPage === 'map.php' ? 'text-green-600 font-semibold' : '' ?>">
-                        <i data-lucide="map-pin" class="w-5 h-5 mr-1"></i>
+                        <i data-lucide="map-pin" aria-hidden="true" class="w-5 h-5 mr-1"></i>
                         Find a Store
                     </a>
                     <a href="<?= $basePath ?>search.php" class="flex items-center text-gray-700 hover:text-green-600 transition-colors <?= $currentPage === 'search.php' ? 'text-green-600 font-semibold' : '' ?>">
-                        <i data-lucide="search" class="w-5 h-5 mr-1"></i>
+                        <i data-lucide="search" aria-hidden="true" class="w-5 h-5 mr-1"></i>
                         Search Recipes
                     </a>
                     <a href="<?= $basePath ?>ingredients.php" class="flex items-center text-gray-700 hover:text-green-600 transition-colors <?= $currentPage === 'ingredients.php' ? 'text-green-600 font-semibold' : '' ?>">
-    <i data-lucide="cube" class="w-5 h-5 mr-1"></i>
+    <i data-lucide="cube" aria-hidden="true" class="w-5 h-5 mr-1"></i>
     My Ingredients
 </a>
                     <a href="<?= $basePath ?>match.php" class="flex items-center text-gray-700 hover:text-green-600 transition-colors <?= $currentPage === 'match.php' ? 'text-green-600 font-semibold' : '' ?>">
-                        <i data-lucide="heart-handshake" class="w-5 h-5 mr-1"></i>
+                        <i data-lucide="heart-handshake" aria-hidden="true" class="w-5 h-5 mr-1"></i>
                         Recipe Swiper
                     </a>
                     <a href="<?= $basePath ?>dashboard.php" class="flex items-center text-gray-700 hover:text-green-600 transition-colors <?= $currentPage === 'dashboard.php' ? 'text-green-600 font-semibold' : '' ?>">
-                        <i data-lucide="utensils" class="w-5 h-5 mr-1"></i>
+                        <i data-lucide="utensils" aria-hidden="true" class="w-5 h-5 mr-1"></i>
                         My Meals
                     </a>
                     <a href="<?= $basePath ?>dashboard/bookmarks.php" class="flex items-center text-gray-700 hover:text-green-600 transition-colors <?= $currentPage === 'bookmarks.php' ? 'text-green-600 font-semibold' : '' ?>">
-                        <i data-lucide="bookmark" class="w-5 h-5 mr-1"></i>
+                        <i data-lucide="bookmark" aria-hidden="true" class="w-5 h-5 mr-1"></i>
                         Bookmarks
                     </a>
                 <?php endif; ?>
                 <a href="<?= $basePath ?>social.php" class="flex items-center text-gray-700 hover:text-green-600 transition-colors <?= $currentPage === 'social.php' ? 'text-green-600 font-semibold' : '' ?>">
-                    <i data-lucide="users" class="w-5 h-5 mr-1"></i>
+                    <i data-lucide="users" aria-hidden="true" class="w-5 h-5 mr-1"></i>
                     Social Feed
                 </a>
                 <a href="<?= $basePath ?>AboutLoggedIn.php" class="flex items-center text-gray-700 hover:text-green-600 transition-colors <?= $currentPage === 'AboutLoggedIn.php' ? 'text-green-600 font-semibold' : '' ?>">
-                    <i data-lucide="info" class="w-5 h-5 mr-1"></i>
+                    <i data-lucide="info" aria-hidden="true" class="w-5 h-5 mr-1"></i>
                     About Us
                 </a>
             </div>
 
             <!-- Mobile menu button -->
             <div class="xl:hidden ml-auto">
-                <button id="mobile-menu-button" class="text-gray-500 hover:text-gray-700 focus:outline-none">
-                    <i data-lucide="menu" class="h-6 w-6"></i>
+                <button id="mobile-menu-button" class="text-gray-500 hover:text-gray-700 focus:outline-none" aria-label="Toggle mobile navigation menu">
+                    <i data-lucide="menu" aria-hidden="true" class="h-6 w-6"></i>
                 </button>
             </div>
 
             <!-- Profile dropdown or Login button -->
             <?php if ($isLoggedIn): ?>
                 <div class="ml-4 relative flex items-center">
-                    <button id="profile-menu-button" class="flex items-center focus:outline-none">
+                    <button id="profile-menu-button" class="flex items-center focus:outline-none" aria-label="User profile menu button">
                         <!-- Increased image size -->
                         <img class="h-10 w-10 rounded-full object-cover border-2 border-gray-200" 
                              src="<?= htmlspecialchars($basePath . $profilePicture) ?>" 
-                             alt="Profile picture">
-                        <i data-lucide="chevron-down" class="w-4 h-4 ml-2 text-gray-600"></i>
+                             alt="Your profile picture">
+                        <i data-lucide="chevron-down" aria-hidden="true" class="w-4 h-4 ml-2 text-gray-600"></i>
                     </button>
 
                     <div id="profile-menu" class="hidden absolute right-0 mt-2 top-full w-48 bg-white rounded-md shadow-lg py-1 ring-1 ring-black ring-opacity-5 z-[9999]">
                         <a href="<?= $basePath ?>profile.php" 
                            class="flex items-center px-4 py-2 text-sm text-gray-700 hover:bg-gray-100">
-                           <i data-lucide="user" class="w-4 h-4 mr-2"></i>
+                           <i data-lucide="user" aria-hidden="true" class="w-4 h-4 mr-2"></i>
                            Profile
                         </a>
                         <a href="<?= $basePath ?>dashboard/bookmarks.php" 
                            class="flex items-center px-4 py-2 text-sm text-gray-700 hover:bg-gray-100">
-                           <i data-lucide="bookmark" class="w-4 h-4 mr-2"></i>
+                           <i data-lucide="bookmark" aria-hidden="true" class="w-4 h-4 mr-2"></i>
                            My Bookmarks
                         </a>
                         <a href="<?= $basePath ?>login.php?logout" 
                            class="flex items-center px-4 py-2 text-sm text-gray-700 hover:bg-gray-100">
-                           <i data-lucide="log-out" class="w-4 h-4 mr-2"></i>
+                           <i data-lucide="log-out" aria-hidden="true" class="w-4 h-4 mr-2"></i>
                            Logout
                         </a>
                     </div>
@@ -143,7 +143,7 @@ if (!defined('HEADER_SCRIPT_RUN')) {
                         Search Recipes
                     </a>
                     <a href="<?= $basePath ?>ingredients.php" class="flex items-center text-gray-700 hover:text-green-600 transition-colors <?= $currentPage === 'ingredients.php' ? 'text-green-600 font-semibold' : '' ?>">
-    <i data-lucide="cube" class="w-5 h-5 mr-1"></i>
+    <i data-lucide="cube" aria-hidden="true" class="w-5 h-5 mr-1"></i>
     My Ingredients
 </a>
                     <a href="<?= $basePath ?>match.php" class="block px-3 py-2 rounded-md <?= $currentPage === 'match.php' ? 'bg-green-100 text-green-600 font-medium' : 'text-gray-700 hover:bg-gray-100' ?>">

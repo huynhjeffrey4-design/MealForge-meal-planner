@@ -48,7 +48,20 @@ $totalTime = $randomRecipe["total_time"];
         body {
             padding-top: 4rem; /* Space for fixed header */
         }
+    
+    .sr-only {
+        position: absolute;
+        width: 1px;
+        height: 1px;
+        padding: 0;
+        margin: -1px;
+        overflow: hidden;
+        clip: rect(0, 0, 0, 0);
+        white-space: nowrap;
+        border: 0;
+    }
     </style>
+    
 
 </head>
 <body class="bg-green-50">
@@ -58,7 +71,7 @@ $totalTime = $randomRecipe["total_time"];
 <div class="container mx-auto p-4">
     <?php if (!$isModal): ?>
         <a href="profile.php" class="flex items-center text-gray-600 mb-6">
-            <i data-lucide="arrow-left" class="h-5 w-5 mr-1"></i>
+            <i data-lucide="arrow-left" aria-hidden="true" class="h-5 w-5 mr-1"></i>
             Back to Profile
         </a>
     <?php endif; ?>
@@ -84,19 +97,19 @@ $totalTime = $randomRecipe["total_time"];
                     <div class="flex flex-wrap items-center gap-4 mb-6">
                         <!-- Total Time -->
                         <div class="flex items-center">
-                            <i data-lucide="clock" class="h-5 w-5 text-gray-500 mr-1"></i>
+                            <i data-lucide="clock" aria-hidden="true" class="h-5 w-5 text-gray-500 mr-1"></i>
                             <span class="text-sm text-gray-600"><?= htmlspecialchars($totalTime) ?> mins</span>
                         </div>
 
                         <!-- Difficulty -->
                         <div class="flex items-center">
-                            <i data-lucide="star" class="h-5 w-5 text-gray-500 mr-1"></i>
+                            <i data-lucide="star" aria-hidden="true" class="h-5 w-5 text-gray-500 mr-1"></i>
                             <span class="text-sm text-gray-600"><?= htmlspecialchars($difficulty) ?></span>
                         </div>
 
                         <!-- Serves -->
                         <div class="flex items-center">
-                            <i data-lucide="users" class="h-5 w-5 text-gray-500 mr-1"></i>
+                            <i data-lucide="users" aria-hidden="true" class="h-5 w-5 text-gray-500 mr-1"></i>
                             <span class="text-sm text-gray-600">Serves <?= htmlspecialchars($serves) ?></span>
                         </div>
                     </div>
@@ -119,7 +132,7 @@ $totalTime = $randomRecipe["total_time"];
         <!-- Recipe Image Section (2/3 width on larger screens) -->
         <div class="md:w-3/5 w-full h-100 rounded-lg mt-6 md:mt-0 mb-6 flex items-center justify-center <?php echo ($imageURL !== '') ? '' : 'border-4 border-dashed border-gray-400'; ?>">
             <?php if ($imageURL !== ''): ?>
-                <img src="<?= htmlspecialchars($imageURL) ?>" alt="Recipe Image" class="w-full md:w-4/5 h-auto object-cover rounded-lg">
+                <img src="<?= htmlspecialchars($imageURL) ?>" alt="Image of suggested recipe" class="w-full md:w-4/5 h-auto object-cover rounded-lg">
             <?php else: ?>
                 <span class="text-gray-500">Recipe Image Placeholder</span>
             <?php endif; ?>

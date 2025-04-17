@@ -102,7 +102,20 @@ $recipesCount = count($recipes);
         body {
             padding-top: 4rem; /* Space for fixed header */
         }
+    
+    .sr-only {
+        position: absolute;
+        width: 1px;
+        height: 1px;
+        padding: 0;
+        margin: -1px;
+        overflow: hidden;
+        clip: rect(0, 0, 0, 0);
+        white-space: nowrap;
+        border: 0;
+    }
     </style>
+    
 
 </head>
 <body class="bg-green-50">
@@ -113,7 +126,7 @@ $recipesCount = count($recipes);
 <div class="container mx-auto p-4">
     <?php if (!$isModal): ?>
         <a href="profile.php" class="flex items-center text-gray-600 mb-6">
-            <i data-lucide="arrow-left" class="h-5 w-5 mr-1"></i>
+            <i data-lucide="arrow-left" aria-hidden="true" class="h-5 w-5 mr-1"></i>
             Back to Profile
         </a>
     <?php endif; ?>
@@ -121,7 +134,7 @@ $recipesCount = count($recipes);
     <!-- Search Bar -->
     <div class="relative mb-6">
         <div class="absolute inset-y-0 left-0 flex items-center pl-3 pointer-events-none">
-            <i data-lucide="search" class="w-4 h-4 text-gray-400"></i>
+            <i data-lucide="search" aria-hidden="true" class="w-4 h-4 text-gray-400"></i>
         </div>
         <form action="" method="GET" id="search-form">
             <?php if ($isModal): ?>
@@ -150,7 +163,7 @@ $recipesCount = count($recipes);
         <!-- Left Column: Filters -->
         <div class="w-full md:w-1/3 h-fit bg-white rounded-lg shadow p-6">
             <?php if (!empty($budgetErrors)): ?>
-                <div id="budget-error-box" class="relative mb-4 p-4 bg-red-100 text-red-800 border border-red-300 rounded-lg">
+                <div id="budget-error-box" class="relative mb-4 p-4 bg-red-100 text-red-800 border border-red-300 rounded-lg" role="alert" aria-live="assertive">
                     <button onclick="document.getElementById('budget-error-box').style.display='none';"
                             class="absolute top-2 right-2 text-red-700 hover:text-red-900 text-lg font-bold focus:outline-none"
                             aria-label="Close">
@@ -167,7 +180,7 @@ $recipesCount = count($recipes);
             <!-- Filters Section -->
             <div class="mb-4 flex justify-between items-center">
                 <div class="flex items-center">
-                    <i data-lucide="filter" class="h-5 w-5 mr-2 text-gray-600"></i>
+                    <i data-lucide="filter" aria-hidden="true" class="h-5 w-5 mr-2 text-gray-600"></i>
                     <h2 class="text-lg font-semibold">Filters</h2>
                 </div>
                 <a href="?<?= $isModal ? 'modal=true' : '' ?>" class="text-sm text-red-500">Reset All</a>
@@ -190,7 +203,7 @@ $recipesCount = count($recipes);
                 <div class="border-b pb-4">
                     <div class="flex justify-between items-center mb-2 cursor-pointer" onclick="toggleSection('dietary')">
                         <h3 class="font-medium">Dietary Preference</h3>
-                        <i data-lucide="chevron-down" id="dietary-icon" class="h-5 w-5 transform transition-transform"></i>
+                        <i data-lucide="chevron-down" aria-hidden="true" id="dietary-icon" class="h-5 w-5 transform transition-transform"></i>
                     </div>
                     <div id="dietary-options" class="mt-2 space-y-2">
                         <div class="flex items-center">
@@ -214,7 +227,7 @@ $recipesCount = count($recipes);
                 <div class="border-b pb-4">
                     <div class="flex justify-between items-center mb-2 cursor-pointer" onclick="toggleSection('prep-time')">
                         <h3 class="font-medium">Maximum Preparation Time</h3>
-                        <i data-lucide="chevron-down" id="prep-time-icon" class="h-5 w-5 transform transition-transform"></i>
+                        <i data-lucide="chevron-down" aria-hidden="true" id="prep-time-icon" class="h-5 w-5 transform transition-transform"></i>
                     </div>
                     <div id="prep-time-options" class="mt-2">
                         <input type="range" name="max_prep_time" min="5" max="120" step="5"
@@ -233,7 +246,7 @@ $recipesCount = count($recipes);
                 <div class="border-b pb-4">
                     <div class="flex justify-between items-center mb-2 cursor-pointer" onclick="toggleSection('meal-type')">
                         <h3 class="font-medium">Meal Type</h3>
-                        <i data-lucide="chevron-down" id="meal-type-icon" class="h-5 w-5 transform transition-transform"></i>
+                        <i data-lucide="chevron-down" aria-hidden="true" id="meal-type-icon" class="h-5 w-5 transform transition-transform"></i>
                     </div>
                     <div id="meal-type-options" class="mt-2">
                         <select name="meal_type" class="w-full p-2 bg-gray-100 rounded-lg text-gray-700">
@@ -251,7 +264,7 @@ $recipesCount = count($recipes);
                 <div class="border-b pb-4">
                     <div class="flex justify-between items-center mb-2 cursor-pointer" onclick="toggleSection('budget')">
                         <h3 class="font-medium">Budget ($)</h3>
-                        <i data-lucide="chevron-down" id="budget-icon" class="h-5 w-5 transform transition-transform"></i>
+                        <i data-lucide="chevron-down" aria-hidden="true" id="budget-icon" class="h-5 w-5 transform transition-transform"></i>
                     </div>
                     <div id="budget-options" class="mt-2 flex space-x-4">
                         <!-- Min Budget Input -->
@@ -275,7 +288,7 @@ $recipesCount = count($recipes);
 
 
                 <button type="submit" class="w-full py-2 px-4 bg-red-600 hover:bg-red-700 text-white font-medium rounded-lg transition duration-150 ease-in-out">
-                    Apply Filters
+                    Apply Filters<span class="sr-only"> and refresh the recipe results</span>
                 </button>
             </form>
         </div>
@@ -287,7 +300,7 @@ $recipesCount = count($recipes);
             <div class="grid grid-cols-1 gap-6">
                 <?php if (empty($recipes)): ?>
                     <div class="bg-white rounded-lg shadow p-6 text-center">
-                        <i data-lucide="search-x" class="h-12 w-12 mx-auto text-gray-400 mb-4"></i>
+                        <i data-lucide="search-x" aria-hidden="true" class="h-12 w-12 mx-auto text-gray-400 mb-4"></i>
                         <h3 class="text-lg font-semibold mb-2">No recipes found</h3>
                         <p class="text-gray-600">Try adjusting your filters or search criteria.</p>
                     </div>
@@ -332,11 +345,11 @@ $recipesCount = count($recipes);
 
                                     <div class="flex items-center gap-4">
                                         <div class="flex items-center">
-                                            <i data-lucide="clock" class="h-5 w-5 text-gray-500 mr-1"></i>
+                                            <i data-lucide="clock" aria-hidden="true" class="h-5 w-5 text-gray-500 mr-1"></i>
                                             <span class="text-sm text-gray-600"><?= $recipe['prep_time'] ?> mins</span>
                                         </div>
                                         <div class="flex items-center">
-                                            <i data-lucide="gauge" class="h-5 w-5 text-gray-500 mr-1"></i>
+                                            <i data-lucide="gauge" aria-hidden="true" class="h-5 w-5 text-gray-500 mr-1"></i>
                                             <span class="text-sm text-gray-600"><?= htmlspecialchars($recipe['difficulty']) ?></span>
                                         </div>
                                     </div>

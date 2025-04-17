@@ -63,7 +63,20 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         .focus\:border-primary:focus {
             border-color: #00A651;
         }
+    
+    .sr-only {
+        position: absolute;
+        width: 1px;
+        height: 1px;
+        padding: 0;
+        margin: -1px;
+        overflow: hidden;
+        clip: rect(0, 0, 0, 0);
+        white-space: nowrap;
+        border: 0;
+    }
     </style>
+    
 </head>
 <body class="bg-white min-h-screen">
     <div class="min-h-screen flex flex-col md:flex-row">
@@ -80,7 +93,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         <div class="w-full md:w-1/2 p-6 md:p-10 lg:p-20 m-auto">
             <div class="max-w-2xl mx-auto">
                 <?php if ($validation->getError('general')): ?>
-                    <div id="generalError" class="bg-red-50 border border-red-400 text-red-700 p-4 rounded-md mb-6">
+                    <div id="generalError" class="bg-red-50 border border-red-400 text-red-700 p-4 rounded-md mb-6" role="alert" aria-live="assertive">
                         <?php echo htmlspecialchars($validation->getError('general')); ?>
                     </div>
                 <?php endif; ?>
@@ -159,7 +172,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                     </div>
 
                     <button type="submit" class="w-full bg-primary hover:bg-primary-dark text-white py-4 rounded-lg transition-colors font-medium text-lg">
-                        Create Account
+                        Create Account<span class="sr-only"> to register a MealForge user account</span>
                     </button>
 
                     <div class="text-center text-gray-600">

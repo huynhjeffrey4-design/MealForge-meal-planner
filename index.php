@@ -9,7 +9,22 @@
 	<script src="https://cdn.tailwindcss.com"></script>
 	<!-- Lucide Icons -->
 	<script src="https://unpkg.com/lucide@latest"></script>
-</head>
+
+    <style>
+      .sr-only {
+        position: absolute;
+        width: 1px;
+        height: 1px;
+        padding: 0;
+        margin: -1px;
+        overflow: hidden;
+        clip: rect(0, 0, 0, 0);
+        white-space: nowrap;
+        border: 0;
+      }
+    </style>
+    </head>
+    
 
 <body class="min-h-screen bg-green-50">
 	<!-- Navigation -->
@@ -46,8 +61,8 @@
 				</p>
 				<a href="login.php">
 					<button class="bg-green-600 text-white px-8 py-4 rounded-lg text-lg font-semibold hover:bg-green-700 flex items-center gap-2">
-						Start Your Journey
-						<i data-lucide="chevron-right" class="w-5 h-5"></i>
+						Start Your Journey<span class="sr-only"> with MealForge personalized plans</span>
+						<i data-lucide="chevron-right" aria-hidden="true" class="w-5 h-5"></i>
 					</button>
 				</a>
 			</div>
@@ -64,7 +79,7 @@
 				<!-- Feature 1 -->
 				<div class="bg-green-50 p-6 rounded-lg text-center">
 					<div class="flex justify-center mb-4">
-						<i data-lucide="utensils" class="w-8 h-8 text-green-600"></i>
+						<i data-lucide="utensils" aria-hidden="true" class="w-8 h-8 text-green-600"></i>
 					</div>
 					<h3 class="text-xl font-semibold text-gray-800 mb-2">Dietary Preferences</h3>
 					<p class="text-gray-600">Tell us about your dietary restrictions, allergies, and preferences.</p>
@@ -73,7 +88,7 @@
 				<!-- Feature 2 -->
 				<div class="bg-green-50 p-6 rounded-lg text-center">
 					<div class="flex justify-center mb-4">
-						<i data-lucide="dollar-sign" class="w-8 h-8 text-green-600"></i>
+						<i data-lucide="dollar-sign" aria-hidden="true" class="w-8 h-8 text-green-600"></i>
 					</div>
 					<h3 class="text-xl font-semibold text-gray-800 mb-2">Budget Friendly</h3>
 					<p class="text-gray-600">Set your budget and we'll recommend recipes that won't break the bank.</p>
@@ -82,7 +97,7 @@
 				<!-- Feature 3 -->
 				<div class="bg-green-50 p-6 rounded-lg text-center">
 					<div class="flex justify-center mb-4">
-						<i data-lucide="heart" class="w-8 h-8 text-green-600"></i>
+						<i data-lucide="heart" aria-hidden="true" class="w-8 h-8 text-green-600"></i>
 					</div>
 					<h3 class="text-xl font-semibold text-gray-800 mb-2">Personalized Results</h3>
 					<p class="text-gray-600">Get recipe recommendations that perfectly match your needs.</p>
@@ -102,8 +117,8 @@
 			</p>
 			<a href="login.php">
 				<button class="bg-white text-green-600 px-8 py-4 rounded-lg text-lg font-semibold hover:bg-green-50 flex items-center gap-2 mx-auto">
-					Get Started Now
-					<i data-lucide="arrow-right" class="w-5 h-5"></i>
+					Get Started Now<span class="sr-only"> and create your account</span>
+					<i data-lucide="arrow-right" aria-hidden="true" class="w-5 h-5"></i>
 				</button>
 			</a>
 		</div>

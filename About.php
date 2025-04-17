@@ -22,7 +22,20 @@
     .button:hover {
       background-color: #D9D9D9;
     }
-  </style>
+  
+    .sr-only {
+      position: absolute;
+      width: 1px;
+      height: 1px;
+      padding: 0;
+      margin: -1px;
+      overflow: hidden;
+      clip: rect(0, 0, 0, 0);
+      white-space: nowrap;
+      border: 0;
+    }
+    </style>
+    
 </head>
 
 <body class="min-h-screen bg-green-50">
@@ -72,10 +85,10 @@
 
       <h3 class="text-xl font-semibold text-gray-800">Why MealForge?</h3>
       <ul class="list-none space-y-2">
-        <li>🛒 <strong>Local Grocery Integration:</strong> Save time and money with real-time store prices and deals.</li>
-        <li>🌿 <strong>Health-First Approach:</strong> Prioritize nutrition without sacrificing flavor.</li>
-        <li>🎓 <strong>Student-Friendly:</strong> Designed for busy schedules and tight budgets.</li>
-        <li>🆓 <strong>Completely Free:</strong> Save your budget towards grocery shopping instead.</li>
+        <li><span aria-hidden="true">🛒</span> <strong>Local Grocery Integration:</strong> Save time and money with real-time store prices and deals.</li>
+        <li><span aria-hidden="true">🌿</span> <strong>Health-First Approach:</strong> Prioritize nutrition without sacrificing flavor.</li>
+        <li><span aria-hidden="true">🎓</span> <strong>Student-Friendly:</strong> Designed for busy schedules and tight budgets.</li>
+        <li><span aria-hidden="true">🆓</span> <strong>Completely Free:</strong> Save your budget towards grocery shopping instead.</li>
       </ul>
 
       <h3 class="text-xl font-semibold text-gray-800">Ready to Simplify Meal Planning?</h3>
@@ -83,8 +96,8 @@
 
       <a href="login.php">
 				<button class="bg-white text-green-600 px-8 py-4 rounded-lg text-lg font-semibold hover:bg-green-50 flex items-center gap-2 mx-auto">
-					Get Started Now
-					<i data-lucide="arrow-right" class="w-5 h-5"></i>
+					Get Started Now<span class="sr-only"> and create your meal plan</span>
+					<i data-lucide="arrow-right" aria-hidden="true" class="w-5 h-5"></i>
 				</button>
 			</a>
     </div>

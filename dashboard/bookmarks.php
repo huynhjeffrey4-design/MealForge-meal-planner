@@ -86,14 +86,14 @@ define('IN_SUBDIRECTORY', true);
         </header>
         
         <?php if (isset($_SESSION['message'])): ?>
-            <div class="bg-green-100 border-l-4 border-green-500 text-green-700 p-4 mb-6" role="alert">
+            <div class="bg-green-100 border-l-4 border-green-500 text-green-700 p-4 mb-6"  role="alert" aria-live="polite">
                 <p><?= htmlspecialchars($_SESSION['message']); ?></p>
             </div>
             <?php unset($_SESSION['message']); ?>
         <?php endif; ?>
         
         <?php if (isset($_SESSION['error'])): ?>
-            <div class="bg-red-100 border-l-4 border-red-500 text-red-700 p-4 mb-6" role="alert">
+            <div class="bg-red-100 border-l-4 border-red-500 text-red-700 p-4 mb-6"  role="alert" aria-live="polite">
                 <p><?= htmlspecialchars($_SESSION['error']); ?></p>
             </div>
             <?php unset($_SESSION['error']); ?>
@@ -104,11 +104,12 @@ define('IN_SUBDIRECTORY', true);
             <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
                 <?php if (empty($bookmarkedRecipes)): ?>
                 <div class="bg-white rounded-lg shadow p-6 text-center md:col-span-2 lg:col-span-3">
-                    <i data-lucide="bookmark-x" class="h-12 w-12 mx-auto text-gray-400 mb-4"></i>
+                    <i data-lucide="bookmark-x" aria-hidden="true" class="h-12 w-12 mx-auto text-gray-400 mb-4"></i>
                     <h3 class="text-lg font-semibold mb-2">No bookmarked recipes</h3>
                     <p class="text-gray-600 mb-4">You haven't bookmarked any recipes yet.</p>
                     <a href="../search.php" class="inline-block py-2 px-4 bg-green-600 hover:bg-green-700 text-white font-medium rounded-lg transition duration-150 ease-in-out">
                         Browse Recipes
+<span class="sr-only">Navigate to search page to find new recipes</span>
                     </a>
                 </div>
                 <?php else: ?>
@@ -136,11 +137,11 @@ define('IN_SUBDIRECTORY', true);
                             
                             <div class="flex items-center gap-4">
                                 <div class="flex items-center">
-                                    <i data-lucide="clock" class="h-5 w-5 text-gray-500 mr-1"></i>
+                                    <i data-lucide="clock" aria-hidden="true" class="h-5 w-5 text-gray-500 mr-1"></i>
                                     <span class="text-sm text-gray-600"><?= htmlspecialchars($recipe['prep_time'] ?? '-') ?> mins</span>
                                 </div>
                                 <div class="flex items-center">
-                                    <i data-lucide="gauge" class="h-5 w-5 text-gray-500 mr-1"></i>
+                                    <i data-lucide="gauge" aria-hidden="true" class="h-5 w-5 text-gray-500 mr-1"></i>
                                     <span class="text-sm text-gray-600"><?= htmlspecialchars($recipe['difficulty'] ?? 'Easy') ?></span>
                                 </div>
                             </div>
