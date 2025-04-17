@@ -92,7 +92,20 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && $validToken) {
         .focus\:border-primary:focus {
             border-color: #00A651;
         }
+    
+    .sr-only {
+        position: absolute;
+        width: 1px;
+        height: 1px;
+        padding: 0;
+        margin: -1px;
+        overflow: hidden;
+        clip: rect(0, 0, 0, 0);
+        white-space: nowrap;
+        border: 0;
+    }
     </style>
+    
 </head>
 
 <body class="bg-white min-h-screen">
@@ -110,13 +123,13 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && $validToken) {
         <div class="w-full md:w-1/2 p-6 md:p-10 lg:p-20 m-auto">
             <div class="max-w-2xl mx-auto">
                 <?php if ($error): ?>
-                    <div class="bg-red-50 border border-red-400 text-red-700 p-4 rounded-md mb-6">
+                    <div class="bg-red-50 border border-red-400 text-red-700 p-4 rounded-md mb-6" role="alert" aria-live="assertive">
                         <?php echo htmlspecialchars($error); ?>
                     </div>
                 <?php endif; ?>
 
                 <?php if ($success): ?>
-                    <div class="bg-green-50 border border-green-400 text-green-700 p-4 rounded-md mb-6">
+                    <div class="bg-green-50 border border-green-400 text-green-700 p-4 rounded-md mb-6" role="alert" aria-live="polite">
                         <?php echo htmlspecialchars($success); ?>
                         <div class="mt-4">
                             <a href="login.php" class="bg-primary hover:bg-primary-dark text-white py-2 px-4 rounded-lg transition-colors font-medium">
@@ -152,7 +165,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && $validToken) {
                         <button
                             type="submit"
                             class="w-full bg-primary hover:bg-primary-dark text-white py-4 rounded-lg transition-colors font-medium text-lg">
-                            Reset Password
+                            Reset Password<span class="sr-only"> and update your account credentials</span>
                         </button>
                     </form>
                 <?php else: ?>

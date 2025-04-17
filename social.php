@@ -315,7 +315,7 @@ $sharedRecipes = R::findAll('socialpost', 'ORDER BY timestamp DESC');
 <?php endif; ?>
             <?php if (empty($posts)): ?>
                 <div class="bg-white rounded-lg shadow p-8 text-center">
-                    <i data-lucide="utensils" class="h-16 w-16 mx-auto text-gray-400 mb-4"></i>
+                    <i data-lucide="utensils" aria-hidden="true" class="h-16 w-16 mx-auto text-gray-400 mb-4"></i>
                     <h3 class="text-xl font-semibold mb-2">No recipes shared yet</h3>
                     <p class="text-gray-600 mb-4">Be the first to share a delicious recipe with the community!</p>
                     <?php if ($isLoggedIn): ?>
@@ -369,12 +369,12 @@ $sharedRecipes = R::findAll('socialpost', 'ORDER BY timestamp DESC');
                                         $isLiked = in_array($userEmail, $likedByArray);
                                         ?>
                                             <button type="submit" class="like-button <?= $isLiked ? 'liked' : '' ?>">
-                                                <i data-lucide="thumbs-up" class="h-5 w-5 <?= $isLiked ? 'text-red-500' : 'text-black' ?>"></i>
+                                                <i data-lucide="thumbs-up" aria-hidden="true" class="h-5 w-5 <?= $isLiked ? 'text-red-500' : 'text-black' ?>"></i>
                                             </button>
                                         </form>
                                     <?php else: ?>
                                         <a href="login.php" class="text-primary font-bold no-underline">
-                                            <i data-lucide="thumbs-up" class="h-5 w-5 text-black"></i>
+                                            <i data-lucide="thumbs-up" aria-hidden="true" class="h-5 w-5 text-black"></i>
                                         </a>
                                     <?php endif; ?>
                                     <span class="like-count text-black font-bold <?= isset($isLiked) && $isLiked ? 'liked' : '' ?>"><?= $post['likes'] ?></span>

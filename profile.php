@@ -149,7 +149,20 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['edit_all'])) {
     .header-content {
         height: 4rem;
     }
+    
+    .sr-only {
+      position: absolute;
+      width: 1px;
+      height: 1px;
+      padding: 0;
+      margin: -1px;
+      overflow: hidden;
+      clip: rect(0, 0, 0, 0);
+      white-space: nowrap;
+      border: 0;
+    }
     </style>
+    
 </head>
 <body>
     <?php include 'header.php'; ?>
@@ -171,7 +184,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['edit_all'])) {
          alt="Profile Picture" 
          class="w-full h-full object-cover">
         <label for="profile_picture" class="absolute inset-x-0 bottom-0 bg-black bg-opacity-50 text-white text-center py-1 cursor-pointer opacity-0 hover:opacity-100 transition-opacity duration-300">
-        <i class="fa fa-camera"></i> Change
+        <i class="fa fa-camera" aria-hidden="true"></i> Change
         </label>
         <input type="file" id="profile_picture" name="profile_picture" accept="image/*" class="hidden">
         </div>
@@ -255,7 +268,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['edit_all'])) {
 
         <div class="mt-8 bg-gray-50 rounded-lg p-5 border-l-4 border-primary profile-info-section">
             <div class="text-xl font-bold mb-4 text-gray-800 flex items-center">
-                <i class="fa fa-lightbulb text-primary mr-2"></i> Daily Health Tips
+                <i class="fa fa-lightbulb text-primary mr-2" aria-hidden="true"></i> Daily Health Tips
             </div>
             <div class="flex items-start p-4 mb-4 bg-white rounded-lg shadow-sm" id="current-tip">
                 <div class="text-2xl mr-4 text-primary">💡</div>
@@ -264,10 +277,10 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['edit_all'])) {
             <div class="flex justify-between items-center">
                 <div class="flex gap-2">
                     <button class="bg-primary text-white w-9 h-9 rounded-full flex items-center justify-center cursor-pointer transition hover:bg-primary-dark" id="prev-tip">
-                        <i class="fa fa-chevron-left"></i>
+                        <i class="fa fa-chevron-left" aria-hidden="true"></i>
                     </button>
                     <button class="bg-primary text-white w-9 h-9 rounded-full flex items-center justify-center cursor-pointer transition hover:bg-primary-dark" id="next-tip">
-                        <i class="fa fa-chevron-right"></i>
+                        <i class="fa fa-chevron-right" aria-hidden="true"></i>
                     </button>
                 </div>
                 <div class="flex gap-1 mt-2 justify-center">

@@ -179,7 +179,20 @@ handleDeleteComment($isLoggedIn, $recipeController, $recipe_id);
             page-break-inside: avoid;
         }
     }
+    
+    .sr-only {
+      position: absolute;
+      width: 1px;
+      height: 1px;
+      padding: 0;
+      margin: -1px;
+      overflow: hidden;
+      clip: rect(0, 0, 0, 0);
+      white-space: nowrap;
+      border: 0;
+    }
     </style>
+    
 </head>
 <body class="bg-gray-100">
     <div class="container mx-auto max-w-3xl p-4">
@@ -213,7 +226,7 @@ handleDeleteComment($isLoggedIn, $recipeController, $recipe_id);
         </div>
         <?php else: ?>
 				<?php if (isset($_SESSION['message'])): ?>
-					<div class="bg-green-50 border border-green-400 text-green-700 p-4 rounded-md mb-6">
+					<div class="bg-green-50 border border-green-400 text-green-700 p-4 rounded-md mb-6" role="alert" aria-live="polite">
 <p>
 					<?php echo htmlspecialchars($_SESSION['message']); ?>
 
@@ -223,7 +236,7 @@ handleDeleteComment($isLoggedIn, $recipeController, $recipe_id);
 				<?php endif; ?>
 
 				<?php if (isset($_SESSION['error'])): ?>
-					<div id="login-error" class="bg-red-50 border border-red-400 text-red-700 p-4 rounded-md mb-6">
+					<div id="login-error" class="bg-red-50 border border-red-400 text-red-700 p-4 rounded-md mb-6" role="alert" aria-live="assertive">
 <p>
 					<?php echo $_SESSION['error']; ?>
 </p>
@@ -261,9 +274,9 @@ handleDeleteComment($isLoggedIn, $recipeController, $recipe_id);
     <input type="hidden" name="recipe_id" value="<?= $recipe_id ?>">
     <button type="submit" class="<?= $isBookmarked ? 'text-green-600' : 'text-gray-500' ?> hover:text-gray-700" id="bookmark_button">
         <?php if ($isBookmarked): ?>
-            <i data-lucide="bookmark-check"></i>
+            <i data-lucide="bookmark-check" aria-hidden="true"></i>
         <?php else: ?>
-            <i data-lucide="bookmark-plus"></i>
+            <i data-lucide="bookmark-plus" aria-hidden="true"></i>
         <?php endif; ?>
     </button>
 </form>
@@ -367,13 +380,13 @@ handleDeleteComment($isLoggedIn, $recipeController, $recipe_id);
                             <!-- Hidden input to pass the id -->
                             <input type="hidden" name="id" value="<?= $recipe_id ?>">  <!-- Use 'id' here -->
                             <button type="submit" class="like-button <?= $isLiked ? 'liked' : '' ?>">
-                                <i data-lucide="thumbs-up" class="h-5 w-5 <?= $isLiked ? 'text-red-500' : 'text-black' ?>"></i>
+                                <i data-lucide="thumbs-up" aria-hidden="true" class="h-5 w-5 <?= $isLiked ? 'text-red-500' : 'text-black' ?>"></i>
                             </button>
                         </form>
 
                     <?php else: ?>
                         <a href="login.php" class="text-primary font-bold no-underline">
-                            <i data-lucide="thumbs-up" class="h-5 w-5 text-black"></i>
+                            <i data-lucide="thumbs-up" aria-hidden="true" class="h-5 w-5 text-black"></i>
                         </a>
                     <?php endif; ?>
 

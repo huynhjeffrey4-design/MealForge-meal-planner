@@ -26,8 +26,23 @@ if (!isset($_SESSION['user'])) {
             }
         }
     }
-  </script>
-</head>
+  
+    </script>
+    <style>
+      .sr-only {
+        position: absolute;
+        width: 1px;
+        height: 1px;
+        padding: 0;
+        margin: -1px;
+        overflow: hidden;
+        clip: rect(0, 0, 0, 0);
+        white-space: nowrap;
+        border: 0;
+      }
+    </style>
+    </head>
+    
 <body class="bg-gray-50">
   <?php include 'header.php'; ?>
   
@@ -38,7 +53,7 @@ if (!isset($_SESSION['user'])) {
     <div class="flex flex-col md:flex-row gap-3 mb-6">
       <div class="relative flex-grow">
         <span class="absolute inset-y-0 left-0 flex items-center pl-3 text-gray-500">
-          <i data-lucide="search" class="w-5 h-5"></i>
+          <i data-lucide="search" aria-hidden="true" class="w-5 h-5"></i>
         </span>
         <input 
           type="text" 
@@ -48,16 +63,16 @@ if (!isset($_SESSION['user'])) {
         />
       </div>
       <button 
-        id="searchButton" 
+        id="searchButton" aria-label="Search for grocery stores" 
         class="bg-primary hover:bg-primary-dark text-white py-3 px-6 rounded-lg transition flex items-center justify-center"
       >
-        <i data-lucide="arrow-right" class="w-5 h-5"></i>
+        <i data-lucide="arrow-right" aria-hidden="true" class="w-5 h-5"></i>
       </button>
       <button 
-        id="currentLocationButton" 
+        id="currentLocationButton" aria-label="Use your current location to find stores" 
         class="bg-primary hover:bg-primary-dark text-white py-3 px-6 rounded-lg transition flex items-center justify-center whitespace-nowrap gap-2"
       >
-        <i data-lucide="map-pin" class="w-5 h-5"></i>
+        <i data-lucide="map-pin" aria-hidden="true" class="w-5 h-5"></i>
         <span>Use my location</span>
       </button>
     </div>
@@ -112,12 +127,12 @@ if (!isset($_SESSION['user'])) {
     </div>
 
     <!-- Map Container -->
-    <div id="map" class="w-full h-96 rounded-xl overflow-hidden shadow-md mb-8 border border-gray-200"></div>
+    <div id="map" role="region" aria-label="Map showing grocery store locations" class="w-full h-96 rounded-xl overflow-hidden shadow-md mb-8 border border-gray-200"></div>
 
     <!-- Stores List -->
     <div class="bg-white rounded-xl shadow-md overflow-hidden border border-gray-200">
       <h3 class="text-xl font-semibold p-4 border-b border-gray-200 bg-gray-50">Nearby Grocery Stores</h3>
-      <ul id="stores-list" class="divide-y divide-gray-200"></ul>
+      <ul id="stores-list" role="region" aria-label="List of nearby grocery stores" class="divide-y divide-gray-200"></ul>
     </div>
   </main>
 

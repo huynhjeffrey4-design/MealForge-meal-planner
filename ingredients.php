@@ -76,7 +76,20 @@ $commonIngredients = [
         .select2-container--default .select2-selection--multiple .select2-selection__choice__remove:hover {
             color: #f3f4f6;
         }
+    
+    .sr-only {
+        position: absolute;
+        width: 1px;
+        height: 1px;
+        padding: 0;
+        margin: -1px;
+        overflow: hidden;
+        clip: rect(0, 0, 0, 0);
+        white-space: nowrap;
+        border: 0;
+    }
     </style>
+    
 </head>
 <body class="bg-green-50">
     <?php include 'header.php'; ?>
@@ -100,14 +113,14 @@ $commonIngredients = [
                 
                 <div class="text-center">
                     <button type="submit" class="px-6 py-3 bg-green-600 text-white font-medium rounded-lg hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-green-500 transition-colors">
-                        Find Recipes
+                        Find Recipes<span class="sr-only"> based on selected ingredients</span>
                     </button>
                 </div>
             </form>
         </div>
         
         <?php if (!empty($recipes)): ?>
-    <div class="mb-6">
+    <div class="mb-6" role="region" aria-label="Matching recipes based on your ingredients">
         <h2 class="text-2xl font-bold text-gray-800 mb-4">Recipes You Can Make</h2>
         <p class="text-gray-600 mb-4">Found <?= count($recipes) ?> recipes using your ingredients</p>
         
@@ -118,7 +131,7 @@ $commonIngredients = [
                         <img src="<?= htmlspecialchars($recipe['imageURL']) ?>" alt="<?= htmlspecialchars($recipe['recipe']) ?>" class="w-full h-48 object-cover">
                     <?php else: ?>
                         <div class="w-full h-48 bg-gray-200 flex items-center justify-center">
-                            <i data-lucide="utensils" class="w-12 h-12 text-gray-400"></i>
+                            <i data-lucide="utensils" aria-hidden="true" class="w-12 h-12 text-gray-400"></i>
                         </div>
                     <?php endif; ?>
                     
@@ -134,11 +147,11 @@ $commonIngredients = [
                         
                         <div class="flex justify-between items-center mb-4">
                             <div class="flex items-center">
-                                <i data-lucide="clock" class="w-4 h-4 text-gray-500 mr-1"></i>
+                                <i data-lucide="clock" aria-hidden="true" class="w-4 h-4 text-gray-500 mr-1"></i>
                                 <span class="text-sm text-gray-500"><?= $recipe['total_time'] ?> mins</span>
                             </div>
                             <div class="flex items-center">
-                                <i data-lucide="gauge" class="w-4 h-4 text-gray-500 mr-1"></i>
+                                <i data-lucide="gauge" aria-hidden="true" class="w-4 h-4 text-gray-500 mr-1"></i>
                                 <span class="text-sm text-gray-500"><?= htmlspecialchars($recipe['difficulty']) ?></span>
                             </div>
                         </div>

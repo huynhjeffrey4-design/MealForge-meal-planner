@@ -141,7 +141,20 @@ if (!isset($_SESSION['user'])) {
         padding: 15px;
       }
     }
-  </style>
+  
+    .sr-only {
+      position: absolute;
+      width: 1px;
+      height: 1px;
+      padding: 0;
+      margin: -1px;
+      overflow: hidden;
+      clip: rect(0, 0, 0, 0);
+      white-space: nowrap;
+      border: 0;
+    }
+    </style>
+    
 </head>
 
 <body>
@@ -165,16 +178,16 @@ if (!isset($_SESSION['user'])) {
 
       <h3>Why MealForge?</h3>
       <ul>
-        <li>🛒 Local Grocery Integration: Save time and money with real-time store prices and deals.</li>
-        <li>🌿 Health-First Approach: Prioritize nutrition without sacrificing flavor.</li>
-        <li>🎓 Student-Friendly: Designed for busy schedules and tight budgets.</li>
-        <li>🆓 Completely Free: Save your budget towards grocery shopping instead.</li>
+        <li><span aria-hidden="true">🛒</span> Local Grocery Integration: Save time and money with real-time store prices and deals.</li>
+        <li><span aria-hidden="true">🌿</span> Health-First Approach: Prioritize nutrition without sacrificing flavor.</li>
+        <li><span aria-hidden="true">🎓</span> Student-Friendly: Designed for busy schedules and tight budgets.</li>
+        <li><span aria-hidden="true">🆓</span> Completely Free: Save your budget towards grocery shopping instead.</li>
       </ul>
 
       <h3>Ready to Simplify Meal Planning?</h3>
       <p>Join thousands of users already enjoying stress-free meals.</p>
       <div class="button-container">
-        <a href="dashboard.php" class="button">Go to Dashboard</a>
+        <a href="dashboard.php" class="button">Go to Dashboard<span class="sr-only"> to start planning meals</span></a>
       </div>
     </div>
   </div>
