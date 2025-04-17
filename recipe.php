@@ -470,15 +470,8 @@ handleDeleteComment($isLoggedIn, $recipeController, $recipe_id);
 						<h2 class="text-2xl font-bold mb-4">Similar Recipes You Might Like</h2>
 						<div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
 							<?php foreach ($similarRecipes as $similarRecipe): ?>
-								<a href="recipe.php?id=<?= htmlspecialchars($similarRecipe['id']) ?>" class="block bg-white rounded-lg shadow overflow-hidden hover:shadow-md transition-shadow duration-200">
-									<?php if (!empty($similarRecipe['imageURL'])): ?>
-										<img src="<?= htmlspecialchars($similarRecipe['imageURL']) ?>" alt="<?= htmlspecialchars($similarRecipe['recipe']) ?>" class="w-full h-32 object-cover">
-									<?php else: ?>
-										<div class="w-full h-32 bg-gray-200 flex items-center justify-center text-gray-400">
-											<i data-lucide="image-off" class="w-10 h-10"></i>
-										</div>
-									<?php endif; ?>
-									<div class="p-3">
+								<a href="recipe.php?id=<?= htmlspecialchars($similarRecipe['id']) ?>" class="block bg-white rounded-lg shadow p-3 hover:shadow-md transition-shadow duration-200">
+									<div>
 										<h3 class="font-semibold text-md mb-1 truncate"><?= htmlspecialchars($similarRecipe['recipe']) ?></h3>
 										<?php if (!empty($similarRecipe['description'])): ?>
 											<p class="text-gray-600 text-sm mb-2 line-clamp-2"><?= htmlspecialchars($similarRecipe['description']) ?></p>
