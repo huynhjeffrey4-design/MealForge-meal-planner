@@ -59,9 +59,9 @@ class PostController
     }
 
     // Add a new post
-    public function addPost($userId, $firstName, $lastName, $description, $base64Image, $profile_pic): void
+    public function addPost($userId, $firstName, $lastName, $description, $base64Image, $profile_pic, $recipe_id): void
     {
-        $this->postProvider->addPost($userId, $firstName, $lastName, $description, $base64Image, $profile_pic);
+        $this->postProvider->addPost($userId, $firstName, $lastName, $description, $base64Image, $profile_pic, $recipe_id);
     }
 
     // Add a comment to a post
@@ -196,7 +196,7 @@ class RedbeanPostDataProvider implements PostDataProvider
     }
 
     // Add a new post to the database
-    public function addPost($userId, $firstName, $lastName, $description, $base64Image, $profile_pic): void
+    public function addPost($userId, $firstName, $lastName, $description, $base64Image, $profile_pic, $recipe_id): void
     {
         $post = \R::dispense('post');
         $post->user_id = $userId;
@@ -208,7 +208,7 @@ class RedbeanPostDataProvider implements PostDataProvider
         $post->likes = 0;
         $post->liked_by = "";
         $post->profile_picture = $profile_pic;
-
+        $post->from_recipe = $recipe_id;
         \R::store($post);
     }
 

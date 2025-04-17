@@ -5,6 +5,9 @@ require_once __DIR__ . '/controllers/post.php';
 require_once 'SetupRedbean.php';
 DatabaseConnection::getInstance()->setup();
 session_start();
+if (isset($_GET['recipe_id'])) {
+    $_SESSION['from_recipe_id'] = intval($_GET['recipe_id']);
+}
 // Initialize PostController with Redbean
 $postController = new PostController(new RedbeanPostDataProvider());
 $socialPosts = R::findAll('socialpost', 'ORDER BY timestamp DESC');
@@ -97,6 +100,7 @@ if (isset($_GET['recipe_id'], $_GET['recipe_name'], $_GET['user_firstname'])) {
 
     // Create the post message dynamically
     $postMessage = "I just made {$recipeName}!";
+
 } else {
     // Default message if no parameters are passed
     $postMessage = "";
@@ -111,7 +115,7 @@ function handlePostSubmission($isLoggedIn, $postController)
 
         $allowedTypes = ['image/jpeg', 'image/png', 'image/gif'];
         if (!in_array($image['type'], $allowedTypes)) {
-            $_SESSION['error'] = 'Invalid image type. Please upload a JPG, PNG, or GIF image.';
+            $_SESSION['error'] = 'Upload a JPG, PNG, or GIF image. Max size = 2 MB.';
             header('Location: social.php');
             exit;
         }
@@ -125,7 +129,11 @@ function handlePostSubmission($isLoggedIn, $postController)
 
         // Profile picture
         $profile_picture = $user['profile_picture'] ?: 'prof_pics/default_avatar.png';
-        $postController->addPost($userId, $user['first_name'], $user['last_name'], $description, $base64Image, $profile_picture);
+
+        $recipe_id = $_SESSION['from_recipe_id'] ?? null;
+        unset($_SESSION['from_recipe_id']);
+
+        $postController->addPost($userId, $user['first_name'], $user['last_name'], $description, $base64Image, $profile_picture, $recipe_id);
 
         header('Location: social.php');
         exit;
@@ -217,8 +225,10 @@ $posts = $postController->getAllPosts();
                     </div>
                     <!-- Image File Upload (Takes 1/3 of the width) -->
                     <div class="flex-1 w-1/3">
-                        <label for="image" class="block text-sm font-medium text-gray-700">Upload Image</label>
-                        <input type="file" id="image" name="image" accept="image/jpeg, image/png, image/gif" class="w-full p-2 border border-gray-300 rounded-md" required>
+                        <label for="image" class="block text-sm font-medium text-gray-700">
+                            Upload Image <span class="text-xs text-gray-500">(2 MB limit)</span>
+                        </label>
+                        <input type="file" id="image" name="image" accept="image/jpeg, image/png, image/gif" class="w-full p-2 border border-gray-300 rounded-md">
                     </div>
                 </div>
             </form>
@@ -379,6 +389,14 @@ $sharedRecipes = R::findAll('socialpost', 'ORDER BY timestamp DESC');
                                     <?php endif; ?>
                                     <span class="like-count text-black font-bold <?= isset($isLiked) && $isLiked ? 'liked' : '' ?>"><?= $post['likes'] ?></span>
                                 </div>
+                                <?php if (!empty($post['from_recipe'])): ?>
+                                    <div class="mt-2">
+                                        <a href="recipe.php?id=<?= htmlspecialchars($post['from_recipe']) ?>"
+                                           class="inline-block px-4 py-2 bg-green-500 text-white rounded-md hover:bg-green-600 font-semibold text-sm">
+                                            View Recipe
+                                        </a>
+                                    </div>
+                                <?php endif; ?>
                             </div>
 
                         <!-- Right section: Recipe Image -->
@@ -496,5 +514,21 @@ $sharedRecipes = R::findAll('socialpost', 'ORDER BY timestamp DESC');
     });
 </script>
 
+<script>
+    document.addEventListener("DOMContentLoaded", function () {
+        const form = document.querySelector('form[enctype="multipart/form-data"]');
+        const fileInput = document.getElementById('image');
+
+        form.addEventListener('submit', function (e) {
+            const file = fileInput.files[0];
+            const maxSize = 2 * 1024 * 1024; // 2 MB
+
+            if (file && file.size > maxSize) {
+                e.preventDefault();
+                alert("Image is too large. Max size is 2 MB.");
+            }
+        });
+    });
+</script>
 </body>
 </html>
