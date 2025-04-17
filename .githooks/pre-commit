@@ -1,17 +1,33 @@
 #!/bin/bash
-echo "Running PHP CS Fixer using Docker with PHP 8.1..."
 
-docker run --rm \
-  -v "$(pwd):/app" \
-  -w /app \
-  php:8.1-cli \
-  ./vendor/bin/php-cs-fixer fix .
+# Get list of staged PHP files
+STAGED_PHP_FILES=$(git diff --cached --name-only --diff-filter=ACM | grep '\.php$')
 
-if [ $? -ne 0 ]; then
-  echo "PHP CS Fixer failed!"
-  exit 1
+# Exit if no PHP files are staged
+if [ -z "$STAGED_PHP_FILES" ]; then
+    echo "No PHP files staged for commit. Skipping PHP CS Fixer."
+    exit 0
 fi
 
-git add -u
+echo "Running PHP CS Fixer using Docker with PHP 8.1..."
+echo "Formatting staged PHP files only: $STAGED_PHP_FILES"
 
+# Run PHP CS Fixer only on staged PHP files
+for FILE in $STAGED_PHP_FILES; do
+    docker run --rm \
+        -v "$(pwd):/app" \
+        -w /app \
+        php:8.1-cli \
+        ./vendor/bin/php-cs-fixer fix "$FILE"
+    
+    if [ $? -ne 0 ]; then
+        echo "PHP CS Fixer failed on $FILE!"
+        exit 1
+    fi
+    
+    # Re-add the fixed file to staging
+    git add "$FILE"
+done
+
+echo "PHP CS Fixer completed successfully!"
 exit 0
