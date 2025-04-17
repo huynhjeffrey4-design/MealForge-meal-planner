@@ -112,7 +112,7 @@ if (!isset($_SESSION['user'])) {
     .button {
       font-family: 'Josefin Sans', sans-serif;
       color: white;
-      background-color: #00A63E;
+      background-color:  #15803D;
       padding: 12px 20px;
       border: none;
       border-radius: 6px;
@@ -124,7 +124,7 @@ if (!isset($_SESSION['user'])) {
     }
 
     .button:hover {
-      background-color: #008c34;
+      background-color: #116530;
     }
     
     @media (max-width: 768px) {

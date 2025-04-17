@@ -50,7 +50,7 @@ if ($registration_success) {
 	<link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
 	<style>
 		.bg-primary {
-			background-color: #00A651;
+			background-color: #15803D;
 		}
 
 		.text-primary {
@@ -58,7 +58,7 @@ if ($registration_success) {
 		}
 
 		.hover\:bg-primary-dark:hover {
-			background-color: #009048;
+			background-color: #116530;
 		}
 
 		.focus\:ring-primary:focus {
@@ -91,7 +91,7 @@ if ($registration_success) {
 			<div class="max-w-2xl mx-auto">
 				<h1 class="text-2xl font-bold mb-6 md:mb-10 text-white">MealForge</h1>
 				<h2 class="text-3xl md:text-4xl lg:text-5xl font-bold mb-4 text-white">Login to your MealForge account</h2>
-				<p class="text-white/90 text-lg md:text-xl">Your meal planner, powered by your needs.</p>
+				<p class="text-white text-lg md:text-xl">Your meal planner, powered by your needs.</p>
 			</div>
 		</div>
 
@@ -140,7 +140,7 @@ if ($registration_success) {
 								class="w-4 h-4 rounded border-gray-300 text-primary focus:ring-primary">
 							<label for="remember" class="text-sm text-gray-600">Remember me</label>
 						</div>
-						<a href="forgot-password.php" class="text-primary hover:text-primary/80">
+						<a href="forgot-password.php" class="text-green-700 hover:text-green-800">
 							Forgot your password?
 						</a>
 					</div>
@@ -153,7 +153,7 @@ if ($registration_success) {
 
 					<div class="text-center text-gray-600">
 						Don't have a MealForge account?
-						<a href="registration.php" class="text-primary hover:text-primary/80 font-medium">
+						<a href="registration.php" class="text-green-700 hover:text-green-800 font-medium">
 							Create one now
 						</a>
 					</div>

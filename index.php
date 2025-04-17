@@ -36,10 +36,10 @@
 			<div class="space-x-6">
 				<a href="About.php">
 
-					<button class="text-gray-600 hover:text-green-700">About</button>
+					<button class="text-gray-700 hover:text-green-700">About</button>
 				</a>
 				<a href="login.php">
-					<button class="bg-green-600 text-white px-4 py-2 rounded-lg hover:bg-green-700">
+					<button class="bg-green-700 text-white px-4 py-2 rounded-lg hover:bg-green-700">
 						Get Started
 					</button>
 				</a>
@@ -60,9 +60,9 @@
 					Tell us about your dietary preferences and budget, and we'll forge the perfect meal plan tailored to your needs.
 				</p>
 				<a href="login.php">
-					<button class="bg-green-600 text-white px-8 py-4 rounded-lg text-lg font-semibold hover:bg-green-700 flex items-center gap-2">
-						Start Your Journey<span class="sr-only"> with MealForge personalized plans</span>
-						<i data-lucide="chevron-right" aria-hidden="true" class="w-5 h-5"></i>
+					<button class="bg-green-700 text-white px-8 py-4 rounded-lg text-lg font-semibold hover:bg-green-700 flex items-center gap-2">
+						Start Your Journey
+						<i data-lucide="chevron-right" class="w-5 h-5"></i>
 					</button>
 				</a>
 			</div>
@@ -107,18 +107,18 @@
 	</div>
 
 	<!-- CTA Section -->
-	<div class="bg-green-600 py-20">
+	<div class="bg-green-700 py-20">
 		<div class="max-w-6xl mx-auto px-4 text-center">
 			<h2 class="text-3xl font-bold text-white mb-6">
 				Ready to Transform Your Meal Planning?
 			</h2>
-			<p class="text-xl text-green-50 mb-8 max-w-2xl mx-auto">
+			<p class="text-xl text-white font-medium mb-8 max-w-2xl mx-auto">
 				Join thousands of happy users who have discovered their perfect meal plans with MealForge.
 			</p>
 			<a href="login.php">
-				<button class="bg-white text-green-600 px-8 py-4 rounded-lg text-lg font-semibold hover:bg-green-50 flex items-center gap-2 mx-auto">
-					Get Started Now<span class="sr-only"> and create your account</span>
-					<i data-lucide="arrow-right" aria-hidden="true" class="w-5 h-5"></i>
+				<button class="bg-white text-green-700 px-8 py-4 rounded-lg text-lg font-semibold hover:bg-green-50 flex items-center gap-2 mx-auto">
+					Get Started Now
+					<i data-lucide="arrow-right" class="w-5 h-5"></i>
 				</button>
 			</a>
 		</div>
@@ -130,13 +130,13 @@
 			<div class="grid grid-cols-1 md:grid-cols-4 gap-8">
 				<div>
 					<h3 class="text-xl font-bold mb-4">MealForge</h3>
-					<p class="text-gray-400">
+					<p class="text-gray-300">
 						Personalizing meal planning for a healthier, happier you.
 					</p>
 				</div>
 				<div>
 					<h4 class="font-semibold mb-4">Company</h4>
-					<ul class="space-y-2 text-gray-400">
+					<ul class="space-y-2 text-gray-300">
 						<li>About Us</li>
 						<li>Careers</li>
 						<li>Contact</li>
@@ -144,7 +144,7 @@
 				</div>
 				<div>
 					<h4 class="font-semibold mb-4">Resources</h4>
-					<ul class="space-y-2 text-gray-400">
+					<ul class="space-y-2 text-gray-300">
 						<li>Blog</li>
 						<li>Recipes</li>
 						<li>Support</li>
@@ -152,7 +152,7 @@
 				</div>
 				<div>
 					<h4 class="font-semibold mb-4">Legal</h4>
-					<ul class="space-y-2 text-gray-400">
+					<ul class="space-y-2 text-gray-300">
 						<li>Privacy Policy</li>
 						<li>Terms of Service</li>
 						<li>Cookie Policy</li>
