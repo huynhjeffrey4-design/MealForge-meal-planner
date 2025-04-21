@@ -59,7 +59,7 @@ final class RecipeCest
         // Verify redirection to the social page with correct parameters
         $I->seeInCurrentUrl($expectedUrlPart);
 
-        $I->see("I just made \"Panuozzo sandwich!\"");
+        $I->see("I just made \"Panuozzo sandwich\"!");
     }
 
     public function recipeShowsRecommendations(AcceptanceTester $I)
