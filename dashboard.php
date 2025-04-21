@@ -125,6 +125,20 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         }
         exit;
     }
+
+    if (isset($_POST['remove_meal_id'])) {
+        $mealId = (int)$_POST['remove_meal_id'];
+        $meal = R::load('mealplan', $mealId);
+
+        if ($meal && $meal->user_id == $userId) {
+            R::trash($meal);
+            echo json_encode(['success' => true]);
+        } else {
+            echo json_encode(['success' => false, 'message' => 'Meal not found or access denied']);
+        }
+        exit;
+    }
+
 }
 ?>
 
@@ -226,7 +240,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                                             </button>
                                             <div class="hidden absolute right-0 mt-2 w-48 bg-white rounded-md shadow-lg z-10 meal-menu">
                                                 <div class="py-1">
-                                                    <button class="w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 remove-meal" data-day="<?php echo $day; ?>" data-index="<?php echo $index; ?>">
+                                                    <button class="w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 remove-meal"
+                                                            data-meal-id="<?= $meal['id'] ?>">
                                                         <i class="fa fa-trash mr-2 text-red-500" aria-hidden="true"></i> Remove
                                                     </button>
                                                 </div>
@@ -478,6 +493,13 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             <div class="p-0">
                 <img id="recipe-image" src="" alt="Preview of selected recipe" class="w-full h-64 object-cover rounded-lg mb-4">
 
+                <!-- Meal Name Section -->
+                <div class="mb-4">
+                    <h3 class="text-lg font-bold">Meal Name</h3>
+                    <p id="meal-name" class="text-gray-700"></p>
+                </div>
+
+
                 <!-- Description Section -->
                 <div id="description-section" class="mb-6">
                     <h3 class="text-lg font-bold mb-2 mt-6">Description</h3>
@@ -518,7 +540,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
            </div>
        </div>
         </div>
-    </div>
+
     <!-- Confirmation Modal -->
     <div id="confirm-modal" class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center hidden z-50 p-2 sm:p-4" role="dialog" aria-label="Confirmation Modal">
         <div class="bg-white rounded-lg w-[95%] max-w-md p-4 sm:p-6">
@@ -671,6 +693,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 
                 // Populate recipe modal with meal data
                 document.getElementById('recipe-title').textContent = mealData.name;
+                document.getElementById('meal-name').textContent = mealData.recipe || "Unnamed"
                 document.getElementById('recipe-image').src = mealData.image;
                 document.getElementById('recipe-image').alt = mealData.name;
                 document.getElementById('recipe-description').textContent = mealData.description;
@@ -806,68 +829,60 @@ safeIngredients.forEach(ingredient => {
         });
         
         // Remove meal handlers
+        let mealIdToRemove = null;
+
         document.querySelectorAll('.remove-meal').forEach(button => {
-            button.addEventListener('click', function() {
-                const day = this.dataset.day;
-                const index = parseInt(this.dataset.index);
-                
-                // Store removal data
-                removeData.day = day;
-                removeData.index = index;
-                
+            button.addEventListener('click', function () {
+                mealIdToRemove = this.dataset.mealId;
+
                 // Show confirmation modal
-                document.getElementById('confirm-title').textContent = `Remove this meal from ${day}?`;
+                document.getElementById('confirm-title').textContent = `Remove this meal?`;
                 document.getElementById('confirm-message').textContent = 'Are you sure you want to remove this meal from your plan?';
-                confirmModal.classList.remove('hidden');
+                document.getElementById('confirm-modal').classList.remove('hidden');
             });
         });
-        
+
+
         // Confirm removal handler
         document.getElementById('confirm-action').addEventListener('click', function() {
-            if (removeData.day && removeData.index >= 0) {
-                // Send request to remove meal
+            if (mealIdToRemove) {
                 const formData = new FormData();
-                formData.append('remove_day', removeData.day);
-                formData.append('remove_index', removeData.index);
-                
+                formData.append('remove_meal_id', mealIdToRemove);
+
                 fetch('dashboard.php', {
                     method: 'POST',
                     body: formData
                 })
-                .then(response => response.json())
-                .then(data => {
-                    if (data.success) {
-                        // Close modal
-                        confirmModal.classList.add('hidden');
-                        
-                        // Reload page to show updated meal plan
-                        window.location.reload();
-                    } else {
-                        alert('Failed to remove meal: ' + (data.message || 'Unknown error'));
-                    }
-                })
-                .catch(error => {
-                    console.error('Error:', error);
-                    alert('An error occurred while removing the meal');
-                });
+                    .then(response => response.json())
+                    .then(data => {
+                        if (data.success) {
+                            document.getElementById('confirm-modal').classList.add('hidden');
+                            window.location.reload();
+                        } else {
+                            alert('Failed to remove meal: ' + (data.message || 'Unknown error'));
+                        }
+                    })
+                    .catch(error => {
+                        console.error('Error:', error);
+                        alert('An error occurred while removing the meal');
+                    });
             }
         });
 
-        
-  
-    
+
+
+
+
 
         document.addEventListener("DOMContentLoaded", function() {
         const chooseSearchBtn = document.getElementById("chooseSearchBtn");
         const chooseCreateBtn = document.getElementById("chooseCreateBtn");
         const mealModal = document.getElementById("meal-modal");
         const searchIframe = document.getElementById("search-iframe");
-       // const chooseAddMethodModal = document.getElementById("chooseAddMethodModal");
 
   
 
      chooseCreateBtn.addEventListener("click", function () {
-    //  chooseAddMethodModal.classList.add("hidden"); // 
     
     
     const iframe = document.getElementById("createRecipeIframe");
