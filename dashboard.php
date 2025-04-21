@@ -45,10 +45,18 @@ if (!$user) {
     exit;
 }
 
-// Sample meals data (in a real app, this would come from a database)
-$meals = [
-    // Your meal data array here...
+$meals = R::findAll('mealplan', 'user_id = ?', [$userId]);
+$groupedMeals = [
+    'Monday' => [], 'Tuesday' => [], 'Wednesday' => [],
+    'Thursday' => [], 'Friday' => [], 'Saturday' => [], 'Sunday' => []
 ];
+
+foreach ($meals as $meal) {
+    $day = $meal->day ?? '';
+    if (isset($groupedMeals[$day])) {
+        $groupedMeals[$day][] = $meal->export();
+    }
+}
 
 
 // Add recipe directly to meal plan
@@ -196,8 +204,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                     <h2 class="text-lg font-bold text-center mb-4"><?php echo $day; ?></h2>
                     
                     <div class="flex-1 flex flex-col" id="meals-<?php echo strtolower($day); ?>">
-                        <?php if (isset($_SESSION['meal_plan'][$day]) && !empty($_SESSION['meal_plan'][$day])): ?>
-                            <?php foreach ($_SESSION['meal_plan'][$day] as $index => $meal): ?>
+                        <?php if (!empty($groupedMeals[$day])): ?>
+                            <?php foreach ($groupedMeals[$day] as $index => $meal): ?>
                                 <div class="mb-3 relative meal-card">
                                 <a href="#" class="meal-details" data-meal='<?= htmlspecialchars(json_encode($meal), ENT_QUOTES, 'UTF-8') ?>'>
                                 <img
@@ -208,7 +216,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
                                  
                                         <div class="bg-black bg-opacity-60 text-white text-sm p-2 absolute bottom-0 left-0 right-0 rounded-b-lg">
-                                            <?php echo htmlspecialchars($meal['name']); ?>
+                                            <?php echo htmlspecialchars($meal['recipe']); ?>
                                         </div>
                                     </a>
                                     <div class="absolute top-2 right-2 meal-options">
@@ -456,6 +464,12 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                     </button>
                     <h2 class="text-xl font-bold" id="recipe-title">Recipe Details</h2>
                 </div>
+                <a href="social.php"
+                   class="text-gray-500 hover:text-blue-600 mr-2"
+                   title="Share to Social Page">
+                    <i data-lucide="share-2" class="w-5 h-5"></i>
+                    <span class="sr-only">Share to Social Page</span>
+                </a>
                 <button id="close-recipe" class="text-gray-500 hover:text-gray-700">
                     <i class="fa fa-times" aria-hidden="true"></i><span class="sr-only">Close</span>
                 </button>
@@ -463,11 +477,15 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             
             <div class="p-0">
                 <img id="recipe-image" src="" alt="Preview of selected recipe" class="w-full h-64 object-cover rounded-lg mb-4">
-                
-                <p id="recipe-description" class="list-disc pl-5 space-y-1"></p>
-              
-               
-                   <h3 class="text-lg font-bold mb-2">Meal Details</h3>
+
+                <!-- Description Section -->
+                <div id="description-section" class="mb-6">
+                    <h3 class="text-lg font-bold mb-2 mt-6">Description</h3>
+                    <p id="recipe-description" class="text-gray-700"></p>
+                </div>
+
+
+                <h3 class="text-lg font-bold mb-2">Meal Details</h3>
                    <ul class="list-disc pl-5 space-y-1 text-sm text-gray-700">
 
 
@@ -475,13 +493,13 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                       <li id="prep-time"></li>
                       <li id="cook-time"></li>
                       <li id="difficulty"></li>
-                      <li id="servings"></li>
+                      <li id="serves"></li>
                       <li id="meal-type"></li>
                   </ul>
                 </div>
                 
                 <div class="mb-6">
-                    <h3 class="text-lg font-bold mb-2">Ingredients</h3>
+                    <h3 class="text-lg font-bold mt-6 mb-2">Ingredients</h3>
                     <ul id="recipe-ingredients" class="list-disc pl-5 space-y-1"></ul>
                 </div>
                 
@@ -493,12 +511,12 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                
                   <div id="recipe-tags" class="flex flex-wrap gap-2 mb-4"></div>
                  </div>
-                
-                <div>
-                    <h3 class="text-lg font-bold mb-2">Nutrition Information</h3>
-                    <ul id="recipe-nutrition" class="list-disc pl-5 space-y-1"></ul>
-                </div>
-            </div>
+
+           <div id="nutrition-section" class="mb-6">
+               <h3 class="text-lg font-bold mb-2">Nutrition Information</h3>
+               <ul id="recipe-nutrition" class="list-disc pl-5 space-y-1"></ul>
+           </div>
+       </div>
         </div>
     </div>
     <!-- Confirmation Modal -->
@@ -542,7 +560,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         const day = this.dataset.day;
         currentDay = day;
         const searchIframe = document.getElementById('search-iframe');
-   // searchIframe.src = `search.php?modal=true&day=${encodeURIComponent(day)}`;
    searchIframe.src = `search.php?modal=true&day=${encodeURIComponent(currentDay)}&from=dashboard`;
 
     document.getElementById('meal-modal').classList.remove('hidden');
@@ -594,7 +611,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                       prepTime: recipe.prep_time || '',
                       cookTime: recipe.cook_time || '',
                       difficulty: recipe.difficulty || '',
-                      servings: recipe.serves || '',
+                      serves: recipe.serves || '',
                       mealType: recipe.meal_type || '',
                       tags: Array.isArray(recipe.tags) ? recipe.tags : []
                    
@@ -660,7 +677,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 document.getElementById("prep-time").textContent     = "Prep Time: " + (mealData.prepTime || "N/A") + " min";
                 document.getElementById("cook-time").textContent     = "Cook Time: " + (mealData.cookTime || "N/A") + " min";
                 document.getElementById("difficulty").textContent    = "Difficulty: " + (mealData.difficulty || "N/A");
-                document.getElementById("servings").textContent      = "Servings: " + (mealData.servings || "N/A");
+                document.getElementById("serves").textContent      = "Serves: " + (mealData.serves || "N/A");
                 document.getElementById("meal-type").textContent = "Meal Type: " + (mealData.mealType || "N/A");
 
 
@@ -693,54 +710,65 @@ safeIngredients.forEach(ingredient => {
 });
 
 // Populate instructions
-const instructionsList = document.getElementById('recipe-instructions');
-instructionsList.innerHTML = '';
-safeInstructions.forEach(step => {
-    const li = document.createElement('li');
-    li.textContent = step;
-    instructionsList.appendChild(li);
-});
+                const instructionsContainer = document.getElementById('recipe-instructions');
+                instructionsContainer.textContent = safeInstructions.join('\n\n');
 
               
 
                 // Populate tags
                 const tagsContainer = document.getElementById('recipe-tags');
-                tagsContainer.innerHTML = ''; 
+                tagsContainer.innerHTML = '';
 
                 if (mealData.tags && mealData.tags.length > 0) {
-                  const label = document.createElement('span');
-                     label.textContent = 'Tags: ';
-                     label.className = 'font-semibold mr-2';
-                     tagsContainer.appendChild(label);
+                    tagsContainer.style.display = 'flex';
+                    const label = document.createElement('span');
+                    label.textContent = 'Tags: ';
+                    label.className = 'font-semibold mr-2';
+                    tagsContainer.appendChild(label);
 
-                  mealData.tags.forEach(tag => {
-                     const span = document.createElement('span');
-                    span.className = 'inline-block bg-green-100 text-green-800 text-sm rounded-full px-3 py-1 mr-1';
-                    span.textContent = tag;
-                    tagsContainer.appendChild(span);
-                 });
-                 } else {
-                tagsContainer.textContent = 'Tags: None';
-                 }
-              
-                
+                    mealData.tags.forEach(tag => {
+                        const span = document.createElement('span');
+                        span.className = 'inline-block bg-green-100 text-green-800 text-sm rounded-full px-3 py-1 mr-1';
+                        span.textContent = tag;
+                        tagsContainer.appendChild(span);
+                    });
+                } else {
+                    tagsContainer.style.display = 'none';
+                }
+
+
+
                 // Populate nutrition
                 const nutritionList = document.getElementById('recipe-nutrition');
-                  nutritionList.innerHTML = '';
+                const nutritionSection = document.getElementById('recipe-nutrition');
+                const nutritionWrapper = nutritionSection?.closest('div'); // container with heading + list
+                nutritionSection.innerHTML = '';
 
                 const safeNutrition = Array.isArray(mealData.nutrition)
-                ? mealData.nutrition
-                : (typeof mealData.nutrition === 'string'
-                ? mealData.nutrition.split(',').map(n => n.trim())
-                  : []);
+                    ? mealData.nutrition
+                    : (typeof mealData.nutrition === 'string'
+                        ? mealData.nutrition.split(',').map(n => n.trim())
+                        : []);
 
-               safeNutrition.forEach(item => {
-                  const li = document.createElement('li');
-                  li.textContent = item;
-                  nutritionList.appendChild(li);
+                const validNutrition = safeNutrition.filter(item => {
+                    const value = parseInt(item);
+                    return !isNaN(value) && value > 0;
                 });
 
-                
+                if (validNutrition.length > 0) {
+                    validNutrition.forEach(item => {
+                        const li = document.createElement('li');
+                        li.textContent = item;
+                        nutritionSection.appendChild(li);
+                    });
+                    if (nutritionWrapper) nutritionWrapper.classList.remove('hidden');
+                } else {
+                    if (nutritionWrapper) nutritionWrapper.classList.add('hidden');
+                }
+
+
+
+
                 // Show recipe modal
                 recipeModal.classList.remove('hidden');
             });
@@ -865,13 +893,6 @@ safeInstructions.forEach(step => {
         document.getElementById("createRecipeIframe").src = "";
     });
 });
-
-
-  
-
-
-
-
     </script> 
   
     
@@ -881,9 +902,9 @@ safeInstructions.forEach(step => {
   <div class="bg-white rounded-lg w-full max-w-md h-[80vh] flex flex-col">
     <div class="p-4 border-b flex justify-between items-center">
       <h2 class="text-xl font-bold">Create Your Own Recipe</h2>
-      <button id="close-createRecipeModal" class="text-gray-500 hover:text-gray-700">
-          <i class="fa fa-times" aria-hidden="true"></i><span class="sr-only">Close</span>
-      </button>
+        <button id="close-createRecipeModal" class="w-full bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded text-center flex items-center justify-center">
+            <i class="fa fa-times" aria-hidden="true"></i><span class="sr-only">Close</span>
+        </button>
     </div>
     <iframe id="createRecipeIframe" class="w-full flex-1 border-0" src=""></iframe>
   </div>
@@ -917,7 +938,5 @@ window.addEventListener('message', function (event) {
   }
 });
 </script>
-
-
 </body>
 </html>
