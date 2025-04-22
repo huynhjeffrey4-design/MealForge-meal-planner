@@ -37,14 +37,14 @@ final class LinksCest
             'links' => [
                 /* Uncomment this when implementing forgot-password */
                 /*['text' => 'Forgot your password?', 'href' => 'forgot-password.php'],*/
-                ['text' => 'Create one now', 'href' => 'registration.php']
+                ['text' => 'Sign up', 'href' => 'registration.php']
             ]
         ],
         'Registration Page' => [
             'url' => '/registration.php',
             'pageIdentifier' => 'Create your',
             'links' => [
-                ['text' => 'Login', 'href' => 'login.php', 'expectInUrl' => true]
+                ['text' => 'Log in', 'href' => 'login.php', 'expectInUrl' => true]
             ]
         ],
         'Search Page' => [
