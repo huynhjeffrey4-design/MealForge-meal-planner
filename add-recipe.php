@@ -150,6 +150,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['submit_recipe'])) {
 <body class="bg-green-50 p-6">
 <div class="max-w-2xl mx-auto bg-white p-6 rounded-xl shadow">
 
+
     <?php if ($step == 1): ?>
         <h2 class="text-2xl font-bold mb-4">Step 1: Basic Info</h2>
         <form method="POST" class="space-y-4">
@@ -180,16 +181,16 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['submit_recipe'])) {
 
             <div class="flex items-center">
                 <label for="prep_time" class="w-40 font-medium">Prep Time (min):</label>
-                <input id="prep_time" name="prep_time" type="number" class="flex-1 border border-gray-300 rounded px-2 py-1 text-sm leading-tight" required>
+                <input id="prep_time" name="prep_time" type="number" min="0" class="flex-1 border border-gray-300 rounded px-2 py-1 text-sm leading-tight" required>
             </div>
             <div class="flex items-center">
                 <label for="cook_time" class="w-40 font-medium">Cook Time (min):</label>
-                <input id="cook_time" name="cook_time" type="number" class="flex-1 border border-gray-300 rounded px-2 py-1 text-sm leading-tight" required>
+                <input id="cook_time" name="cook_time" type="number" min="0" class="flex-1 border border-gray-300 rounded px-2 py-1 text-sm leading-tight" required>
             </div>
 
             <div class="flex items-center">
                 <label for="serves" class="w-40 font-medium">Serves:</label>
-                <input id="serves" name="serves" type="number" class="flex-1 border border-gray-300 rounded px-2 py-1 text-sm leading-tight" required>
+                <input id="serves" name="serves" type="number" min="0" class="flex-1 border border-gray-300 rounded px-2 py-1 text-sm leading-tight" required>
             </div>
 
             <div class="flex items-center">
@@ -352,31 +353,37 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['submit_recipe'])) {
 
 
     <?php elseif ($step == 6): ?>
-        <h2 class="text-2xl font-bold text-green-600 mb-4">Recipe Submitted!</h2>
-        <script>
-            const recipeData = <?= json_encode($recipe) ?>;
-            const day = <?= json_encode($day) ?>;
-            const fullMeal = {
-                id: Date.now(),
-                name: recipeData.recipe || 'Untitled',
-                image: recipeData.image || 'static/images/default-recipe.jpg',
-                description: recipeData.description || '',
-                ingredients: (recipeData.ingredients || '').split(', '),
-                instructions: recipeData.instructions || '',
-                nutrition: [
-                    `${recipeData.calories || 0} cal`,
-                    `${recipeData.protein || 0}g protein`
-                ],
-                prepTime: recipeData.prep_time || 'N/A',
-                cookTime: recipeData.cook_time || 'N/A',
-                difficulty: recipeData.difficulty || 'N/A',
-                serves: recipeData.serves || 'N/A',
-                mealType: recipeData.meal_type || 'N/A',
-                type: recipeData.meal_type || 'N/A'
-            };
+    <h2 class="text-2xl font-bold text-green-600 mb-4">Recipe Submitted!</h2>
+    <script>
+        // Send addMeal once, then replace the iframe's content to prevent reload loops
+        const recipeData = <?= json_encode($recipe) ?>;
+        const day = <?= json_encode($day) ?>;
+        const fullMeal = {
+            id: Date.now(),
+            name: recipeData.recipe || 'Untitled',
+            image: recipeData.image || 'static/images/default-recipe.jpg',
+            description: recipeData.description || '',
+            ingredients: (recipeData.ingredients || '').split(', '),
+            instructions: recipeData.instructions || '',
+            nutrition: [
+                `${recipeData.calories || 0} cal`,
+                `${recipeData.protein || 0}g protein`
+            ],
+            prepTime: recipeData.prep_time || 'N/A',
+            cookTime: recipeData.cook_time || 'N/A',
+            difficulty: recipeData.difficulty || 'N/A',
+            serves: recipeData.serves || 'N/A',
+            mealType: recipeData.meal_type || 'N/A',
+            type: recipeData.meal_type || 'N/A'
+        };
 
-            window.parent.postMessage({ action: 'addMeal', recipe: fullMeal, day }, '*');
-        </script>
+        window.parent.postMessage({ action: 'addMeal', recipe: fullMeal, day }, '*');
+
+        // Immediately replace the page to blank to avoid message re-sending on reload
+        setTimeout(() => {
+            window.location.replace('about:blank');
+        }, 200);
+    </script>
     <?php endif; ?>
 
 </div>
