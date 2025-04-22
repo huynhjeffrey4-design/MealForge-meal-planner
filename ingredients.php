@@ -156,7 +156,7 @@ $commonIngredients = [
                             </div>
                         </div>
                         
-                        <a href="recipe.php?id=<?= $recipe['id'] ?>" class="block w-full text-center px-4 py-2 bg-green-600 text-white font-medium rounded-lg hover:bg-green-700 transition-colors">
+                        <a href="recipe.php?id=<?= $recipe['id'] ?>&from=ingredients.php" class="block w-full text-center px-4 py-2 bg-green-600 text-white font-medium rounded-lg hover:bg-green-700 transition-colors">
                             View Recipe
                         </a>
                     </div>

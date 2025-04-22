@@ -338,7 +338,7 @@ $recipesCount = count($recipes);
                             $hasHealthy = in_array("Healthy", $recipe['tags'] ?? []);
                         $hasUnhealthy = in_array("Unhealthy", $recipe['tags'] ?? []);
                         ?>
-                        <a href="<?= $isModal ? '#' : 'recipe.php?id=' . htmlspecialchars($recipe['id']) ?>"
+                        <a href="<?= $isModal ? '#' : 'recipe.php?id=' . htmlspecialchars($recipe['id']) . '&from=search.php' ?>"
                            class="relative block bg-white rounded-lg shadow overflow-hidden hover:shadow-md transition-shadow duration-200"
                             <?php if ($isModal): ?>
                                 onclick='addRecipeToMealPlan(<?= json_encode($recipe, JSON_HEX_TAG | JSON_HEX_APOS | JSON_HEX_QUOT | JSON_HEX_AMP) ?>)'

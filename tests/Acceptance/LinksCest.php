@@ -33,18 +33,18 @@ final class LinksCest
         ],
         'Login Page' => [
             'url' => '/login.php',
-            'pageIdentifier' => 'Login to your MealForge account',
+            'pageIdentifier' => 'Log in to your MealForge account',
             'links' => [
                 /* Uncomment this when implementing forgot-password */
                 /*['text' => 'Forgot your password?', 'href' => 'forgot-password.php'],*/
-                ['text' => 'Create one now', 'href' => 'registration.php']
+                ['text' => 'Sign up', 'href' => 'registration.php']
             ]
         ],
         'Registration Page' => [
             'url' => '/registration.php',
-            'pageIdentifier' => 'Create your MealForge account',
+            'pageIdentifier' => 'Create your',
             'links' => [
-                ['text' => 'Login', 'href' => 'login.php', 'expectInUrl' => true]
+                ['text' => 'Log in', 'href' => 'login.php', 'expectInUrl' => true]
             ]
         ],
         'Search Page' => [

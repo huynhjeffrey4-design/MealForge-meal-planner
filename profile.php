@@ -253,7 +253,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['edit_all'])) {
             </button>
             <div id="liked-recipes-list" class="mt-4 space-y-2 hidden">
                 <?php foreach ($likedRecipes as $recipe): ?>
-                    <a href="recipe.php?id=<?= htmlspecialchars($recipe['id']) ?>" class="block">
+                    <a href="recipe.php?id=<?= htmlspecialchars($recipe['id']) ?>&from=profile.php" class="block">
                         <div class="p-4 bg-white border border-gray-300 rounded shadow-sm hover:bg-gray-50 transition">
                 <span class="text-gray-800 font-medium">
                     <?= htmlspecialchars($recipe['name']) ?>

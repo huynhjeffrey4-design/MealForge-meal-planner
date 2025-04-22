@@ -150,6 +150,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['submit_recipe'])) {
 <body class="bg-green-50 p-6">
 <div class="max-w-2xl mx-auto bg-white p-6 rounded-xl shadow">
 
+
     <?php if ($step == 1): ?>
         <h2 class="text-2xl font-bold mb-4">Step 1: Basic Info</h2>
         <form method="POST" class="space-y-4">
@@ -384,6 +385,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['submit_recipe'])) {
         }, 200);
     </script>
     <?php endif; ?>
+
 </div>
 <script>
     document.addEventListener("DOMContentLoaded", function () {

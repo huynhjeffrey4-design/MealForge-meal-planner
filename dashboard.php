@@ -402,7 +402,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 `;
 
                 card.addEventListener('click', () => {
-                    window.location.href = `./recipe.php?id=${recipe.id}`;
+                    window.location.href = `./recipe.php?id=${recipe.id}&from=dashboard.php`;
                 });
 
                 // Touch for mobile
@@ -418,7 +418,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                     const diffY = Math.abs(touch.pageY - startY);
                     const timeDiff = new Date().getTime() - startTime;
                     if (diffX < 5 && diffY < 5 && timeDiff < 500) {
-                        window.location.href = `./recipe.php?id=${recipe.id}`;
+                        window.location.href = `./recipe.php?id=${recipe.id}&from=dashboard.php`;
                     }
                 });
 
@@ -878,7 +878,9 @@ safeIngredients.forEach(ingredient => {
 
 
 
+
      chooseCreateBtn.addEventListener("click", function () {
+
 
 
     const iframe = document.getElementById("createRecipeIframe");
@@ -891,6 +893,8 @@ safeIngredients.forEach(ingredient => {
             userId: userId
         }, "*");
     }, 100);
+
+
 
     };
 
@@ -921,6 +925,7 @@ safeIngredients.forEach(ingredient => {
   </div>
 </div>
 <script>
+
     let handledAddMeal = false;
 
     window.addEventListener('message', function (event) {
@@ -929,6 +934,7 @@ safeIngredients.forEach(ingredient => {
             window.location.reload(); // <- just reload cleanly
         }
     });
+
 </script>
 </body>
 </html>
