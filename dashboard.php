@@ -350,10 +350,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 </div>
             </div>
         </div>
-
-        <div class="text-center mt-4">
-            <button onclick="loadRecipes()" class="px-4 py-2 bg-primary text-white rounded hover:bg-primary-dark">Refresh</button>
-        </div>
     </div>
     
     <script>
@@ -880,11 +876,11 @@ safeIngredients.forEach(ingredient => {
         const mealModal = document.getElementById("meal-modal");
         const searchIframe = document.getElementById("search-iframe");
 
-  
+
 
      chooseCreateBtn.addEventListener("click", function () {
-    
-    
+
+
     const iframe = document.getElementById("createRecipeIframe");
     iframe.src = `add-recipe.php?from=dashboard&day=${encodeURIComponent(currentDay)}`;
      iframe.onload = () => {
@@ -895,11 +891,11 @@ safeIngredients.forEach(ingredient => {
             userId: userId
         }, "*");
     }, 100);
-      
+
     };
 
-    
-  
+
+
     document.getElementById("createRecipeModal").classList.remove("hidden");
 });
     document.getElementById("close-createRecipeModal").addEventListener("click", function() {
@@ -925,33 +921,14 @@ safeIngredients.forEach(ingredient => {
   </div>
 </div>
 <script>
-window.addEventListener('message', function (event) {
-  const data = event.data;
-  if (data.action === 'addMealSuccess') {
-    const day = data.day;
-    const recipe = data.recipe;
+    let handledAddMeal = false;
 
-    const card = document.querySelector(`[data-day="${day}"]`);
-    if (card) {
-      const image = card.querySelector('.meal-image');
-      const name = card.querySelector('.meal-name');
-      const icon = card.querySelector('.meal-icon');
-
-      if (image) image.src = recipe.image || 'static/images/default-recipe.jpg';
-      if (name) name.textContent = recipe.name || 'Unnamed Recipe';
-      if (icon) {
-        icon.textContent = '✔️';
-        icon.classList.remove('text-red-500');
-        icon.classList.add('text-green-500');
-      }
-
-      card.classList.add('meal-added');
-    }
-
-    const mealModal = document.getElementById('mealModal');
-    if (mealModal) mealModal.classList.add('hidden');
-  }
-});
+    window.addEventListener('message', function (event) {
+        const data = event.data;
+        if (data.action === 'addMealSuccess') {
+            window.location.reload(); // <- just reload cleanly
+        }
+    });
 </script>
 </body>
 </html>
