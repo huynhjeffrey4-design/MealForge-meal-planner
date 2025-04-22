@@ -82,7 +82,7 @@ if (!defined('HEADER_SCRIPT_RUN')) {
                             </button>
                             <div class="absolute left-0 mt-1 w-48 bg-white rounded-md shadow-lg py-1 ring-1 ring-black ring-opacity-5 hidden group-hover:block z-50">
                                 <a href="<?= $basePath ?>ingredients.php" class="flex items-center px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 <?= $currentPage === 'ingredients.php' ? 'text-green-600 font-medium' : '' ?>">
-                                    <i data-lucide="cube" aria-hidden="true" class="w-4 h-4 mr-2"></i>
+                                    <i data-lucide="refrigerator" aria-hidden="true" class="w-4 h-4 mr-2"></i>
                                     My Ingredients
                                 </a>
                                 <a href="<?= $basePath ?>dashboard.php" class="flex items-center px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 <?= $currentPage === 'dashboard.php' ? 'text-green-600 font-medium' : '' ?>">
