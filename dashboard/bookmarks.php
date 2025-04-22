@@ -114,7 +114,7 @@ define('IN_SUBDIRECTORY', true);
                 </div>
                 <?php else: ?>
                     <?php foreach ($bookmarkedRecipes as $recipe): ?>
-                    <a href="../recipe.php?id=<?= htmlspecialchars($recipe['id']) ?>" class="block bg-white rounded-lg shadow overflow-hidden hover:shadow-md transition-shadow duration-200">
+                    <a href="../recipe.php?id=<?= htmlspecialchars($recipe['id']) ?>&from=dashboard/bookmarks.php" class="block bg-white rounded-lg shadow overflow-hidden hover:shadow-md transition-shadow duration-200">
                             <?php if (!empty($recipe['image'])): ?>
                             <div class="w-full">
                                 <img src="<?= htmlspecialchars($recipe['image']) ?>" alt="<?= htmlspecialchars($recipe['recipe']) ?>" class="w-full h-48 object-cover">

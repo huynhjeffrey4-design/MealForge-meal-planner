@@ -52,6 +52,11 @@ if (isset($_SESSION['user']) && isset($_SESSION['user']['id']) && $recipe_id) {
     $isBookmarked = $bookmarkController->isBookmarked($recipe_id);
 }
 
+$returnPage = 'search.php';  // default return search.php
+if (isset($_GET['from']) && in_array($_GET['from'], ['search.php', 'ingredients.php', 'match.php', 'dashboard.php', 'dashboard/bookmarks.php', 'profile.php'])) {
+    $returnPage = $_GET['from'];
+}
+
 // Added for recipe liking and commenting
 function handleCommentSubmission($isLoggedIn, $recipeController, $recipe_id): void
 {
@@ -208,12 +213,12 @@ handleDeleteComment($isLoggedIn, $recipeController, $recipe_id);
 	<div class="container mx-auto max-w-3xl p-4">
 		<!-- Back to search button -->
 		<div class="mb-6 print-hide">
-			<a href="search.php" class="flex items-center text-gray-600 hover:text-gray-900">
+			<a href="<?= $returnPage ?>" class="flex items-center text-gray-600 hover:text-gray-900">
 				<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="mr-2">
 					<path d="M19 12H5"></path>
 					<path d="M12 19l-7-7 7-7"></path>
 				</svg>
-				To Search
+				Return
 			</a>
 		</div>
 
@@ -257,7 +262,7 @@ handleDeleteComment($isLoggedIn, $recipeController, $recipe_id);
 			<div class="bg-white rounded-lg shadow-md p-6">
 				<!-- Recipe Header -->
 				<div class="flex justify-between items-start mb-4">
-					<h1 class="text-3xl font-bold text-gray-800 mr-3"><?= htmlspecialchars($recipe['recipe']) ?></h1>
+					<h1 class="text-3xl font-bold text-gray-800 mr-3"><?= htmlspecialchars_decode(htmlspecialchars($recipe['recipe'])) ?></h1>
 					<div class="flex space-x-4">
 						<!-- Print Icon -->
 						<button id="print-button" class="text-gray-500 hover:text-gray-700">

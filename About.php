@@ -95,7 +95,7 @@
       <p>Join thousands of users already enjoying stress-free meals. Sign up today—it's free!</p>
 
       <a href="login.php">
-				<button class="bg-white text-green-700 px-8 py-4 rounded-lg text-lg font-semibold hover:bg-green-50 flex items-center gap-2 mx-auto">
+				<button class="bg-white text-green-700 px-8 py-4 rounded-lg text-lg font-bold hover:bg-green-50 flex items-center gap-2 mx-auto">
 					Get Started Now
 					<i data-lucide="arrow-right" class="w-5 h-5"></i>
 				</button>
