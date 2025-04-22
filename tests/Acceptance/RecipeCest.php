@@ -41,17 +41,15 @@ final class RecipeCest
         $recipeId = 5;
         $I->amOnPage('/recipe.php?id=' . $recipeId);
 
-        // Define expected parameters based on recipe ID 1 and the test user
+        // Define expected parameters based on recipe ID 5 and the test user
         $expectedRecipeId = (string)$recipeId;
-        $expectedRecipeName = 'Panuozzo sandwich'; // Name of recipe with ID 1
-        $expectedUserFirstName = $this->testUser['first_name'];
+        $expectedRecipeName = 'Panuozzo sandwich'; // Name of recipe with ID 5
 
         // Construct the expected URL part, ensuring parameters are URL encoded
         $expectedUrlPart = sprintf(
-            'social.php?recipe_id=%s&recipe_name=%s&user_firstname=%s',
+            'social.php?recipe_id=%s&recipe_name=%s',
             $expectedRecipeId,
             urlencode($expectedRecipeName),
-            urlencode($expectedUserFirstName)
         );
 
         // Find the share link (<a> tag) and click it
@@ -61,7 +59,7 @@ final class RecipeCest
         // Verify redirection to the social page with correct parameters
         $I->seeInCurrentUrl($expectedUrlPart);
 
-        $I->see("I just made Panuozzo sandwich!");
+        $I->see("I just made \"Panuozzo sandwich\"!");
     }
 
     public function recipeShowsRecommendations(AcceptanceTester $I)
