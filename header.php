@@ -271,9 +271,28 @@ body {
     padding-top: 4rem !important;
 }
 
-/* Styling for dropdown hover effects */
+/* Improved dropdown handling with transitions */
+.group-hover\:block {
+    display: none;
+    opacity: 0;
+    visibility: hidden;
+    transition: opacity 0.2s, visibility 0.2s;
+    transition-delay: 0.1s;
+}
+
 .group:hover .group-hover\:block {
     display: block;
+    opacity: 1;
+    visibility: visible;
+}
+
+/* Add a small buffer zone to prevent accidental mouseout */
+.dropdown-container {
+    padding-bottom: 5px;
+}
+
+.dropdown-menu {
+    margin-top: -5px; /* Compensate for the padding */
 }
 
 /* Transition for mobile dropdown icons */
@@ -286,7 +305,6 @@ body {
 </style>
 
 <script>
-// Only add this script once
 document.addEventListener('DOMContentLoaded', function() {
     // Initialize Lucide icons
     if (typeof lucide !== 'undefined') {
@@ -332,6 +350,52 @@ document.addEventListener('DOMContentLoaded', function() {
             // Toggle the dropdown
             dropdown.classList.toggle('open');
             content.classList.toggle('hidden');
+        });
+    });
+
+    // Add improved dropdown behavior for desktop
+    const dropdownGroups = document.querySelectorAll('.group');
+    let activeDropdown = null;
+    let timeout = null;
+
+    dropdownGroups.forEach(group => {
+        const dropdown = group.querySelector('.group-hover\\:block');
+        if (!dropdown) return;
+
+        // Add classes to enhance the dropdown behavior
+        group.classList.add('dropdown-container');
+        dropdown.classList.add('dropdown-menu');
+
+        // Mouse enter event
+        group.addEventListener('mouseenter', () => {
+            clearTimeout(timeout);
+            if (activeDropdown && activeDropdown !== dropdown) {
+                activeDropdown.style.display = 'none';
+                activeDropdown.style.opacity = '0';
+                activeDropdown.style.visibility = 'hidden';
+            }
+            dropdown.style.display = 'block';
+            // Small delay to trigger animation
+            setTimeout(() => {
+                dropdown.style.opacity = '1';
+                dropdown.style.visibility = 'visible';
+            }, 10);
+            activeDropdown = dropdown;
+        });
+
+        // Mouse leave event with delay
+        group.addEventListener('mouseleave', () => {
+            timeout = setTimeout(() => {
+                dropdown.style.opacity = '0';
+                dropdown.style.visibility = 'hidden';
+                // Hide after fade out animation
+                setTimeout(() => {
+                    if (dropdown.style.opacity === '0') {
+                        dropdown.style.display = 'none';
+                    }
+                }, 200);
+                activeDropdown = null;
+            }, 300); // 300ms delay before hiding
         });
     });
 });
