@@ -1,57 +1,15 @@
 <?php
-date_default_timezone_set('America/New_York');
 require_once __DIR__ . '/controllers/user.php';
 require_once __DIR__ . '/controllers/post.php';
-require_once 'SetupRedbean.php';
-DatabaseConnection::getInstance()->setup();
 session_start();
 if (isset($_GET['recipe_id'])) {
     $_SESSION['from_recipe_id'] = intval($_GET['recipe_id']);
 }
 // Initialize PostController with Redbean
 $postController = new PostController(new RedbeanPostDataProvider());
-$socialPosts = R::findAll('socialpost', 'ORDER BY timestamp DESC');
-
 
 // Check if user is logged in
 $isLoggedIn = isset($_SESSION['user']['id']);
-//   Step 1:
-if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['like_post_id'])) {
-    $postId = $_POST['like_post_id'];
-    $userId = $_SESSION['user']['id'] ?? null;
-
-    if ($userId && $postId) {
-        $existing = R::findOne('likes', 'post_id = ? AND user_id = ?', [$postId, $userId]);
-        if (!$existing) {
-            $like = R::dispense('likes');
-            $like->post_id = $postId;
-            $like->user_id = $userId;
-            R::store($like);
-        }
-    }
-
-    header('Location: social.php');
-    exit;
-}
-//  Step 2:
-if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['comment_post_id'])) {
-    $postId = $_POST['comment_post_id'];
-    $commentText = trim($_POST['comment_text'] ?? '');
-    $userId = $_SESSION['user']['id'] ?? null;
-
-    if ($userId && $postId && $commentText !== '') {
-        $comment = R::dispense('comment');
-        $comment->post_id = $postId;
-        $comment->user_id = $userId;
-        $comment->comment = $commentText;
-        R::store($comment);
-    }
-
-    header('Location: social.php');
-    exit;
-}
-
-
 
 // Handle Logout
 if (isset($_GET['logout'])) {
@@ -61,50 +19,14 @@ if (isset($_GET['logout'])) {
     exit;
 }
 
-if ($_SERVER['REQUEST_METHOD'] === 'POST' &&
-    $_SERVER['CONTENT_TYPE'] === 'application/json') {
-
-    $raw = file_get_contents("php://input");
-    $data = json_decode($raw, true);
-
-    if ($data['action'] === 'shareRecipe' && !empty($data['recipe'])) {
-        $recipe = $data['recipe'];
-        $userId = $_SESSION['user_id'] ?? null;
-
-        if (!$userId) {
-            echo " Missing user_id";
-            exit;
-        }
-
-        $post = R::dispense('socialpost');
-        $post->user_id = $userId;
-        $now = new DateTime('now', new DateTimeZone('America/New_York'));
-        $post->timestamp = $now->getTimestamp();
-        $post->recipe = json_encode($recipe);
-        R::store($post);
-
-        echo "✅ Posted to social feed";
-        exit;
-    }
-
-    echo " Invalid data";
-    exit;
-}
-
-
-// For autofilling from recipe details page
-if (isset($_GET['recipe_id'], $_GET['recipe_name'], $_GET['user_firstname'])) {
-    $recipeId = $_GET['recipe_id'];
+// Autofill post message if recipe_name is passed
+if (isset($_GET['recipe_name'])) {
     $recipeName = $_GET['recipe_name'];
-    $userFirstName = $_GET['user_firstname'];
-
-    // Create the post message dynamically
-    $postMessage = "I just made {$recipeName}!";
-
+    $postMessage = "I just made \"{$recipeName}\"!";
 } else {
-    // Default message if no parameters are passed
     $postMessage = "";
 }
+
 
 
 function handlePostSubmission($isLoggedIn, $postController)
@@ -246,83 +168,6 @@ $posts = $postController->getAllPosts();
     <!-- Social Feed Section -->
     <div id="social-feed" class="w-full">
         <div class="space-y-8">
-        <?php
-$sharedRecipes = R::findAll('socialpost', 'ORDER BY timestamp DESC');
-?>
-
-<?php if (!empty($sharedRecipes)): ?>
-  <h2 class="text-2xl font-bold mt-12 mb-4"> Community Shared Recipes</h2>
-  <div class="flex flex-col gap-6 max-w-4xl mx-auto"> 
-    <?php foreach ($sharedRecipes as $shared):
-        $r = json_decode($shared->recipe, true);
-        ?>
-      <div class="bg-white border rounded-lg p-4 shadow">
-        <h3 class="text-lg font-bold"><?= htmlspecialchars($r['step1']['meal_name'] ?? 'Untitled') ?></h3>
-        <p class="text-sm text-gray-600"><?= htmlspecialchars($r['step1']['description'] ?? '') ?></p>
-        <?php if (!empty($r['step4']['image'])): ?>
-          <img src="<?= htmlspecialchars($r['step4']['image']) ?>" class="mt-3 w-full rounded">
-          <ul class="mt-2 text-sm text-gray-700">
-     <li><strong>Prep Time:</strong> <?= htmlspecialchars($r['step1']['prep_time'] ?? 'N/A') ?> min</li>
-     <li><strong>Cook Time:</strong> <?= htmlspecialchars($r['step1']['cook_time'] ?? 'N/A') ?> min</li>
-     <li><strong>Difficulty:</strong> <?= htmlspecialchars($r['step1']['difficulty'] ?? 'N/A') ?></li>
-     <li><strong>Servings:</strong> <?= htmlspecialchars($r['step1']['servings'] ?? 'N/A') ?></li>
-     <li><strong>Meal Type:</strong> <?= htmlspecialchars($r['step1']['meal_type'] ?? 'N/A') ?></li>
- </ul>
-
-
-        <?php endif; ?>
-        <ul class="list-disc pl-5 mt-2 text-sm">
-          <?php foreach ($r['ingredients'] ?? [] as $i): ?>
-            <li><?= $i['qty'] ?> <?= $i['unit'] ?> <?= $i['name'] ?></li>
-          <?php endforeach; ?>
-        </ul>
-        <ol class="list-decimal pl-5 mt-2 text-sm">
-          <?php foreach ($r['instructions'] ?? [] as $step): ?>
-            <li><?= htmlspecialchars($step) ?></li>
-          <?php endforeach; ?>
-        </ol>
-        <p class="mt-2 text-xs text-gray-400">Shared on <?= date('Y-m-d H:i', $shared->timestamp) ?></p>
-        <?php
-        $likeCount = R::count('likes', 'post_id = ?', [$shared->id]);
-        $comments = R::findAll('comment', 'post_id = ?', [$shared->id]);
-        ?>
-
-
-<form method="POST" class="mt-2">
-    <input type="hidden" name="like_post_id" value="<?= $shared->id ?>">
-    <button type="submit" class="text-sm text-blue-600 hover:underline">👍 <?= $likeCount ?> Like</button>
-</form>
-
-
-<div class="mt-3">
-    <h4 class="font-semibold">Comments:</h4>
-    <?php foreach ($comments as $comment): ?>
-        <?php
-                    $user = R::findOne('users', 'id = ?', [$comment->user_id]);
-        $username = $user ? $user->name : 'User ' . $comment->user_id;
-        ?>
-        <p class="text-sm"><strong><?= htmlspecialchars($username) ?>:</strong> <?= htmlspecialchars($comment->comment) ?></p>
-    <?php endforeach; ?>
-</div>
-
-
-<?php if ($isLoggedIn): ?>
-<form method="POST" class="mt-2">
-    <input type="hidden" name="comment_post_id" value="<?= $shared->id ?>">
-    <textarea name="comment_text" rows="2" class="w-full p-2 border border-gray-300 rounded-md text-sm text-black bg-white" placeholder="Add a comment..." required></textarea>
-
-    <button type="submit" class="mt-1 px-3 py-1 bg-green-500 text-white text-sm rounded hover:bg-green-600">Submit Comment</button>
-</form>
-<?php else: ?>
-    <p class="text-sm text-gray-500">Log in to like or comment.</p>
-<?php endif; ?>
-
-
-
-      </div>
-    <?php endforeach; ?>
-  </div>
-<?php endif; ?>
             <?php if (empty($posts)): ?>
                 <div class="bg-white rounded-lg shadow p-8 text-center">
                     <i data-lucide="utensils" aria-hidden="true" class="h-16 w-16 mx-auto text-gray-400 mb-4"></i>

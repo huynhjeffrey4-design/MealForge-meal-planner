@@ -45,10 +45,18 @@ if (!$user) {
     exit;
 }
 
-// Sample meals data (in a real app, this would come from a database)
-$meals = [
-    // Your meal data array here...
+$meals = R::findAll('mealplan', 'user_id = ?', [$userId]);
+$groupedMeals = [
+    'Monday' => [], 'Tuesday' => [], 'Wednesday' => [],
+    'Thursday' => [], 'Friday' => [], 'Saturday' => [], 'Sunday' => []
 ];
+
+foreach ($meals as $meal) {
+    $day = $meal->day ?? '';
+    if (isset($groupedMeals[$day])) {
+        $groupedMeals[$day][] = $meal->export();
+    }
+}
 
 
 // Add recipe directly to meal plan
@@ -117,6 +125,20 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         }
         exit;
     }
+
+    if (isset($_POST['remove_meal_id'])) {
+        $mealId = (int)$_POST['remove_meal_id'];
+        $meal = R::load('mealplan', $mealId);
+
+        if ($meal && $meal->user_id == $userId) {
+            R::trash($meal);
+            echo json_encode(['success' => true]);
+        } else {
+            echo json_encode(['success' => false, 'message' => 'Meal not found or access denied']);
+        }
+        exit;
+    }
+
 }
 ?>
 
@@ -196,8 +218,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                     <h2 class="text-lg font-bold text-center mb-4"><?php echo $day; ?></h2>
                     
                     <div class="flex-1 flex flex-col" id="meals-<?php echo strtolower($day); ?>">
-                        <?php if (isset($_SESSION['meal_plan'][$day]) && !empty($_SESSION['meal_plan'][$day])): ?>
-                            <?php foreach ($_SESSION['meal_plan'][$day] as $index => $meal): ?>
+                        <?php if (!empty($groupedMeals[$day])): ?>
+                            <?php foreach ($groupedMeals[$day] as $index => $meal): ?>
                                 <div class="mb-3 relative meal-card">
                                 <a href="#" class="meal-details" data-meal='<?= htmlspecialchars(json_encode($meal), ENT_QUOTES, 'UTF-8') ?>'>
                                 <img
@@ -208,7 +230,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
                                  
                                         <div class="bg-black bg-opacity-60 text-white text-sm p-2 absolute bottom-0 left-0 right-0 rounded-b-lg">
-                                            <?php echo htmlspecialchars($meal['name']); ?>
+                                            <?php echo htmlspecialchars($meal['recipe']); ?>
                                         </div>
                                     </a>
                                     <div class="absolute top-2 right-2 meal-options">
@@ -218,7 +240,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                                             </button>
                                             <div class="hidden absolute right-0 mt-2 w-48 bg-white rounded-md shadow-lg z-10 meal-menu">
                                                 <div class="py-1">
-                                                    <button class="w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 remove-meal" data-day="<?php echo $day; ?>" data-index="<?php echo $index; ?>">
+                                                    <button class="w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 remove-meal"
+                                                            data-meal-id="<?= $meal['id'] ?>">
                                                         <i class="fa fa-trash mr-2 text-red-500" aria-hidden="true"></i> Remove
                                                     </button>
                                                 </div>
@@ -456,6 +479,12 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                     </button>
                     <h2 class="text-xl font-bold" id="recipe-title">Recipe Details</h2>
                 </div>
+                <a href="social.php"
+                   class="text-gray-500 hover:text-blue-600 mr-2"
+                   title="Share to Social Page">
+                    <i data-lucide="share-2" class="w-5 h-5"></i>
+                    <span class="sr-only">Share to Social Page</span>
+                </a>
                 <button id="close-recipe" class="text-gray-500 hover:text-gray-700">
                     <i class="fa fa-times" aria-hidden="true"></i><span class="sr-only">Close</span>
                 </button>
@@ -463,11 +492,22 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             
             <div class="p-0">
                 <img id="recipe-image" src="" alt="Preview of selected recipe" class="w-full h-64 object-cover rounded-lg mb-4">
-                
-                <p id="recipe-description" class="list-disc pl-5 space-y-1"></p>
-              
-               
-                   <h3 class="text-lg font-bold mb-2">Meal Details</h3>
+
+                <!-- Meal Name Section -->
+                <div class="mb-4">
+                    <h3 class="text-lg font-bold">Meal Name</h3>
+                    <p id="meal-name" class="text-gray-700"></p>
+                </div>
+
+
+                <!-- Description Section -->
+                <div id="description-section" class="mb-6">
+                    <h3 class="text-lg font-bold mb-2 mt-6">Description</h3>
+                    <p id="recipe-description" class="text-gray-700"></p>
+                </div>
+
+
+                <h3 class="text-lg font-bold mb-2">Meal Details</h3>
                    <ul class="list-disc pl-5 space-y-1 text-sm text-gray-700">
 
 
@@ -475,13 +515,13 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                       <li id="prep-time"></li>
                       <li id="cook-time"></li>
                       <li id="difficulty"></li>
-                      <li id="servings"></li>
+                      <li id="serves"></li>
                       <li id="meal-type"></li>
                   </ul>
                 </div>
                 
                 <div class="mb-6">
-                    <h3 class="text-lg font-bold mb-2">Ingredients</h3>
+                    <h3 class="text-lg font-bold mt-6 mb-2">Ingredients</h3>
                     <ul id="recipe-ingredients" class="list-disc pl-5 space-y-1"></ul>
                 </div>
                 
@@ -493,14 +533,14 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                
                   <div id="recipe-tags" class="flex flex-wrap gap-2 mb-4"></div>
                  </div>
-                
-                <div>
-                    <h3 class="text-lg font-bold mb-2">Nutrition Information</h3>
-                    <ul id="recipe-nutrition" class="list-disc pl-5 space-y-1"></ul>
-                </div>
-            </div>
+
+           <div id="nutrition-section" class="mb-6">
+               <h3 class="text-lg font-bold mb-2">Nutrition Information</h3>
+               <ul id="recipe-nutrition" class="list-disc pl-5 space-y-1"></ul>
+           </div>
+       </div>
         </div>
-    </div>
+
     <!-- Confirmation Modal -->
     <div id="confirm-modal" class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center hidden z-50 p-2 sm:p-4" role="dialog" aria-label="Confirmation Modal">
         <div class="bg-white rounded-lg w-[95%] max-w-md p-4 sm:p-6">
@@ -541,7 +581,10 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     button.addEventListener('click', function () {
         const day = this.dataset.day;
         currentDay = day;
-        openChooseModal(day);
+        const searchIframe = document.getElementById('search-iframe');
+   searchIframe.src = `search.php?modal=true&day=${encodeURIComponent(currentDay)}&from=dashboard`;
+
+    document.getElementById('meal-modal').classList.remove('hidden');
     });
 });
 
@@ -590,7 +633,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                       prepTime: recipe.prep_time || '',
                       cookTime: recipe.cook_time || '',
                       difficulty: recipe.difficulty || '',
-                      servings: recipe.serves || '',
+                      serves: recipe.serves || '',
                       mealType: recipe.meal_type || '',
                       tags: Array.isArray(recipe.tags) ? recipe.tags : []
                    
@@ -650,13 +693,14 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 
                 // Populate recipe modal with meal data
                 document.getElementById('recipe-title').textContent = mealData.name;
+                document.getElementById('meal-name').textContent = mealData.recipe || "Unnamed"
                 document.getElementById('recipe-image').src = mealData.image;
                 document.getElementById('recipe-image').alt = mealData.name;
                 document.getElementById('recipe-description').textContent = mealData.description;
                 document.getElementById("prep-time").textContent     = "Prep Time: " + (mealData.prepTime || "N/A") + " min";
                 document.getElementById("cook-time").textContent     = "Cook Time: " + (mealData.cookTime || "N/A") + " min";
                 document.getElementById("difficulty").textContent    = "Difficulty: " + (mealData.difficulty || "N/A");
-                document.getElementById("servings").textContent      = "Servings: " + (mealData.servings || "N/A");
+                document.getElementById("serves").textContent      = "Serves: " + (mealData.serves || "N/A");
                 document.getElementById("meal-type").textContent = "Meal Type: " + (mealData.mealType || "N/A");
 
 
@@ -689,54 +733,65 @@ safeIngredients.forEach(ingredient => {
 });
 
 // Populate instructions
-const instructionsList = document.getElementById('recipe-instructions');
-instructionsList.innerHTML = '';
-safeInstructions.forEach(step => {
-    const li = document.createElement('li');
-    li.textContent = step;
-    instructionsList.appendChild(li);
-});
+                const instructionsContainer = document.getElementById('recipe-instructions');
+                instructionsContainer.textContent = safeInstructions.join('\n\n');
 
               
 
                 // Populate tags
                 const tagsContainer = document.getElementById('recipe-tags');
-                tagsContainer.innerHTML = ''; 
+                tagsContainer.innerHTML = '';
 
                 if (mealData.tags && mealData.tags.length > 0) {
-                  const label = document.createElement('span');
-                     label.textContent = 'Tags: ';
-                     label.className = 'font-semibold mr-2';
-                     tagsContainer.appendChild(label);
+                    tagsContainer.style.display = 'flex';
+                    const label = document.createElement('span');
+                    label.textContent = 'Tags: ';
+                    label.className = 'font-semibold mr-2';
+                    tagsContainer.appendChild(label);
 
-                  mealData.tags.forEach(tag => {
-                     const span = document.createElement('span');
-                    span.className = 'inline-block bg-green-100 text-green-800 text-sm rounded-full px-3 py-1 mr-1';
-                    span.textContent = tag;
-                    tagsContainer.appendChild(span);
-                 });
-                 } else {
-                tagsContainer.textContent = 'Tags: None';
-                 }
-              
-                
+                    mealData.tags.forEach(tag => {
+                        const span = document.createElement('span');
+                        span.className = 'inline-block bg-green-100 text-green-800 text-sm rounded-full px-3 py-1 mr-1';
+                        span.textContent = tag;
+                        tagsContainer.appendChild(span);
+                    });
+                } else {
+                    tagsContainer.style.display = 'none';
+                }
+
+
+
                 // Populate nutrition
                 const nutritionList = document.getElementById('recipe-nutrition');
-                  nutritionList.innerHTML = '';
+                const nutritionSection = document.getElementById('recipe-nutrition');
+                const nutritionWrapper = nutritionSection?.closest('div'); // container with heading + list
+                nutritionSection.innerHTML = '';
 
                 const safeNutrition = Array.isArray(mealData.nutrition)
-                ? mealData.nutrition
-                : (typeof mealData.nutrition === 'string'
-                ? mealData.nutrition.split(',').map(n => n.trim())
-                  : []);
+                    ? mealData.nutrition
+                    : (typeof mealData.nutrition === 'string'
+                        ? mealData.nutrition.split(',').map(n => n.trim())
+                        : []);
 
-               safeNutrition.forEach(item => {
-                  const li = document.createElement('li');
-                  li.textContent = item;
-                  nutritionList.appendChild(li);
+                const validNutrition = safeNutrition.filter(item => {
+                    const value = parseInt(item);
+                    return !isNaN(value) && value > 0;
                 });
 
-                
+                if (validNutrition.length > 0) {
+                    validNutrition.forEach(item => {
+                        const li = document.createElement('li');
+                        li.textContent = item;
+                        nutritionSection.appendChild(li);
+                    });
+                    if (nutritionWrapper) nutritionWrapper.classList.remove('hidden');
+                } else {
+                    if (nutritionWrapper) nutritionWrapper.classList.add('hidden');
+                }
+
+
+
+
                 // Show recipe modal
                 recipeModal.classList.remove('hidden');
             });
@@ -774,89 +829,73 @@ safeInstructions.forEach(step => {
         });
         
         // Remove meal handlers
+        let mealIdToRemove = null;
+
         document.querySelectorAll('.remove-meal').forEach(button => {
-            button.addEventListener('click', function() {
-                const day = this.dataset.day;
-                const index = parseInt(this.dataset.index);
-                
-                // Store removal data
-                removeData.day = day;
-                removeData.index = index;
-                
+            button.addEventListener('click', function () {
+                mealIdToRemove = this.dataset.mealId;
+
                 // Show confirmation modal
-                document.getElementById('confirm-title').textContent = `Remove this meal from ${day}?`;
+                document.getElementById('confirm-title').textContent = `Remove this meal?`;
                 document.getElementById('confirm-message').textContent = 'Are you sure you want to remove this meal from your plan?';
-                confirmModal.classList.remove('hidden');
+                document.getElementById('confirm-modal').classList.remove('hidden');
             });
         });
-        
+
+
         // Confirm removal handler
         document.getElementById('confirm-action').addEventListener('click', function() {
-            if (removeData.day && removeData.index >= 0) {
-                // Send request to remove meal
+            if (mealIdToRemove) {
                 const formData = new FormData();
-                formData.append('remove_day', removeData.day);
-                formData.append('remove_index', removeData.index);
-                
+                formData.append('remove_meal_id', mealIdToRemove);
+
                 fetch('dashboard.php', {
                     method: 'POST',
                     body: formData
                 })
-                .then(response => response.json())
-                .then(data => {
-                    if (data.success) {
-                        // Close modal
-                        confirmModal.classList.add('hidden');
-                        
-                        // Reload page to show updated meal plan
-                        window.location.reload();
-                    } else {
-                        alert('Failed to remove meal: ' + (data.message || 'Unknown error'));
-                    }
-                })
-                .catch(error => {
-                    console.error('Error:', error);
-                    alert('An error occurred while removing the meal');
-                });
+                    .then(response => response.json())
+                    .then(data => {
+                        if (data.success) {
+                            document.getElementById('confirm-modal').classList.add('hidden');
+                            window.location.reload();
+                        } else {
+                            alert('Failed to remove meal: ' + (data.message || 'Unknown error'));
+                        }
+                    })
+                    .catch(error => {
+                        console.error('Error:', error);
+                        alert('An error occurred while removing the meal');
+                    });
             }
         });
 
-        
-        function openChooseModal(day) {
-            currentDay = day;
-            document.getElementById("chooseAddMethodModal").classList.remove("hidden");
-        }
 
-        function closeChooseModal() {
-            document.getElementById("chooseAddMethodModal").classList.add("hidden");
-        }
+
+
+
 
         document.addEventListener("DOMContentLoaded", function() {
-    const chooseSearchBtn = document.getElementById("chooseSearchBtn");
-    const chooseCreateBtn = document.getElementById("chooseCreateBtn");
-    const mealModal = document.getElementById("meal-modal");
-    const searchIframe = document.getElementById("search-iframe");
-    const chooseAddMethodModal = document.getElementById("chooseAddMethodModal");
+        const chooseSearchBtn = document.getElementById("chooseSearchBtn");
+        const chooseCreateBtn = document.getElementById("chooseCreateBtn");
+        const mealModal = document.getElementById("meal-modal");
+        const searchIframe = document.getElementById("search-iframe");
 
   
-    chooseSearchBtn.addEventListener("click", function () {
-        chooseAddMethodModal.classList.add("hidden");  
-        searchIframe.src = `search.php?modal=true&day=${encodeURIComponent(currentDay)}`;  
-        mealModal.classList.remove("hidden");  
-    });
 
-    chooseCreateBtn.addEventListener("click", function () {
-    chooseAddMethodModal.classList.add("hidden"); // 
+     chooseCreateBtn.addEventListener("click", function () {
     
     
     const iframe = document.getElementById("createRecipeIframe");
     iframe.src = `add-recipe.php?from=dashboard&day=${encodeURIComponent(currentDay)}`;
      iframe.onload = () => {
         const userId = <?= json_encode($_SESSION['user']['id']) ?>;
+        setTimeout(() => {
         iframe.contentWindow.postMessage({
             type: "USER_ID",
             userId: userId
         }, "*");
+    }, 100);
+      
     };
 
     
@@ -869,34 +908,50 @@ safeInstructions.forEach(step => {
         document.getElementById("createRecipeIframe").src = "";
     });
 });
-
-
-
-
     </script> 
+  
     
-   <!-- Choose Add Method Modal -->
-<div id="chooseAddMethodModal" class="fixed inset-0 bg-black bg-opacity-50 hidden z-50 flex items-center justify-center">
-  <div class="bg-white rounded-lg p-6 text-center shadow-xl w-80">
-    <h2 class="text-xl font-bold mb-4">How do you want to add a recipe?</h2>
-    <button id="chooseSearchBtn" class="bg-green-500 text-white w-full py-2 rounded mb-3">Search Recipes</button>
-    <button id="chooseCreateBtn" class="bg-blue-500 text-white w-full py-2 rounded">Create Your Own</button>
-    <button onclick="closeChooseModal()" class="text-gray-500 mt-3 text-sm underline">Cancel</button>
-  </div>
-</div> 
+
 <!-- Create Recipe Modal -->
 <div id="createRecipeModal" class="fixed inset-0 bg-black bg-opacity-50 hidden z-50 flex items-center justify-center p-4">
   <div class="bg-white rounded-lg w-full max-w-md h-[80vh] flex flex-col">
     <div class="p-4 border-b flex justify-between items-center">
       <h2 class="text-xl font-bold">Create Your Own Recipe</h2>
-      <button id="close-createRecipeModal" class="text-gray-500 hover:text-gray-700">
-          <i class="fa fa-times" aria-hidden="true"></i><span class="sr-only">Close</span>
-      </button>
+        <button id="close-createRecipeModal" class="w-full bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded text-center flex items-center justify-center">
+            <i class="fa fa-times" aria-hidden="true"></i><span class="sr-only">Close</span>
+        </button>
     </div>
     <iframe id="createRecipeIframe" class="w-full flex-1 border-0" src=""></iframe>
   </div>
 </div>
+<script>
+window.addEventListener('message', function (event) {
+  const data = event.data;
+  if (data.action === 'addMealSuccess') {
+    const day = data.day;
+    const recipe = data.recipe;
 
+    const card = document.querySelector(`[data-day="${day}"]`);
+    if (card) {
+      const image = card.querySelector('.meal-image');
+      const name = card.querySelector('.meal-name');
+      const icon = card.querySelector('.meal-icon');
 
+      if (image) image.src = recipe.image || 'static/images/default-recipe.jpg';
+      if (name) name.textContent = recipe.name || 'Unnamed Recipe';
+      if (icon) {
+        icon.textContent = '✔️';
+        icon.classList.remove('text-red-500');
+        icon.classList.add('text-green-500');
+      }
+
+      card.classList.add('meal-added');
+    }
+
+    const mealModal = document.getElementById('mealModal');
+    if (mealModal) mealModal.classList.add('hidden');
+  }
+});
+</script>
 </body>
 </html>
