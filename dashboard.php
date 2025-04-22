@@ -383,7 +383,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 `;
 
                 card.addEventListener('click', () => {
-                    window.location.href = `./recipe.php?id=${recipe.id}`;
+                    window.location.href = `./recipe.php?id=${recipe.id}&from=dashboard.php`;
                 });
 
                 // Touch for mobile
@@ -399,7 +399,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                     const diffY = Math.abs(touch.pageY - startY);
                     const timeDiff = new Date().getTime() - startTime;
                     if (diffX < 5 && diffY < 5 && timeDiff < 500) {
-                        window.location.href = `./recipe.php?id=${recipe.id}`;
+                        window.location.href = `./recipe.php?id=${recipe.id}&from=dashboard.php`;
                     }
                 });
 
