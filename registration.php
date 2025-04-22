@@ -39,7 +39,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 }
 ?>
 
-
 <!doctype html>
 <html lang="en">
 <head>
@@ -49,49 +48,56 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
     <style>
         .bg-primary {
-            background-color: #00A651;
+            background-color: #00663D;
         }
         .text-primary {
-            color: #00A651;
+            color: #00663D;
         }
         .hover\:bg-primary-dark:hover {
-            background-color: #009048;
+            background-color: #005534;
         }
         .focus\:ring-primary:focus {
-            --tw-ring-color: rgba(0, 166, 81, 0.5);
+            --tw-ring-color: rgba(0, 102, 61, 0.5);
         }
         .focus\:border-primary:focus {
-            border-color: #00A651;
+            border-color: #00663D;
+        }
+        
+        .registration-illustration {
+            background-image: url('uploads/mealforge_reg.png');
+            background-repeat: no-repeat;
+            background-size: cover;
+            background-position: center;
         }
     
-    .sr-only {
-        position: absolute;
-        width: 1px;
-        height: 1px;
-        padding: 0;
-        margin: -1px;
-        overflow: hidden;
-        clip: rect(0, 0, 0, 0);
-        white-space: nowrap;
-        border: 0;
-    }
+        .sr-only {
+            position: absolute;
+            width: 1px;
+            height: 1px;
+            padding: 0;
+            margin: -1px;
+            overflow: hidden;
+            clip: rect(0, 0, 0, 0);
+            white-space: nowrap;
+            border: 0;
+        }
     </style>
     
 </head>
 <body class="bg-white min-h-screen">
     <div class="min-h-screen flex flex-col md:flex-row">
-        <!-- Brand Section -->
-        <div class="bg-primary w-full md:w-1/2 p-6 md:p-10 lg:p-20">
+        <!-- Brand Section with Background Image -->
+        <div class="bg-primary w-full md:w-1/2 p-6 md:p-10 lg:p-20 registration-illustration">
             <div class="max-w-2xl mx-auto">
                 <h1 class="text-2xl font-bold mb-6 md:mb-10 text-white">MealForge</h1>
-                <h2 class="text-3xl md:text-4xl lg:text-5xl font-bold mb-4 text-white">Create your MealForge account</h2>
-                <p class="text-white/90 text-lg md:text-xl">Get started on your meal prep journey today - for free!</p>
+                <h2 class="text-3xl md:text-4xl lg:text-5xl font-bold mb-4 text-white">Create your<br>MealForge account</h2>
+                <p class="text-white text-lg md:text-xl">Get started on your meal prep journey today - for free!</p>
             </div>
         </div>
 
         <!-- Form Section -->
-        <div class="w-full md:w-1/2 p-6 md:p-10 lg:p-20 m-auto">
-            <div class="max-w-2xl mx-auto">
+        <div class="w-full md:w-1/2 p-6 md:p-10 lg:p-20 flex items-center">
+            <div class="max-w-md w-full mx-auto">
                 <?php if ($validation->getError('general')): ?>
                     <div id="generalError" class="bg-red-50 border border-red-400 text-red-700 p-4 rounded-md mb-6" role="alert" aria-live="assertive">
                         <?php echo htmlspecialchars($validation->getError('general')); ?>
@@ -137,7 +143,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
                     <!-- Email Field -->
                     <div class="space-y-2">
-                        <label for="email" class="block font-medium text-gray-700">Email (username)</label>
+                        <label for="email" class="block font-medium text-gray-700">Email</label>
                         <input 
                             type="email" 
                             id="email" 
@@ -178,7 +184,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                     <div class="text-center text-gray-600">
                         Already have a MealForge account?
                         <a href="login.php" class="text-primary hover:text-primary/80 font-medium">
-                            Login now
+                            Log in
                         </a>
                     </div>
                 </form>
