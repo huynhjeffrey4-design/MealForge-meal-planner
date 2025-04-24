@@ -39,7 +39,9 @@ $recipe['serves']  = $recipe['serves'] ?? $recipe['serves'] ?? '';
 
 
 
-$recipe['image']     = $recipe['image'] ?? $recipe['imageURL'] ?? 'assets/default-recipe.jpg';
+$recipe['image'] = (!empty($recipe['image']))
+    ? $recipe['image']
+    : (!empty($recipe['imageURL']) ? $recipe['imageURL'] : 'uploads/generic_food.png');
 
 
 $bean = R::dispense('mealplan');
